@@ -1,0 +1,57 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Environment
+.env
+.env.local
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# GCP & Credentials
+service-account.json
+sa-key.json
+*service_account*.json
+*credentials*.json
+*-key.json
+*.pem
+*.key
+*.pfx
+scratch/
+instance/public-data/
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+*.backup*
+*.tmp
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*.egg-info/
+dist/
+build/
+.pytest_cache/

@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: nvb_pilot_test
+      POSTGRES_USER: pilot_test
+      POSTGRES_PASSWORD: isolated-local-test-only
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U pilot_test -d nvb_pilot_test"]
+      interval: 2s
+      retries: 20
+    tmpfs: [/var/lib/postgresql/data]
+  verify:
+    build: .
+    environment:
+      NVB_TEST_POSTGRES_URL: postgresql://pilot_test:isolated-local-test-only@postgres/nvb_pilot_test
+      NVB_DISABLE_EXTERNAL_SERVICES: "1"
+      DEMO_MODE: "true"
+      SEED_DEMO_DATA: "false"
+    depends_on:
+      postgres: {condition: service_healthy}
+    command: [python, -m, unittest, tests.test_ministry_pilot_postgres, -v]

@@ -1,0 +1,25 @@
+<section id="auditorReportView" class="rbac-view-panel auditor-workbench" style="display:none" aria-label="Auditor workspace">
+  <div class="aw-heading"><div><span class="aw-eyebrow">NVB · PUBLIC ACCOUNTABILITY</span><h2>Follow the evidence. Review the decision.</h2><p>Citizen needs, public investment and delivery — connected through one project record.</p></div><button type="button" id="awRefresh" class="aw-button">Refresh view</button></div>
+  <div id="awStatus" class="aw-status" role="status" aria-live="polite">Preparing the audit workspace…</div>
+  <div id="awMetrics" class="aw-metrics" aria-label="Audit overview"></div>
+  <form id="awScopeForm" class="aw-scope">
+    <label>Find a project<input id="awProjectSearch" placeholder="District, ward, category or project ID"></label>
+    <label class="aw-wide">Project<select id="awProject"><option value="">All projects</option></select></label>
+    <label>Ticket ID<input id="awTicket" placeholder="Optional citizen ticket"></label>
+    <label>Intake from<input id="awIntakeFrom" type="date"></label><label>Intake to<input id="awIntakeTo" type="date"></label>
+    <label>Event / observation from<input id="awEventFrom" type="date"></label><label>Event / observation to<input id="awEventTo" type="date"></label>
+    <button class="aw-button aw-primary" type="submit">Apply scope</button><button class="aw-button" id="awClear" type="button">Clear local filters</button>
+  </form>
+  <p class="aw-note">State, district, category and urgency follow the filters above. Intake dates select citizen reports; event dates select audit events and observations. Unlinked global events appear only without report filters.</p>
+  <div class="aw-tabs" role="tablist" aria-label="Auditor views">
+    <button type="button" id="awTabEvidence" role="tab" aria-selected="true" aria-controls="awContent" data-aw-tab="evidence">Evidence & decisions</button>
+    <button type="button" id="awTabDelivery" role="tab" aria-selected="false" aria-controls="awContent" data-aw-tab="delivery">Delivery & finance</button>
+    <button type="button" id="awTabOutcomes" role="tab" aria-selected="false" aria-controls="awContent" data-aw-tab="outcomes">Outcomes</button>
+    <button type="button" id="awTabEvents" role="tab" aria-selected="false" aria-controls="awContent" data-aw-tab="events">Audit trail</button>
+    <button type="button" id="awTabConsent" role="tab" aria-selected="false" aria-controls="awContent" data-aw-tab="consent">Consent & rights</button>
+    <button type="button" id="awTabSecurity" role="tab" aria-selected="false" aria-controls="awContent" data-aw-tab="security">Security & exceptions</button>
+  </div>
+  <div id="awContent" role="tabpanel" aria-labelledby="awTabEvidence" tabindex="0"></div>
+  <div id="awActionStatus" class="aw-status" role="status" aria-live="polite" hidden></div>
+  <div id="awInspector" class="aw-inspector" hidden tabindex="-1" aria-label="Selected audit record"></div>
+</section>

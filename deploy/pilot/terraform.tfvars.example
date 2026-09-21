@@ -1,0 +1,14 @@
+project_id = "REPLACE_WITH_APPROVED_PROJECT"
+billing_account = "REPLACE_WITH_APPROVED_BILLING_ACCOUNT"
+# Pin a built/scanned image digest. No implicit latest image.
+image = "asia-south1-docker.pkg.dev/PROJECT/REPOSITORY/nvb@sha256:REPLACE"
+enable_runtime = false
+enable_dispatch = false
+public_intake = false
+monthly_budget_inr = 150000
+oidc_issuer = "https://identity.example.gov.in"
+oidc_client_id = "REPLACE"
+oidc_authorization_endpoint = "https://identity.example.gov.in/authorize"
+oidc_token_endpoint = "https://identity.example.gov.in/token"
+oidc_jwks_uri = "https://identity.example.gov.in/.well-known/jwks.json"
+oidc_redirect_uri = "https://pilot.example.gov.in/pilot/callback"

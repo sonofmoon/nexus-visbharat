@@ -1,0 +1,8 @@
+{
+  "backend": "PostgreSQL 16.10",
+  "exit_code": 0,
+  "scope": "Isolated per-test schemas in workspace-local server",
+  "cloud_resources_used": false,
+  "tests": 27,
+  "seconds": 76.772
+}

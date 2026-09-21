@@ -1,0 +1,47 @@
+{
+  "observed_at": "2026-09-19T05:30:51.920124+00:00",
+  "request_rows": 100000,
+  "historical_audit_rows": 1000000,
+  "environment": "SQLite / Flask test client / local Windows host",
+  "network_included": false,
+  "model_calls": 0,
+  "runs": [
+    {
+      "label": "initial_snapshot",
+      "concurrency": 1,
+      "requests": 1,
+      "p50_ms": 672.51,
+      "p95_ms": 672.51,
+      "p99_ms": 672.51,
+      "requests_per_second": 1.48,
+      "max_payload_bytes": 4595,
+      "failures": 0,
+      "cache_hits": 0
+    },
+    {
+      "label": "warm_snapshot",
+      "concurrency": 20,
+      "requests": 100,
+      "p50_ms": 53.94,
+      "p95_ms": 79.9,
+      "p99_ms": 84.65,
+      "requests_per_second": 309.59,
+      "max_payload_bytes": 4594,
+      "failures": 0,
+      "cache_hits": 100
+    },
+    {
+      "label": "paged_history",
+      "concurrency": 20,
+      "requests": 100,
+      "p50_ms": 130.06,
+      "p95_ms": 262.13,
+      "p99_ms": 277.64,
+      "requests_per_second": 125.75,
+      "max_payload_bytes": 20375,
+      "failures": 0,
+      "cache_hits": 0
+    }
+  ],
+  "integrity_workload": "Unsigned synthetic historical events; separate tests check protected-event integrity."
+}

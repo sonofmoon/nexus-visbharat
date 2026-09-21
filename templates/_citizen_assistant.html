@@ -1,0 +1,23 @@
+<div id="dfcxVoiceWidgetWrapper">
+  <button id="dfcxWidgetToggleBtn" class="nvb-assistant-launch" onclick="toggleDfcxAssistant()" aria-controls="dfcxAssistantWindow" aria-expanded="false"><i class="bi bi-mic-fill" aria-hidden="true"></i><span data-assistant-text="open">Talk to NVB</span></button>
+  <section id="dfcxAssistantWindow" class="nvb-assistant" style="display:none" aria-label="NVB citizen assistant">
+    <header class="nvb-assistant-header"><div><strong data-assistant-text="title">NVB Citizen Assistant</strong><small>Powered by Google Cloud · Build with AI</small></div><button onclick="toggleDfcxAssistant()" data-assistant-label="close" aria-label="Close assistant">×</button></header>
+    <div class="nvb-assistant-toolbar"><select id="dfcxLanguage" aria-label="Assistant language"><option value="en">English</option><option value="ta">தமிழ்</option><option value="te">తెలుగు</option></select><button id="dfcxMute" data-assistant-text="mute">Mute replies</button><button id="dfcxStop" data-assistant-text="stop">Stop</button><button id="dfcxReplay" data-assistant-text="replay">Replay</button></div>
+    <div id="dfcxScrollable" class="nvb-assistant-body">
+    <ol id="dfcxSteps" class="nvb-assistant-steps" aria-label="Request progress"><li data-stage="collect_issue" data-assistant-text="stage_issue">Describe</li><li data-stage="collect_location" data-assistant-text="stage_location">Locate</li><li data-stage="collect_confirmation" data-assistant-text="stage_review">Review</li><li data-stage="complete" data-assistant-text="stage_complete">Track</li></ol>
+    <div id="dfcxMessageStream" role="log" aria-live="polite" aria-relevant="additions text"></div>
+    <div id="dfcxTaskArea" class="nvb-assistant-task">
+      <div id="dfcxLocationPanel" hidden><label for="dfcxDistrict" data-assistant-text="district">District</label><select id="dfcxDistrict"></select><label for="dfcxWard" data-assistant-text="landmark">Ward, village or landmark (optional)</label><input id="dfcxWard" maxlength="160"><button id="dfcxUseLocation" data-assistant-text="use_location">Use this location</button></div>
+      <div id="dfcxReviewPanel" hidden><strong data-assistant-text="details">Request details</strong><p id="dfcxSummary"></p><div class="nvb-assistant-actions"><button id="dfcxEditIssue" data-assistant-text="edit_issue">Correct text</button><button id="dfcxEditLocation" data-assistant-text="edit_location">Edit location</button></div><label class="nvb-assistant-consent"><input type="checkbox" id="dfcxConsent"><span data-assistant-text="consent"></span></label><button id="dfcxConfirm" class="nvb-assistant-primary" data-assistant-text="confirm">Confirm and submit</button></div>
+      <div id="dfcxReceipt" hidden></div>
+    </div>
+    <div class="nvb-assistant-actions nvb-assistant-controls"><button id="dfcxNew" data-assistant-text="new">New request</button><button id="dfcxTrack" data-assistant-text="track">Track request</button><button id="dfcxCancel" data-assistant-text="cancel">Cancel draft</button><button id="dfcxRetry" data-assistant-text="retry" hidden>Retry</button></div>
+    </div>
+    <p id="dfcxStatus" class="nvb-assistant-status" role="status">Ready</p>
+    <details class="nvb-assistant-telemetry"><summary data-assistant-text="provider">Processing details</summary><span id="dfcxFlowBadge">Connection checked when you send a message</span><span id="dfcxIntentBadge"></span></details>
+    <form id="dfcxInputForm" class="nvb-assistant-input"><button type="button" id="dfcxMicBtn" data-assistant-label="record" aria-label="Record voice"><i class="bi bi-mic-fill" aria-hidden="true"></i></button><input id="dfcxInputText" maxlength="4000" autocomplete="off" aria-label="Message the assistant" placeholder="Type a message or record your voice…"><button id="dfcxSend" type="submit" data-assistant-text="send">Send</button></form>
+    <p class="nvb-assistant-notice" data-assistant-text="notice">Voice is sent to speech services for transcription. Review the text before sending. Avoid personal identifiers.</p>
+  </section>
+</div>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/citizen-assistant.css') }}">
+<script src="{{ url_for('static', filename='js/citizen-assistant.js') }}" defer></script>

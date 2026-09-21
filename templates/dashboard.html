@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Policy Dashboard - Nexus VisBharat</title>
+ <link rel="stylesheet" href="/static/css/style.css">
+ <link rel="stylesheet" href="/static/css/dashboard.css?v=2">
+ <link rel="icon" href="/favicon.ico">
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+ <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+ <script>window.NEXUS_MAPS_API_KEY = {{ google_maps_api_key|tojson }};</script>
+ <script>window.NVB_ROLE_TOKENS = {{ role_tokens|tojson }};</script>
+ <script>window.NVB_PILOT_ONLY={{ pilot_only|default(false)|tojson }};window.NVB_PILOT_USER_ROLE={{ pilot_user_role|default(none)|tojson }};</script>
+ {% if selected_demo_ticket %}<script>sessionStorage.setItem('nvb_active_role', 'admin'); window.NVB_DEMO_TICKET = {{ selected_demo_ticket|tojson }};</script>{% endif %}
+ {% if google_maps_api_key %}
+ <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&loading=async" async defer></script>
+ {% endif %}
+<link rel="stylesheet" href="/static/css/analyst-workbench.css">
+<link rel="stylesheet" href="/static/css/auditor-workbench.css">
+</head>
+<body class="dashboard-page{% if pilot_scoped %} pilot-scoped-theme{% endif %}">
+ <a class="skip-link" href="#mainContent">Skip to dashboard</a>
+ <aside class="console-sidebar" id="consoleSidebar" aria-label="Workspace navigation">
+ <a class="console-brand" href="/"><span class="brand-symbol" aria-hidden="true"><i class="bi bi-broadcast-pin"></i></span><span class="rail-label">Nexus <strong>VisBharat</strong><small>{% if pilot_scoped %}PILOT SCOPE{% else %}POLICY CONSOLE{% endif %}</small></span></a>
+ <div class="sidebar-section rail-label">WORKSPACE</div>
+ <nav class="console-navigation" aria-label="Dashboard sections">
+ <a href="#mainContent" class="is-active" aria-current="page"><i class="bi bi-grid-1x2" aria-hidden="true"></i><span class="rail-label">Overview</span></a>
+ <a href="#mapPanel"><i class="bi bi-geo-alt" aria-hidden="true"></i><span class="rail-label">Demand hotspots</span></a>
+ <a href="#analyticsPanel"><i class="bi bi-bar-chart" aria-hidden="true"></i><span class="rail-label">Executive analytics</span></a>
+ <a href="#priorityPanel"><i class="bi bi-layers" aria-hidden="true"></i><span class="rail-label">Priority projects</span></a>
+ <a href="#policyWorkbench"><i class="bi bi-sliders2" aria-hidden="true"></i><span class="rail-label">Policy workspace</span></a>
+ <a href="#liveFeedPanel"><i class="bi bi-activity" aria-hidden="true"></i><span class="rail-label">Live operations</span></a>
+ <a href="#aiRuntimePanel"><i class="bi bi-cpu" aria-hidden="true"></i><span class="rail-label">AI runtime</span></a>
+ </nav>
+ <div class="sidebar-footer"><span class="rail-label">CONNECTED GOVERNANCE</span><a href="/pilot/submit"><i class="bi bi-plus-circle" aria-hidden="true"></i><span class="rail-label">Pilot submission</span></a><a href="/pilot"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i><span class="rail-label">Pilot portal</span></a></div>
+ </aside>
+ <header class="console-topbar">
+ <button class="icon-button" id="railToggle" type="button" aria-label="Toggle navigation" aria-controls="consoleSidebar" aria-expanded="true"><i class="bi bi-list" aria-hidden="true"></i></button>
+ <span class="console-breadcrumb">Workspace <span aria-hidden="true">/</span> {% if pilot_scoped %}<strong>Pilot scope: Vellore–Tirupati Water</strong>{% else %}<strong>Policy dashboard</strong>{% endif %}</span>
+ <form class="console-search" role="search" id="sectionSearchForm">
+ <i class="bi bi-search" aria-hidden="true"></i><input id="sectionSearch" type="search" placeholder="Find a dashboard section" aria-label="Find a dashboard section" list="dashboardSections" autocomplete="off"><datalist id="dashboardSections"></datalist>
+ </form>
+ <button class="icon-button" id="themeSwitch" type="button" aria-label="Switch to dark theme" aria-pressed="false"><i class="bi bi-moon" aria-hidden="true"></i></button>
+ <details class="console-popover" id="notificationsPopover"><summary class="icon-button" aria-label="Runtime notifications"><i class="bi bi-bell" aria-hidden="true"></i></summary><div class="popover-content"><strong>Runtime status</strong><p id="runtimeNotification">Checking connected services…</p><a href="#aiRuntimePanel">View service health</a></div></details>
+ <div class="role-selector-container">
+<select id="userRoleSelector" class="role-select-dropdown" aria-label="Select User Role">
+ <option value="analyst" selected>Analyst</option>
+ <option value="auditor">Auditor</option>
+ <option value="admin">Admin</option>
+ <option value="public">Public</option>
+</select>
+</div>
+ <details class="console-popover"><summary class="workspace-avatar" aria-label="Workspace menu">NV</summary><div class="popover-content"><strong>Nexus VisBharat</strong><p>Your policy workspace</p><a href="/">Citizen portal</a><a href="/submit">Submit a request</a></div></details>
+ </header>
+
+ <main class="dashboard-main" id="mainContent" tabindex="-1">
+  {% if pilot_scoped or pilot_only %}<div class="demo-dataset-notice pilot-dataset-notice"><i class="bi bi-droplet-half"></i> Vellore–Tirupati Water Services Pilot · Active Programme Scope (Tamil Nadu &amp; Andhra Pradesh) · <a href="/pilot">Open Ministry Pilot Portal →</a></div>{% elif demo_showcase %}<div class="demo-dataset-notice">Synthetic demonstration data · 12,500 fictional demands across 97 districts. <a href="/demo">Open interactive walkthrough →</a></div>{% endif %}
+ <div id="commandHero" class="command-hero"><div><span class="eyebrow">AI COMMAND CENTER</span><h1>Policy overview</h1><p>Understand demand. Prioritize investment. Track public outcomes.</p></div><a class="btn btn-primary" href="#policyWorkbench"><i class="bi bi-sliders2" aria-hidden="true"></i> Open policy workspace</a></div>
+ <!-- Google AI Runtime Health -->
+ <div class="dashboard-panel panel-ai-runtime" id="aiRuntimePanel" aria-label="AI runtime health">
+ <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+ <h3><i class="bi bi-cpu-fill" aria-hidden="true"></i> Google AI Runtime Health</h3>
+ <div class="panel-header-right" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+ <span id="aiRuntimeOverallBadge" class="panel-badge" style="background:#eef2f7;color:#334155;">Checking...</span>
+ <span id="aiRuntimeCheckedAt" class="refresh-hint">Last checked: --:--:--</span>
+ <button class="btn btn-primary btn-sm" id="refreshAiStatusBtn"><i class="bi bi-arrow-clockwise"></i> Refresh AI Status</button>
+ </div>
+ </div>
+ <div id="aiRuntimeGrid">
+ <div class="brief-placeholder" style="grid-column:1/-1;">Loading AI runtime status...</div>
+ </div>
+ <div id="aiRuntimeModes" style="margin-top:10px;font-size:0.86rem;color:#64748b;"></div>
+ </div>
+
+ <!-- Stats Row -->
+ <div class="stats-row" id="dashboardTopStats">
+ <div class="stat-card-mini">
+ <div class="stat-icon" aria-hidden="true"><i class="bi bi-inbox-fill"></i></div>
+ <div class="stat-info">
+ <div class="stat-number" id="totalComplaints">-</div>
+ <div class="stat-label">Citizen Requests</div>
+ </div>
+ </div>
+ <div class="stat-card-mini">
+ <div class="stat-icon" aria-hidden="true"><i class="bi bi-translate"></i></div>
+ <div class="stat-info">
+ <div class="stat-number" id="languageCount">-</div>
+ <div class="stat-label">Languages represented</div>
+ </div>
+ </div>
+ <div class="stat-card-mini">
+ <div class="stat-icon" aria-hidden="true"><i class="bi bi-geo-alt-fill"></i></div>
+ <div class="stat-info">
+ <div class="stat-number" id="districtCount">-</div>
+ <div class="stat-label">Districts Covered</div>
+ </div>
+ </div>
+ <div class="stat-card-mini">
+ <div class="stat-icon" aria-hidden="true"><i class="bi bi-check-circle-fill"></i></div>
+ <div class="stat-info">
+ <div class="stat-number" id="resolutionRate">-</div>
+ <div class="stat-label">Operational closure</div>
+ </div>
+ </div>
+ <div class="stat-card-mini">
+ <div class="stat-icon" aria-hidden="true"><i class="bi bi-map-fill"></i></div>
+ <div class="stat-info">
+ <div class="stat-number" id="stateCount">-</div>
+ <div class="stat-label">States</div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Filters -->
+ <div class="dashboard-filters" id="dashboardGlobalFilters">
+ <div class="filter-group">
+ <label for="filterState">State</label>
+ <select id="filterState" class="filter-select">
+ <option value="">All States</option>
+ </select>
+ </div>
+ <div class="filter-group">
+ <label for="filterDistrict">District</label>
+ <select id="filterDistrict" class="filter-select" disabled>
+ <option value="">All Districts</option>
+ </select>
+ </div>
+ <div class="filter-group">
+ <label for="filterCategory">Category</label>
+ <select id="filterCategory" class="filter-select">
+ <option value="">All Categories</option>
+ <option value="Road">Road</option>
+ <option value="Water Supply">Water Supply</option>
+ <option value="Electricity">Electricity</option>
+ <option value="Health">Health</option>
+ <option value="Education">Education</option>
+ <option value="Sanitation">Sanitation</option>
+ <option value="Transport">Transport</option><option value="Housing">Housing</option><option value="Digital Connectivity">Digital Connectivity</option><option value="Other">Other</option>
+ </select>
+ </div>
+ <div class="filter-group">
+ <label for="filterUrgency">Urgency</label>
+ <select id="filterUrgency" class="filter-select">
+ <option value="">All Levels</option>
+ <option value="Emergency">Emergency</option>
+ <option value="Urgent">Urgent</option>
+ <option value="Routine">Routine</option>
+ </select>
+ </div>
+ <div class="filter-group"><label for="filterDateFrom">From (UTC)</label><input class="filter-select" id="filterDateFrom" type="date"></div>
+ <div class="filter-group"><label for="filterDateTo">Through (UTC)</label><input class="filter-select" id="filterDateTo" type="date"></div>
+ <div class="filter-group"><label for="filterLanguage">Language</label><select class="filter-select" id="filterLanguage"><option value="">All languages</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="en">English</option></select></div>
+ <div class="filter-group"><label for="filterChannel">Channel</label><select class="filter-select" id="filterChannel"><option value="">All channels</option><option>Web Form</option><option>Voice IVR</option><option>IVR Missed Call</option><option>WhatsApp</option><option>Telegram</option><option>SMS Keyword</option><option>Email/Open API</option></select></div>
+ <button class="btn btn-primary btn-sm" id="refreshBtn" aria-label="Refresh filtered data" title="Refresh filtered data"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Refresh Data</button>
+ </div>
+
+ <div id="roleQuickActions" class="role-quick-actions" aria-label="Role quick actions"></div>
+
+ <!-- Main Grid -->
+ <div class="dashboard-grid">
+ <!-- Map -->
+ <div class="dashboard-panel panel-map" id="mapPanel">
+ <div class="panel-header">
+ <h3><i class="bi bi-map" aria-hidden="true"></i> Demand Hotspot Map</h3>
+ <div class="panel-header-right" style="display:flex;align-items:center;gap:8px;">
+ <select id="mapLayer" class="filter-select" aria-label="Map data layer">
+ <option value="demand">Demand Layer</option>
+ <option value="spend">Approved cost estimates</option>
+ <option value="gap">Service coverage gap</option>
+ <option value="priority">Priority (default weights)</option>
+ </select>
+ <span class="panel-badge">Geospatial view</span>
+ </div>
+ </div>
+ <div class="map-stage"><div id="hotspotMap" class="map-container" aria-label="District demand map"></div><div class="map-overlay" aria-live="polite"><span id="mapLayerLabel">Demand layer</span><span id="mapDataStatus">Loading district signals…</span></div></div>
+ <div class="map-legend" id="mapLegend">
+ <div class="legend-item">
+ <span class="legend-dot" style="background:#ef4444"></span>
+ <span>Critical (>50 complaints)</span>
+ </div>
+ <div class="legend-item">
+ <span class="legend-dot" style="background:#f59e0b"></span>
+ <span>High (20-50)</span>
+ </div>
+ <div class="legend-item">
+ <span class="legend-dot" style="background:#3b82f6"></span>
+ <span>Moderate (5-20)</span>
+ </div>
+ <div class="legend-item">
+ <span class="legend-dot" style="background:#10b981"></span>
+ <span>Low (<5)</span>
+ </div>
+ </div>
+ </div>
+
+ <!-- Priority Projects -->
+ <div class="dashboard-panel panel-projects" id="priorityPanel">
+ <div class="panel-header">
+ <h3><i class="bi bi-sort-down" aria-hidden="true"></i> AI-Ranked Priority Projects</h3>
+ <div class="panel-header-right">
+ <span id="projectsRefreshedAt" class="refresh-hint">Last refreshed: --:--:--</span>
+ <span class="panel-badge">Observed indicators</span>
+ </div>
+ </div>
+ <div class="projects-list" id="projectsList" role="region" aria-live="polite" aria-label="Priority projects updates">
+ <!-- Populated by JS -->
+ </div>
+ </div>
+
+ <!-- RBAC Role-Tailored Interactive Report Suite -->
+ <div class="dashboard-panel panel-rbac-reports" id="policyWorkbench">
+ <div class="panel-header rbac-header">
+ <div class="rbac-title-group">
+ <div class="rbac-icon"><i class="bi bi-shield-check"></i></div>
+ <div>
+ <h3 style="margin:0;font-size:1.15rem;font-weight:700" id="rbacReportTitle">Analyst</h3>
+ <span class="rbac-subtitle" id="rbacReportSubtitle" style="font-size:0.8rem;color:#64748b">Authenticated Access Mode: Analyst (Bearer Token Active)</span>
+ </div>
+ </div>
+ <div class="rbac-badge-container">
+ <span class="role-active-pill" id="rbacActiveRolePill"><i class="bi bi-person-badge"></i> Role: Analyst</span>
+ </div>
+ </div>
+
+ <!-- Executive Suite Top-Level Navigation Bar -->
+ <div class="role-suite-main-nav mb-3 p-2 rounded-4">
+ <button class="role-suite-btn active" data-role="analyst" onclick="switchRbacRoleView('analyst')">
+ <i class="bi bi-bar-chart-line-fill"></i> Analyst Suite
+ </button>
+ <button class="role-suite-btn" data-role="auditor" onclick="switchRbacRoleView('auditor')">
+ <i class="bi bi-shield-check"></i> Auditor Suite
+ </button>
+ <button class="role-suite-btn" data-role="admin" onclick="switchRbacRoleView('admin')">
+ <i class="bi bi-shield-lock-fill"></i> Admin Suite
+ </button>
+ <button class="role-suite-btn" data-role="public" onclick="switchRbacRoleView('public')">
+ <i class="bi bi-globe"></i> Public Lens
+ </button>
+ </div>
+
+ {% include 'analyst_workbench.html' %}
+
+ {% include 'auditor_workbench.html' %}
+
+ <!-- Admin Role Suite (User Management, Officer Lifecycle Remarks, Delivery Ops, Security) -->
+ <div id="adminReportView" class="rbac-view-panel" style="display:none;">
+ <button class="btn btn-secondary" type="button" onclick="window.NVBAuditor.openForAdmin()">Open audit review tools as Admin</button>
+ <div id="adminFreshnessBar" class="refresh-hint" style="margin:2px 0 10px;">Last updated: --</div>
+ <div class="rbac-subtabs">
+ <button class="rbac-subtab active" data-subtab="admin-requests"><i class="bi bi-diagram-3-fill"></i> Request Execution & Progress Remarks</button>
+ <button class="rbac-subtab" data-subtab="admin-policy">Project review & approval</button>
+ <button class="rbac-subtab" data-subtab="admin-delivery"><i class="bi bi-broadcast-pin text-primary"></i> Delivery & Telemetry Health Ops </button>
+ <button class="rbac-subtab" data-subtab="admin-users"><i class="bi bi-people-fill"></i> User & Token Management</button>
+ <button class="rbac-subtab" data-subtab="admin-alerts"><i class="bi bi-shield-shaded"></i> Security & Threat Alerts</button>
+ </div>
+
+ <!-- 1. Request Execution & Officer Progress Remarks Subpanel -->
+ <div id="admin-policy-panel" class="rbac-subpanel" style="display:none;">
+ <h4>Review project evidence before approval</h4><p>Record an engineering estimate and catchment evidence. Approval is a separate action and does not record expenditure or project completion.</p>
+ <button type="button" id="wbRefreshApprovals" class="btn btn-outline-primary">Refresh drafts</button><div id="wbApprovals"></div>
+ </div>
+ <div id="admin-requests-panel" class="rbac-subpanel">
+ <!-- Google Material 3 Administrative Control Card -->
+ <div class="google-material-card nvb-card nvb-card-overflow mb-4">
+ <!-- Google 4-Color Accent Stripe -->
+ <div style="height:4px;background:linear-gradient(90deg, #4285F4 0% 25%, #EA4335 25% 50%, #FBBC04 50% 75%, #34A853 75% 100%);"></div>
+
+ <div style="padding:1.75rem 2rem;">
+ <!-- Header Bar -->
+ <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+ <div class="d-flex align-items-center gap-3">
+ <div style="width:48px;height:48px;background:#e8f0fe;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#1a73e8;font-size:1.5rem;flex-shrink:0;">
+ <i class="bi bi-pencil-square"></i>
+ </div>
+ <div>
+ <h4 style="margin:0;font-weight:700;color:#202124;font-size:1.18rem;letter-spacing:-0.2px;">Officer Request Execution & Progress Remarks</h4>
+ <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+ <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 12px;font-weight:600;"><i class="bi bi-shield-lock-fill"></i> Google Admin Secured API</span>
+ <span class="badge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-journal-check text-success"></i> Immutable SHA-256 Audit Trail</span>
+ </div>
+ </div>
+ </div>
+ <span class="badge" style="background:#e6f4ea;color:#137333;border-radius:100px;padding:6px 16px;font-size:0.82rem;font-weight:700;"><i class="bi bi-check-circle-fill"></i> Executive Auth Active</span>
+ </div>
+
+ <!-- Form Inputs Container -->
+ <form id="adminUpdateLifecycleForm" onsubmit="event.preventDefault(); window.submitAdminOfficerUpdate();" style="background:#f8fafd;border:1px solid #c2e7ff;border-radius:16px;padding:1.5rem;" class="row g-3">
+ <div class="col-12 mb-1">
+ <div class="d-flex align-items-center gap-2 flex-wrap" style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:10px 14px;">
+ <span style="font-size:0.8rem;font-weight:700;color:#5f6368;"><i class="bi bi-magic text-primary me-1"></i> Quick Demo Tickets:</span>
+ {% if demo_showcase %}{% for case in demo_showcase.cases %}
+ <button type="button" class="btn btn-sm btn-outline-primary nvb-btn-pill nvb-btn-xs" onclick='window.populateAdminUpdateForm({{ case.request_id|tojson }})'>
+ <i class="bi bi-tag-fill me-1"></i> {{ case.district }} · {{ case.category }} · {{ case.status }}
+ </button>
+ {% endfor %}{% endif %}
+ </div>
+ </div>
+
+ <div class="col-md-4">
+ <label style="font-size:0.82rem;font-weight:700;color:#174ea6;margin-bottom:6px;display:block;">
+ <i class="bi bi-qr-code-scan me-1"></i> Target Request Ticket ID:
+ </label>
+ <input type="text" id="adminUpdateTicketId" class="form-control" placeholder="e.g. NVB-202609140456" required style="border-radius:10px;border:1px solid #cbd5e1;padding:10px 14px;font-size:0.92rem;font-weight:700;background:#ffffff;">
+ </div>
+
+ <div class="col-md-4">
+ <label style="font-size:0.82rem;font-weight:700;color:#174ea6;margin-bottom:6px;display:block;">
+ <i class="bi bi-signpost-split-fill me-1"></i> Lifecycle Work Stage Action:
+ </label>
+ <select id="adminUpdateAction" class="form-select" style="border-radius:10px;border:1px solid #cbd5e1;padding:10px 14px;font-size:0.88rem;font-weight:600;background:#ffffff;">
+ <option value="acknowledged">1. Triage & Priority Score (Stage 2)</option>
+ <option value="prioritized">2. Allocate Budget & Scheme Fit (Stage 3)</option>
+ <option value="in_progress" selected>3. Mark Work In Progress (Stage 4)</option>
+ <option value="escalated">4. Escalate to District Collector (Stage 4 Alert)</option>
+ <option value="resolved">5. Mark Work Resolved (Stage 5)</option>
+ <option value="closed">6. Formally Close Request (Stage 5 Final)</option>
+ </select>
+ </div>
+
+ <div class="col-md-4">
+ <label style="font-size:0.82rem;font-weight:700;color:#174ea6;margin-bottom:6px;display:block;">
+ <i class="bi bi-calendar-event me-1"></i> Target Resolution Date (SLA):
+ </label>
+ <input type="date" id="adminUpdateSla" class="form-control" style="border-radius:10px;border:1px solid #cbd5e1;padding:10px 14px;font-size:0.9rem;background:#ffffff;">
+ </div>
+
+ <div class="col-12">
+ <label style="font-size:0.85rem;font-weight:700;color:#174ea6;margin-bottom:8px;display:block;">
+ <i class="bi bi-pencil-square me-1" style="font-size:0.95rem;"></i> Officer Progress Remarks & Field Notes:
+ </label>
+ <textarea id="adminUpdateReason" class="form-control" rows="5" placeholder="Enter official execution remarks (e.g. 'PWD Highways Division assigned contractor JPR Construction. 1.8 km resurfacing in progress. Heavy machinery deployed. Target completion expected within SLA timeframe.')" required style="border-radius:14px;border:1.5px solid #cbd5e1;padding:16px;font-size:0.95rem;background:#ffffff;line-height:1.65;font-family:inherit;width:100%;min-height:140px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.04);"></textarea>
+ </div>
+
+ <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2">
+ <small style="color:#5f6368;font-size:0.78rem;"><i class="bi bi-info-circle-fill text-primary"></i> Updates are logged to public Merkle chain & citizen notification channels.</small>
+ <button type="submit" class="btn px-4 py-2 nvb-btn-primary nvb-btn-pill nvb-btn-form">
+ <i class="bi bi-send-fill me-1"></i> Submit Progress Remarks & Broadcast Stage Update
+ </button>
+ </div>
+ </form>
+
+ <div id="adminUpdateStatusResult" class="mt-3" style="display:none;"></div>
+ </div>
+ </div>
+
+ <!-- Active Citizen Demands Execution Table -->
+ <div class="google-material-card nvb-card nvb-card-overflow" id="adminRequestsCard">
+ <div style="padding:1.5rem 2rem;">
+ <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+ <div>
+ <h5 style="margin:0;font-weight:700;color:#202124;font-size:1.08rem;letter-spacing:-0.2px;">
+ <i class="bi bi-list-task" style="color:#1a73e8"></i> Active Citizen Demands Execution Table
+ </h5>
+ <small style="color:#5f6368;font-size:0.8rem;">Click 'Update Stage & Remarks' on any ticket row to auto-fill the governance form above.</small>
+ </div>
+ <button class="btn btn-sm nvb-btn-secondary nvb-btn-pill-sm" onclick="window.loadAdminRequestsTable()">
+ <i class="bi bi-arrow-clockwise me-1"></i> Refresh Requests List
+ </button>
+ </div>
+ <form id="adminRequestFilters" class="request-filters" aria-label="Filter citizen demands">
+ <div class="request-filter-field">
+ <label for="adminRequestTicket">Ticket ID search</label>
+ <input id="adminRequestTicket" type="search" placeholder="Full or partial ticket ID" autocomplete="off">
+ </div>
+ <div class="request-filter-field">
+ <label for="adminRequestState">State</label>
+ <select id="adminRequestState"><option value="">All states</option></select>
+ </div>
+ <div class="request-filter-field">
+ <label for="adminRequestDistrict">District</label>
+ <select id="adminRequestDistrict" disabled><option value="">All districts</option></select>
+ </div>
+ <div class="request-filter-field">
+ <label for="adminRequestStatus">Status</label>
+ <select id="adminRequestStatus">
+ <option value="active" selected>Active requests</option>
+ <option value="">All statuses</option>
+ <option>Pending</option><option>Acknowledged</option><option>Prioritized</option>
+ <option>Capex Allocated</option><option>In Progress</option><option>Escalated</option>
+ <option>Reopened</option><option>Resolved</option><option>Closed</option>
+ </select>
+ </div>
+ <div class="request-filter-field">
+ <label for="adminRequestCategory">Category</label>
+ <select id="adminRequestCategory"><option value="">All categories</option></select>
+ </div>
+ <div class="request-filter-field">
+ <label for="adminRequestDepartment">Department</label>
+ <select id="adminRequestDepartment"><option value="">All departments</option></select>
+ </div>
+ <div class="request-filter-field">
+ <label for="adminRequestUrgency">Urgency</label>
+ <select id="adminRequestUrgency"><option value="">All urgency levels</option></select>
+ </div>
+ <div class="request-filter-actions">
+ <label class="request-overdue-toggle" for="adminRequestOverdue"><input id="adminRequestOverdue" type="checkbox"> Overdue only</label>
+ <button type="button" id="adminRequestClear" class="btn btn-sm nvb-btn-secondary">Clear filters</button>
+ </div>
+ </form>
+ <p class="request-filter-hint">State, district, category and urgency stay in sync with the dashboard filters. Active requests exclude resolved and closed tickets.</p>
+ <div class="request-list-summary">
+ <span id="adminRequestsSummary" role="status" aria-live="polite">Loading citizen demands...</span>
+ <span>Newest first &middot; 50 per page</span>
+ </div>
+ <div class="table-responsive" style="border-radius:14px;border:1px solid #e8eaed;overflow:hidden;">
+ <table class="table table-hover align-middle mb-0" style="font-size:0.86rem;background:#ffffff;">
+ <thead style="background:#f8f9fa;border-bottom:2px solid #e8eaed;">
+ <tr style="color:#5f6368;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;">
+ <th style="padding:12px 14px;">Ticket ID</th>
+ <th style="padding:12px 14px;">District / State</th>
+ <th style="padding:12px 14px;">Category</th>
+ <th style="padding:12px 14px;">Routed Department</th>
+ <th style="padding:12px 14px;">Current Status</th>
+ <th style="padding:12px 14px;">Urgency / SLA</th>
+ <th style="padding:12px 14px;text-align:right;">Action</th>
+ </tr>
+ </thead>
+ <tbody id="adminRequestsTbody">
+ <tr><td colspan="7" class="text-center p-4 text-muted"><i class="bi bi-arrow-repeat spin"></i> Loading citizen demands...</td></tr>
+ </tbody>
+ </table>
+ </div>
+ <nav class="request-pagination" aria-label="Citizen demands pages">
+ <button type="button" id="adminRequestsPrev" class="btn btn-sm nvb-btn-secondary" disabled>Previous</button>
+ <span id="adminRequestsPage">Page 1 of 1</span>
+ <button type="button" id="adminRequestsNext" class="btn btn-sm nvb-btn-secondary" disabled>Next</button>
+ </nav>
+ </div>
+ </div>
+ </div>
+
+ <!-- 2. Delivery & Telemetry Health Ops Subpanel -->
+ <div id="admin-delivery-panel" class="rbac-subpanel" style="display:none;">
+ <div class="google-material-card nvb-card nvb-card-soft nvb-card-pad-lg">
+ <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+ <h5 style="margin:0;font-weight:700;color:#202124;font-size:1.05rem;">
+ <i class="bi bi-broadcast-pin" style="color:#1a73e8"></i> Delivery Connector & ASR Telemetry Operations
+ </h5>
+ <button class="btn btn-sm btn-primary nvb-btn-pill-sm" onclick="window.loadDeliveryHealthPanel()">
+ <i class="bi bi-arrow-clockwise"></i> Refresh Health Telemetry
+ </button>
+ </div>
+ <div id="adminDeliveryHealthContainer">
+ <p class="brief-placeholder">Loading Delivery Health Ops...</p>
+ </div>
+ </div>
+ </div>
+
+ <div id="admin-users-panel" class="rbac-subpanel" style="display:none;">
+ <div class="admin-controls-bar">
+ <span class="admin-status-indicator"><i class="bi bi-person-gear"></i> Platform User Registry & Token Provisioning</span>
+ <button class="btn btn-primary btn-sm" id="refreshUsersBtn"><i class="bi bi-arrow-clockwise"></i> Refresh Users</button>
+ </div>
+ <div class="audit-table-wrapper">
+ <table class="audit-table">
+ <thead>
+ <tr>
+ <th>User ID</th>
+ <th>User Name</th>
+ <th>Role</th>
+ <th>Created At</th>
+ <th>Action</th>
+ </tr>
+ </thead>
+ <tbody id="usersTbody">
+ <tr><td colspan="5" class="text-center">Loading registered users...</td></tr>
+ </tbody>
+ </table>
+ </div>
+ </div>
+
+ <div id="admin-alerts-panel" class="rbac-subpanel" style="display:none;">
+ <div class="admin-controls-bar">
+ <span class="admin-status-indicator"><i class="bi bi-shield-lock-fill"></i> Full Administrative Governance & System Controls Active</span>
+ <button class="btn btn-primary btn-sm" id="refreshAdminAlertsBtn"><i class="bi bi-shield-shaded"></i> Fetch Security Alerts</button>
+ </div>
+ <div id="adminAlertsContainer" class="admin-alerts-grid">
+ <p class="brief-placeholder">Click "Fetch Security Alerts" to inspect platform security logs.</p>
+ </div>
+ </div>
+ </div>
+
+ <!-- Public View Panel - The Receipt, Not the Portal -->
+ <!-- Public View Panel - Google Material 3 Aesthetic -->
+ <div id="publicReportView" class="rbac-view-panel" style="display:none;">
+ <div id="publicFreshnessBar" class="refresh-hint" style="margin:2px 0 10px;">Last updated: --</div>
+ <div id="publicLensContainer">
+ <div class="google-material-card nvb-card nvb-card-overflow nvb-card-relative">
+ <!-- Google Brand Accent Stripe -->
+ <div style="height:4px;background:linear-gradient(90deg, #4285F4 0% 25%, #EA4335 25% 50%, #FBBC04 50% 75%, #34A853 75% 100%);"></div>
+
+ <div style="padding:2rem;">
+ <!-- Header Bar -->
+ <div class="d-flex justify-content-between align-items-start flex-wrap gap-3" style="margin-bottom:1.5rem;">
+ <div class="d-flex align-items-center gap-3">
+ <div style="width:48px;height:48px;background:#e8f0fe;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#1a73e8;font-size:1.5rem;flex-shrink:0;">
+ <i class="bi bi-shield-check"></i>
+ </div>
+ <div>
+ <h4 style="margin:0;font-weight:700;color:#202124;font-size:1.2rem;letter-spacing:-0.2px;line-height:1.3;">Public</h4>
+ <div class="d-flex align-items-center gap-2 mt-1.5 flex-wrap">
+ <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-patch-check-fill text-primary"></i> Google AI & Bhashini ASR Verified</span>
+ <span class="badge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-geo-alt-fill text-danger"></i> Tamil Nadu | Karur (Tamil)</span>
+ </div>
+ </div>
+ </div>
+ <span class="badge" style="background:#e6f4ea;color:#137333;border-radius:100px;padding:6px 14px;font-size:0.78rem;font-weight:600;"><i class="bi bi-lock-fill"></i> Zero-Trust Merkle Log</span>
+ </div>
+
+ <!-- Voice Trace Stepper Grid -->
+ <div style="margin-bottom:1.5rem;">
+ <h5 style="font-size:0.92rem;font-weight:700;color:#3c4043;margin-bottom:1rem;"><i class="bi bi-signpost-split-fill" style="color:#1a73e8"></i> Voice Trace Particle Timeline (Cluster #TN-KAR-0417)</h5>
+ <div class="sim-results-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;">
+ <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
+ <div>
+ <div class="d-flex align-items-center justify-content-between mb-2">
+ <span class="badge" style="background:#1a73e8;color:#fff;font-weight:700;border-radius:12px;padding:5px 10px;font-size:0.75rem;">HOP #1</span>
+ <span class="badge" style="background:#e8f0fe;color:#1a73e8;font-size:0.72rem;border-radius:10px;padding:4px 8px;">T-2d</span>
+ </div>
+ <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Voice Transcribed</strong>
+ </div>
+ <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Bhashini Tamil ASR v3.2 (Tamil)</small>
+ </div>
+ <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
+ <div>
+ <div class="d-flex align-items-center justify-content-between mb-2">
+ <span class="badge" style="background:#34a853;color:#fff;font-weight:700;border-radius:12px;padding:5px 10px;font-size:0.75rem;">HOP #2</span>
+ <span class="badge" style="background:#e8f0fe;color:#1a73e8;font-size:0.72rem;border-radius:10px;padding:4px 8px;">T-1d</span>
+ </div>
+ <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Clustered</strong>
+ </div>
+ <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Joined Cluster #TN-KAR-0417 (2,104 voices)</small>
+ </div>
+ <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
+ <div>
+ <div class="d-flex align-items-center justify-content-between mb-2">
+ <span class="badge" style="background:#fbbc04;color:#202124;font-weight:700;border-radius:12px;padding:5px 10px;font-size:0.75rem;">HOP #3</span>
+ <span class="badge" style="background:#e8f0fe;color:#1a73e8;font-size:0.72rem;border-radius:10px;padding:4px 8px;">T-12h</span>
+ </div>
+ <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Scored & Ranked</strong>
+ </div>
+ <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Priority Score 0.942 (#3 Hotspot)</small>
+ </div>
+ <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
+ <div>
+ <div class="d-flex align-items-center justify-content-between mb-2">
+ <span class="badge" style="background:#ea4335;color:#fff;font-weight:700;border-radius:12px;padding:5px 10px;font-size:0.75rem;">HOP #4</span>
+ <span class="badge" style="background:#e8f0fe;color:#1a73e8;font-size:0.72rem;border-radius:10px;padding:4px 8px;">Now</span>
+ </div>
+ <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Capex Allocated</strong>
+ </div>
+ <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Drafted PM Gati Shakti Capex</small>
+ </div>
+ </div>
+ </div>
+
+ <!-- My Cluster, My Neighbors Google Card -->
+ <div style="background:#f8fafd;border:1px solid #dadce0;border-left:5px solid #1a73e8;border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
+ <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+ <div style="max-width:70%;">
+ <strong style="color:#174ea6;font-size:0.98rem;display:block;margin-bottom:4px;"><i class="bi bi-people-fill"></i> My Cluster, My Neighbors (Karur, Tamil Nadu)</strong>
+ <p style="margin:0;font-size:0.88rem;color:#3c4043;line-height:1.5;">Your voice joined <strong>Cluster #TN-KAR-0417</strong> alongside <strong>2,104 neighbors</strong>.</p>
+ </div>
+ <button class="btn btn-sm nvb-btn-primary nvb-btn-pill nvb-btn-md nvb-btn-nowrap" id="publicCosignBtn"><i class="bi bi-hand-thumbs-up-fill"></i> Co-Sign Demand (3 co-signed this morning)</button>
+ </div>
+ </div>
+
+ <!-- Democratic Causal Impact Receipt Card -->
+ <div style="background:#f6fbf7;border:1px solid #ceead6;border-left:5px solid #34a853;border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
+ <div class="d-flex align-items-center gap-3">
+ <div style="width:42px;height:42px;background:#ceead6;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#137333;font-size:1.3rem;flex-shrink:0;">
+ <i class="bi bi-patch-check-fill"></i>
+ </div>
+ <div>
+ <strong style="color:#137333;font-size:0.96rem;display:block;margin-bottom:4px;">Democratic Causal Impact Receipt (Karur Ward 12)</strong>
+ <p style="margin:0;font-size:0.88rem;color:#202124;line-height:1.5;">"Demand in your ward fell <strong>78.4%</strong> after solar pumping pipeline execution. Your voice helped cause this impact."</p>
+ </div>
+ </div>
+ </div>
+
+ <!-- Cryptographic Verifier Button & Proof Box -->
+ <div style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:1rem 1.25rem;" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+ <div class="d-flex align-items-center gap-2">
+ <span class="badge" style="background:#3c4043;color:#fff;font-family:monospace;font-size:0.72rem;padding:4px 8px;">SHA-256</span>
+ <small style="font-family:'Roboto Mono', monospace;font-size:0.78rem;color:#5f6368;">308f87e5a7b1c44298fc1c14...</small>
+ </div>
+ <button class="btn btn-sm nvb-btn-outline-primary nvb-btn-pill-sm" id="verifyPublicChainBtn"><i class="bi bi-shield-check"></i> Verify Receipt Math (SHA-256 Chain)</button>
+ </div>
+ <div id="publicVerifyResult" class="mt-2 text-start" style="display:none;"></div>
+ </div>
+ </div>
+ </div>
+
+ <div class="google-material-card nvb-card nvb-card-mt nvb-card-pad-md">
+ <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+ <h5 style="margin:0;font-weight:700;color:#202124;font-size:1rem;"><i class="bi bi-bar-chart-line-fill" style="color:#1a73e8"></i> Public Service Snapshot</h5>
+ <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 10px;font-weight:600;">Public</span>
+ </div>
+ <div id="publicKpiRow" class="stats-row" style="margin-top:8px;">
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Citizen Requests</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Districts Covered</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Operational closure</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Active Projects</div></div></div>
+ </div>
+ </div>
+
+ <div class="google-material-card nvb-card nvb-card-mt nvb-card-pad-md">
+ <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+ <h5 style="margin:0;font-weight:700;color:#202124;font-size:1rem;"><i class="bi bi-kanban-fill" style="color:#1a73e8"></i> Project Progress (Public)</h5>
+ <span class="badge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 10px;font-weight:600;">Read-only</span>
+ </div>
+ <div id="publicProjectProgress" role="region" aria-live="polite" aria-label="Public project progress updates">
+ <p class="brief-placeholder">Loading public project progress...</p>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Executive Analytics Suite (Google Analytics 4 Mode) -->
+ <div class="dashboard-panel panel-charts" id="analyticsPanel">
+ <div class="panel-header ga4-header">
+ <div class="ga4-title-group">
+ <div class="ga4-icon" aria-hidden="true"><i class="bi bi-graph-up-arrow"></i></div>
+ <div>
+ <h3 style="margin:0;font-size:1.1rem;font-weight:700">Executive Platform Analytics</h3>
+ <span class="ga4-subtitle">Request trends, service demand, and channel performance</span>
+ </div>
+ </div>
+ <div class="ga4-controls" style="display:flex;gap:12px;align-items:center">
+ <span class="ga4-status-pill"><span class="pulse-dot"></span> Live 30s Stream</span>
+ <div class="ga4-time-tabs">
+ <button class="ga4-tab active" data-period="14">14 Days</button>
+ <button class="ga4-tab" data-period="30">30 Days</button>
+ <button class="ga4-tab" data-period="all">All Time</button>
+ </div>
+ </div>
+ </div>
+
+ <div class="ga4-cards-grid">
+ <!-- GA4 Card 1: Request Volume Trend -->
+ <div class="ga4-card ga4-card-main">
+ <div class="ga4-card-header">
+ <div>
+ <h4><i class="bi bi-graph-up" aria-hidden="true"></i> Request Volume & Ingestion Velocity</h4>
+ <p class="ga4-card-meta">Daily aggregated citizen grievances across all ingestion channels</p>
+ </div>
+ <div class="ga4-card-metric-badge" id="ga4DailyAvg">Loading…</div>
+ </div>
+ <div class="chart-wrapper">
+ <canvas id="trendChart"></canvas>
+ </div>
+ </div>
+
+ <!-- GA4 Card 2: Category Share -->
+ <div class="ga4-card ga4-card-side">
+ <div class="ga4-card-header">
+ <div>
+ <h4><i class="bi bi-pie-chart-fill" aria-hidden="true"></i> Infrastructure Domain Share</h4>
+ <p class="ga4-card-meta">Percentage share by civic category</p>
+ </div>
+ </div>
+ <div class="chart-wrapper doughnut-wrapper">
+ <canvas id="categoryChart"></canvas>
+ <div class="doughnut-center-stat">
+ <span class="center-number" id="ga4CatTotal">—</span>
+ <span class="center-label">Total</span>
+ </div>
+ </div>
+ </div>
+
+ <!-- GA4 Card 3: Urgency & Risk Breakdown -->
+ <div class="ga4-card ga4-card-half">
+ <div class="ga4-card-header">
+ <div>
+ <h4><i class="bi bi-shield-exclamation" aria-hidden="true"></i> Urgency & Severity Spectrum</h4>
+ <p class="ga4-card-meta">Emergency vs Urgent vs Routine distribution</p>
+ </div>
+ </div>
+ <div class="chart-wrapper">
+ <canvas id="urgencyChart"></canvas>
+ </div>
+ </div>
+
+ <!-- GA4 Card 4: Channel Distribution -->
+ <div class="ga4-card ga4-card-half">
+ <div class="ga4-card-header">
+ <div>
+ <h4><i class="bi bi-diagram-3-fill" aria-hidden="true"></i> Ingestion Source Channels & Status</h4>
+ <p class="ga4-card-meta">Web Form, Voice IVR, WhatsApp & Telegram split</p>
+ </div>
+ </div>
+ <div class="chart-wrapper">
+ <canvas id="channelChart"></canvas>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Policy Brief -->
+ <div class="dashboard-panel panel-brief">
+ <div class="panel-header">
+ <h3><i class="bi bi-file-earmark-text-fill" aria-hidden="true"></i> AI Policy Brief</h3>
+ <span class="panel-badge">Gemini</span>
+ </div>
+ <div class="brief-controls">
+ <select id="briefDistrict" class="filter-select" aria-label="District for policy brief">
+ <option value="">Select District...</option>
+ </select>
+ <button class="btn btn-primary btn-sm" id="generateBriefBtn">Generate Brief</button>
+ </div>
+ <div id="policyBrief" class="policy-brief-content" role="region" aria-live="polite" aria-label="Policy brief output">
+ <p class="brief-placeholder">Select a district and click "Generate Brief" to receive an AI-generated policy recommendation.</p>
+ </div>
+ </div>
+
+ <!-- Complaint Feed -->
+ <div class="dashboard-panel panel-feed" id="liveFeedPanel">
+ <div class="panel-header">
+ <h3><i class="bi bi-broadcast" aria-hidden="true"></i> Live Complaint Feed</h3>
+ <span class="panel-badge">Real-time</span>
+ </div>
+ <div class="complaint-feed" id="complaintFeed" role="region" aria-live="polite" aria-label="Live complaint updates">
+ <!-- Populated by JS -->
+ </div>
+ </div>
+
+ <!-- Prediction Panel -->
+ <div class="dashboard-panel panel-prediction">
+ <div class="panel-header">
+ <h3><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> Demand screening</h3>
+ <span class="panel-badge">Observed indicators</span>
+ </div>
+ <div class="prediction-content" id="predictionContent" role="region" aria-live="polite" aria-label="Prediction updates">
+ <p class="brief-placeholder">Select a state to view AI-predicted infrastructure stress for the next quarter.</p>
+ </div>
+ </div>
+ 
+ <div class="dashboard-panel panel-ops">
+ <div class="panel-header">
+ <h3><i class="bi bi-broadcast-pin" aria-hidden="true"></i> Delivery Health</h3>
+ <span class="panel-badge">Ops</span>
+ </div>
+ <div class="brief-controls">
+ <input id="opsApiToken" class="filter-select" type="password" placeholder="Admin/Auditor API token" aria-label="Admin or Auditor API token">
+ <input id="opsAlertDateFrom" class="filter-select" type="date" aria-label="IVR alert history from date">
+ <input id="opsAlertDateTo" class="filter-select" type="date" aria-label="IVR alert history to date">
+ <select id="opsAlertDeliveryStatus" class="filter-select" aria-label="IVR alert history delivery status">
+ <option value="">All statuses</option>
+ <option value="queued">queued</option>
+ <option value="sent">sent</option>
+ <option value="delivered">delivered</option>
+ <option value="failed">failed</option>
+ <option value="dead_letter">dead_letter</option>
+ </select>
+ <button class="btn btn-primary btn-sm" id="refreshDeliveryHealthBtn">Refresh Health</button>
+ </div>
+ <div id="deliveryHealthPanel" class="policy-brief-content">
+ <p class="brief-placeholder">Enter API token and refresh to view connector health, recent deliveries, IVR callback reliability, ASR telemetry, and secure ASR control actions.</p>
+ </div>
+ </div>
+ </div>
+ </main>
+
+ <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+ <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+ <script>window.NVB_PILOT_CSRF={{ pilot_csrf|default('')|tojson }};</script>
+ <script src="/static/js/pilot-scope.js"></script>
+ <script src="/static/js/dashboard-ui.js?v=1"></script>
+ <script src="/static/js/dashboard.js?v=2"></script>
+ <script src="/static/js/analyst-workbench.js?v=1"></script>
+ <script src="/static/js/auditor-workbench.js?v=2"></script>
+ <script src="/static/js/dashboard-react-layer.js"></script>
+</body>
+</html>

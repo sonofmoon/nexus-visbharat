@@ -1,0 +1,11 @@
+{
+  "command": "python -m unittest discover -s tests -t . -q",
+  "discovered": 255,
+  "passed": 228,
+  "skipped_postgres_in_default_run": 27,
+  "seconds": 170.77,
+  "postgres_verified_separately": "ministry-pilot-postgres.json",
+  "log_sha256": "3ed59cea62bc5c15b5158d0c861f64ab1b63f7c8248c83516db7d92b5117cc5e",
+  "external_services_disabled": true,
+  "final_settings_serialization_check": "1 passed after full suite started"
+}

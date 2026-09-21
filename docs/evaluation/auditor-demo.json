@@ -1,0 +1,43 @@
+{
+  "data_mode": "synthetic",
+  "notice": "Role simulation only; no financial actions or real-world verification",
+  "projects": [
+    {
+      "state": "Tamil Nadu",
+      "district": "Karur",
+      "project_id": "NVB-P-2F379EDE62CFCBB7",
+      "request_id": "NVB-20260802B0DB",
+      "case_id": "NVB-AUD-20260919052524686358-c7a7ad1a",
+      "evidence_ids": [
+        "NVB-EV-20260919052524628549-84e62a44",
+        "NVB-EV-20260919052524644785-0948be72",
+        "NVB-EV-20260919052524658021-2774c64d",
+        "NVB-EV-20260919052524671107-915cdb1c"
+      ]
+    },
+    {
+      "state": "Andhra Pradesh",
+      "district": "Tirupati",
+      "project_id": "NVB-P-074CE7CD9515DEB6",
+      "request_id": "NVB-20260906235F",
+      "case_id": "NVB-AUD-20260919052524749077-b2494119",
+      "evidence_ids": [
+        "NVB-EV-20260919052524707429-f90abf46",
+        "NVB-EV-20260919052524721281-30eb763f",
+        "NVB-EV-20260919052524734894-29d2ccc1"
+      ]
+    },
+    {
+      "state": "Telangana",
+      "district": "Nalgonda",
+      "project_id": "NVB-P-0EA2E315D9CB4166",
+      "request_id": "NVB-202609182DD7",
+      "case_id": "NVB-AUD-20260919052524826546-195ae379",
+      "evidence_ids": [
+        "NVB-EV-20260919052524782294-dc59a1de",
+        "NVB-EV-20260919052524796280-009a2208",
+        "NVB-EV-20260919052524811618-caf4bad7"
+      ]
+    }
+  ]
+}

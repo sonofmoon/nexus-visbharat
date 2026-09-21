@@ -1,0 +1,25 @@
+<header class="public-header">
+  <div class="public-nav-wrap">
+    <a class="public-brand" href="{{ '/pilot' if pilot_page else '/' }}" aria-label="Nexus VisBharat home">
+      <span class="public-brand-icon" aria-hidden="true"><i class="bi bi-broadcast-pin"></i></span>
+      <span>Nexus VisBharat<small>{{ 'MINISTRY PILOT' if pilot_page else 'CITIZEN PLATFORM' }}</small></span>
+    </a>
+    <nav class="public-nav" id="public-navigation" aria-label="Main navigation">
+      {% if pilot_page %}
+      {% for key, href, label in [('home','/pilot','Citizen Portal'),('submit','/pilot/submit','Citizen Request Submission'),('dashboard','/pilot/dashboard','State Policy Dashboard'),('settings','/pilot/settings','Settings')] %}
+      <a href="{{ href }}" {% if pilot_page == key %}aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+      <a href="/" title="Visit Main Portal">Main Portal <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+      {% else %}
+      <a href="/" {% if public_page == 'home' %}aria-current="page"{% endif %}>Overview</a>
+      <a href="/submit" {% if public_page == 'submit' %}aria-current="page"{% endif %}>Submit a request</a>
+      <a href="/pilot">Ministry Pilot <i class="bi bi-buildings" aria-hidden="true"></i></a>
+      <a href="/dashboard">Policy dashboard <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+      {% endif %}
+    </nav>
+    <div class="public-nav-actions">
+      <button class="public-icon-button" type="button" data-public-theme-toggle aria-label="Switch to dark theme"><i class="bi bi-moon" aria-hidden="true"></i></button>
+      <button class="public-icon-button public-menu-button" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="public-navigation" data-public-menu><i class="bi bi-list" aria-hidden="true"></i></button>
+    </div>
+  </div>
+</header>

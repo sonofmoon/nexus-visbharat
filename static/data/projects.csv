@@ -1,0 +1,19 @@
+﻿district,state,lat,lng,category,gap_score,estimated_cost_lakhs,beneficiaries,priority_score,status
+Chennai,Tamil Nadu,13.0827,80.2707,Road,0.72,260,54000,0.84,Approved
+Chennai,Tamil Nadu,13.0827,80.2707,Water Supply,0.68,210,48000,0.80,In Progress
+Chennai,Tamil Nadu,13.0827,80.2707,Sanitation,0.61,140,32000,0.73,Proposed
+Vellore,Tamil Nadu,12.9165,79.1325,Electricity,0.66,170,28000,0.76,Approved
+Vellore,Tamil Nadu,12.9165,79.1325,Health,0.63,190,25000,0.74,In Progress
+Vellore,Tamil Nadu,12.9165,79.1325,Road,0.58,150,21000,0.69,Proposed
+Karur,Tamil Nadu,10.9601,78.0766,Water Supply,0.71,145,18000,0.79,Approved
+Karur,Tamil Nadu,10.9601,78.0766,Sanitation,0.69,120,16000,0.77,In Progress
+Karur,Tamil Nadu,10.9601,78.0766,Transport,0.54,110,14000,0.65,Proposed
+Visakhapatnam,Andhra Pradesh,17.6868,83.2185,Road,0.74,230,42000,0.85,Approved
+Visakhapatnam,Andhra Pradesh,17.6868,83.2185,Health,0.67,200,30000,0.78,In Progress
+Visakhapatnam,Andhra Pradesh,17.6868,83.2185,Education,0.62,160,26000,0.72,Proposed
+Tirupati,Andhra Pradesh,13.6288,79.4192,Water Supply,0.65,135,20000,0.75,Approved
+Tirupati,Andhra Pradesh,13.6288,79.4192,Electricity,0.59,125,17500,0.68,In Progress
+Tirupati,Andhra Pradesh,13.6288,79.4192,Sanitation,0.57,118,16500,0.66,Proposed
+Hyderabad,Telangana,17.3850,78.4867,Transport,0.70,240,46000,0.82,Approved
+Hyderabad,Telangana,17.3850,78.4867,Road,0.64,220,41000,0.77,In Progress
+Hyderabad,Telangana,17.3850,78.4867,Health,0.60,205,36000,0.72,Proposed

@@ -1,0 +1,67 @@
+<div id="analystReportView" class="rbac-view-panel">
+  <div id="analystFreshnessBar" class="refresh-hint" role="status">Loading scoped evidence…</div>
+  <p class="wb-disclosure">Decision support · Reference indicators and project costs require verification. Synthetic records demonstrate workflow; they do not establish public impact.</p>
+  <div class="wb-tabs" role="tablist" aria-label="Analyst workflow">
+    {% for key, label in [('demand','Demand & Inclusion'),('evidence','Evidence & Gaps'),('projects','Project Priorities'),('budget','Budget Scenarios'),('delivery','Delivery & Responsiveness'),('outcomes','Outcomes & Evaluation')] %}
+    <button type="button" role="tab" id="wb-tab-{{ key }}" aria-controls="wb-{{ key }}" aria-selected="{{ 'true' if loop.first else 'false' }}" tabindex="{{ '0' if loop.first else '-1' }}" data-workbench-tab="{{ key }}">{{ label }}</button>
+    {% endfor %}
+  </div>
+  <p id="wbScope" class="wb-scope"></p>
+  <div id="wbError" role="alert" hidden></div>
+  <section id="wb-demand" role="tabpanel" aria-labelledby="wb-tab-demand">
+    <h4>Observed demand and access risks</h4>
+    <div id="wbDemandMetrics" class="wb-metrics"></div>
+    <p>Issue assignments collapse related reports. Demo assignments are synthetic ground truth, not measured AI deduplication.</p>
+    <div id="wbInclusion"></div>
+  </section>
+  <section id="wb-evidence" role="tabpanel" aria-labelledby="wb-tab-evidence" hidden>
+    <h4>Local evidence and development indicators</h4>
+    <p>Open a dataset to compare district indicators and see how they inform a proposal. Choose a state or district above to focus the records. Citizen category, urgency and intake-date filters do not change these reference datasets.</p>
+    <div id="wbEvidence"></div>
+  </section>
+  <section id="wb-projects" role="tabpanel" aria-labelledby="wb-tab-projects" hidden>
+    <h4>Specific projects for human review</h4>
+    <p>Planning bundles connect a ward and service to source tickets. An engineering survey must confirm the intervention, cost, beneficiaries and scheme eligibility.</p>
+    <div class="wb-controls"><label>Find a project <input type="search" id="wbProjectSearch" placeholder="District, ward or service"></label><button id="wbPreviousProjects" type="button" class="btn btn-sm btn-outline-primary">Previous projects</button><button id="wbMoreProjects" type="button" class="btn btn-sm btn-outline-primary">Next projects</button></div>
+    <div id="wbProjects"></div>
+  </section>
+  <section id="wb-budget" role="tabpanel" aria-labelledby="wb-tab-budget" hidden>
+    <h4>Compare a draft budget with the baseline</h4>
+    <p>Baseline uses default weights and midpoint costs at the same budget and project capacity. Scenario settings never change the active policy profile.</p>
+    <form id="wbScenarioForm" class="wb-controls">
+      <label>Capital budget (₹ lakh)<input id="wbBudget" type="number" min="0" max="100000000" step="1" value="8500" required></label>
+      <label>Delivery capacity (projects)<input id="wbCapacity" type="number" min="0" max="200" value="10" required></label>
+      <label>Maximum projects per district<input id="wbDistrictCapacity" type="number" min="1" max="200" value="2" required></label>
+      <label>Annual operating budget (₹ lakh)<input id="wbOperatingBudget" type="number" min="0" max="100000000" value="1000" required></label>
+      <label>Demand weight <input id="wbDemandWeight" type="range" min="0" max="1" step="0.01" value="0.40"><output>0.40</output></label>
+      <label>Deprivation weight <input id="wbEquityWeight" type="range" min="0" max="1" step="0.01" value="0.35"><output>0.35</output></label>
+      <label>Service gap weight <input id="wbGapWeight" type="range" min="0" max="1" step="0.01" value="0.25"><output>0.25</output></label>
+      <label>Cost assumption<select id="wbCostCase"><option value="mid">Midpoint</option><option value="low">Low estimate</option><option value="high">High estimate</option></select></label>
+      <label>Reserve for high deprivation (%)<input id="wbEquityShare" type="number" min="0" max="100" value="0" required></label>
+      <button class="btn btn-primary" type="submit">Compare scenarios</button>
+      <button class="btn btn-outline-primary" type="button" id="wbExportBrief">Download cited decision brief</button>
+    </form>
+    <div id="wbScenarioStatus" role="status"></div>
+    <div id="wbBudgetResults"></div>
+  </section>
+  <section id="wb-delivery" role="tabpanel" aria-labelledby="wb-tab-delivery" hidden>
+    <h4>Response, delivery and citizen feedback</h4>
+    <p>Coverage measures response SLA. Project completion and citizen-confirmed service improvement are separate measures.</p>
+    <div id="wbDelivery"></div>
+  </section>
+  <section id="wb-outcomes" role="tabpanel" aria-labelledby="wb-tab-outcomes" hidden>
+    <h4>Observe outcomes after delivery</h4>
+    <form id="wbOutcomeForm" class="wb-controls">
+      <label>Delivery date (check evidence)<input type="date" id="wbDeliveryDate" required></label>
+      <label>Days before and after<input type="number" id="wbWindowDays" min="7" max="365" value="28" required></label>
+      <label>Project ID (optional)<input id="wbOutcomeProject" placeholder="NVB-P-…"></label>
+      <label>Issue cluster (optional)<input id="wbOutcomeCluster" placeholder="Use a linked cluster ID"></label>
+      <button class="btn btn-primary" type="submit">Compare observed windows</button>
+    </form>
+    <p>Select a district in the global filters or a project catchment. Intake date filters are replaced by the displayed before/after windows. A decrease in reporting is not causal proof.</p>
+    <div id="wbOutcomeResult" role="status">No outcome calculated. Select a delivered project and observation window.</div>
+    <details><summary>Evaluation, scalability and reuse evidence</summary><div id="wbReadiness"></div></details>
+    <details><summary>Future evaluation designs</summary><p>Preregister an outcome, eligible catchment, baseline, rollout design, sample-size assumptions and analysis plan. Obtain human approval before any trial. No RCT results, automatic stopping or prediction-market probabilities are claimed.</p></details>
+  </section>
+  <dialog id="wbProjectDialog" aria-labelledby="wbDialogTitle"><h3 id="wbDialogTitle">Project evidence</h3><button type="button" id="wbCloseDialog" class="btn btn-outline-secondary">Close</button><div id="wbProjectDetail"></div></dialog>
+</div>

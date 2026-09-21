@@ -1,0 +1,44 @@
+name: Release Gate Burn-in
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  burnin-release-gate:
+    name: burnin-release-gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run master burn-in release gate
+        env:
+          PYTHONPATH: .
+        run: python scripts/burnin_release_gate.py
+
+      - name: Upload burn-in reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: burnin-reports
+          path: |
+            docs/reports/ReleaseGate_Burnin_Report.md
+            docs/reports/Phase2_GoLive_Readiness_Report.md
+            docs/reports/Phase3_GoLive_Readiness_Report.md
+            docs/reports/Phase4_GoLive_Readiness_Report.md
+            docs/reports/Phase5_GoLive_Readiness_Report.md
+

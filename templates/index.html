@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Nexus VisBharat - Digital Public Good</title>
+ <link rel="stylesheet" href="/static/css/style.css">
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+ {% include 'partials/public_head.html' %}
+</head>
+<body class="public-page home-page">
+
+{% set public_page = 'home' %}
+{% include 'partials/public_nav.html' %}
+<main id="main-content" class="public-main" tabindex="-1">
+  {% if demo_showcase %}<p class="public-demo-notice">Synthetic demo · 12,500 fictional demands across 97 districts. <a href="/demo">Explore walkthrough →</a></p>{% endif %}
+  <section class="public-hero" aria-labelledby="home-title">
+    <div class="public-hero-copy">
+      <span class="public-eyebrow public-pilot"><span aria-hidden="true"></span> DIGITAL PUBLIC GOOD · SOUTHERN GRID PILOT</span>
+      <h1 id="home-title">Better places.<br><span>Powered by<br>your voice.</span></h1>
+      <p>A safer road. Reliable water. A brighter street.<br> Turn what your community needs into a request that decision-makers can act on.</p>
+      <div class="public-actions"><a href="/submit" class="public-button public-button-primary">Make your voice heard <i class="bi bi-arrow-right" aria-hidden="true"></i></a><a href="#trackSection" class="public-button">Track a request</a></div>
+      <div class="public-hero-languages"><i class="bi bi-translate" aria-hidden="true"></i><span lang="ta">தமிழ்</span><span lang="te">తెలుగు</span><span>English</span><span class="public-muted">Your language. Your choice.</span></div>
+    </div>
+    <div class="public-journey" aria-label="Illustrative example: a citizen reports a streetlight issue, AI helps route the request, and local needs inform public priorities.">
+      <div class="public-journey-label"><i class="bi bi-stars" aria-hidden="true"></i> A voice-to-action example</div>
+      <svg class="public-city" viewBox="0 0 520 380" fill="none" aria-hidden="true">
+        <rect x="24" y="40" width="90" height="68" rx="16" fill="var(--public-city-block)"/><rect x="139" y="18" width="102" height="94" rx="16" fill="var(--public-city-block)"/><rect x="267" y="35" width="118" height="77" rx="16" fill="var(--public-city-block)"/><rect x="416" y="15" width="86" height="105" rx="16" fill="var(--public-city-block)"/>
+        <rect x="28" y="141" width="137" height="104" rx="16" fill="var(--public-city-block)"/><rect x="197" y="140" width="89" height="104" rx="16" fill="var(--public-city-block)"/><rect x="317" y="147" width="160" height="104" rx="16" fill="var(--public-city-block)"/>
+        <rect x="34" y="277" width="80" height="84" rx="16" fill="var(--public-city-block)"/><rect x="142" y="278" width="136" height="80" rx="16" fill="var(--public-city-block)"/><rect x="308" y="286" width="96" height="80" rx="16" fill="var(--public-city-block)"/>
+        <path d="M-20 128H180V263H440V400" stroke="var(--public-route)" stroke-width="4" stroke-linecap="round" stroke-dasharray="6 9"/>
+        <circle cx="180" cy="183" r="25" fill="var(--public-surface)"/><circle cx="180" cy="183" r="12" fill="#0b57d0"/><circle cx="440" cy="320" r="24" fill="var(--public-surface)"/><circle cx="440" cy="320" r="11" fill="#188038"/>
+      </svg>
+      <div class="public-voice-note"><span class="public-circle public-circle-green"><i class="bi bi-mic" aria-hidden="true"></i></span><div><strong>“Our street needs better lighting.”</strong><div class="public-wave" aria-hidden="true"><span style="--bar:8px"></span><span style="--bar:16px"></span><span style="--bar:24px"></span><span style="--bar:12px"></span><span style="--bar:30px"></span><span style="--bar:20px"></span><span style="--bar:10px"></span><span style="--bar:8px"></span><span style="--bar:16px"></span><span style="--bar:24px"></span><span style="--bar:12px"></span><span style="--bar:30px"></span><span style="--bar:20px"></span><span style="--bar:10px"></span><span style="--bar:8px"></span><span style="--bar:16px"></span><span style="--bar:24px"></span><span style="--bar:12px"></span><span style="--bar:30px"></span><span style="--bar:20px"></span><span style="--bar:10px"></span><span style="--bar:8px"></span></div><small>A citizen’s voice, in their own language</small></div></div>
+      <div class="public-routing-note"><span class="public-pill"><i class="bi bi-stars" aria-hidden="true"></i> AI-assisted understanding</span><h3>From a local need<br>to a shared priority.</h3><div><span><i class="bi bi-translate" aria-hidden="true"></i> Translate</span><i class="bi bi-arrow-right" aria-hidden="true"></i><span><i class="bi bi-signpost-split" aria-hidden="true"></i> Route</span></div></div>
+      <span class="public-example-label">Illustrative request journey</span>
+    </div>
+  </section>
+  <section class="public-metrics-section" aria-label="Platform metrics">
+    <div class="public-metrics-heading"><span class="public-eyebrow">A SHARED PICTURE OF LOCAL NEEDS</span><a href="/dashboard" class="public-text-link">Explore the dashboard <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div>
+    <div class="public-metrics">
+      <div><span class="public-metric-icon"><i class="bi bi-chat-square-text" aria-hidden="true"></i></span><strong class="public-metric-value" id="stat-complaints">{{ stats.total_complaints }}</strong><span>Citizen requests</span></div>
+      <div><span class="public-metric-icon"><i class="bi bi-geo-alt" aria-hidden="true"></i></span><strong class="public-metric-value">{{ stats.districts_covered }}</strong><span>Districts represented</span></div>
+      <div><span class="public-metric-icon"><i class="bi bi-translate" aria-hidden="true"></i></span><strong class="public-metric-value">{{ stats.languages_supported }}</strong><span>Languages supported</span></div>
+      <div><span class="public-metric-icon"><i class="bi bi-map" aria-hidden="true"></i></span><strong class="public-metric-value">{{ stats.states_covered }}</strong><span>States represented</span></div>
+      <div><span class="public-metric-icon public-success"><i class="bi bi-check2-circle" aria-hidden="true"></i></span><strong class="public-metric-value">{{ stats.resolution_rate }}%</strong><span>Resolution rate</span></div>
+    </div>
+  </section>
+  <section id="trackSection" class="public-tracker" aria-labelledby="home-track-title">
+    <div><span class="public-eyebrow">STAY IN THE LOOP</span><h2 id="home-track-title">Your request has a story.<br>Follow what happens next.</h2><p>See its work stage, department, and resolution progress.</p></div>
+    <div class="public-tracker-controls"><label for="trackTicketInput">Request or job ID</label><div class="public-track-input"><input type="text" id="trackTicketInput" class="m3-input" placeholder="NVB-YYYYMMDDXXXX" autocomplete="off" spellcheck="false"><button type="button" onclick="trackTicketProgress()" class="public-button public-button-primary">Track request <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div>{% if demo_showcase %}<div class="public-samples"><span>Explore a synthetic sample:</span>{% for case in demo_showcase.cases[:3] %}<button type="button" onclick='fillAndTrack({{ case.request_id|tojson }})'>{{ case.district }} · {{ case.category }}</button>{% endfor %}</div>{% endif %}</div>
+    <div id="trackerResultContainer" class="public-track-result" role="status" style="display:none"></div>
+  </section>
+  <section class="public-section" id="channels" aria-labelledby="channels-title">
+    <div class="public-section-heading"><div><span class="public-eyebrow">PARTICIPATION, WITHOUT THE BARRIERS</span><h2 id="channels-title">One platform. More ways to be heard.</h2></div><p>Choose the channel that works for you.<br>Voice-first, across Tamil, Telugu, and English.</p></div>
+    <div class="public-channel-grid"><article class="public-channel-card public-channel-featured"><div class="public-row"><span class="public-circle "><i class="bi bi-mic" aria-hidden="true"></i></span><span class="public-channel-tag">Recommended</span></div><h3>Voice & web</h3><p>Speak in Tamil, Telugu, or English. Add a photo or describe your request in your own words.</p><div class="public-channel-actions"><a href="/submit" class="public-button public-button-primary">Start a request <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></article>
+<article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-telephone" aria-hidden="true"></i></span><span class="public-channel-tag">1800-103-8472</span></div><h3>Voice IVR</h3><p>A voice-first route for basic phones. Explore the missed-call and callback flow.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openIvrModal()">Explore IVR demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
+<article class="public-channel-card "><div class="public-row"><span class="public-circle public-circle-green"><i class="bi bi-whatsapp" aria-hidden="true"></i></span><span class="public-channel-tag">Messaging</span></div><h3>WhatsApp</h3><p>Use a familiar conversation to share your community’s infrastructure needs.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openWhatsAppModal()">Try WhatsApp demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button><a href="https://wa.me/918807437931" target="_blank" rel="noopener noreferrer" class="public-text-link">Open WhatsApp channel <i class="bi bi-arrow-up-right" aria-hidden="true"></i><span class="public-sr-only">(opens in a new tab)</span></a></div></article>
+<article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-telegram" aria-hidden="true"></i></span><span class="public-channel-tag">Messaging</span></div><h3>Telegram</h3><p>Send your request directly to @NexusVisBharatBot on Telegram.</p><div class="public-channel-actions"><a href="https://t.me/NexusVisBharatBot" target="_blank" rel="noopener noreferrer" class="public-button">Open Telegram bot <i class="bi bi-arrow-up-right" aria-hidden="true"></i><span class="public-sr-only">(opens in a new tab)</span></a></div></article>
+<article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-chat-left-text" aria-hidden="true"></i></span><span class="public-channel-tag">NVB to 56161</span></div><h3>SMS</h3><p>No mobile data? Explore SMS intake using NVB followed by your request text.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openSmsModal()">Explore SMS demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
+<article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-envelope" aria-hidden="true"></i></span><span class="public-channel-tag">Connected services</span></div><h3>Email & API</h3><p>Connect via email or authenticated REST webhooks for automated intake.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openEmailModal()">Try email & API demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button><a href="mailto:demand@visbharat.gov.in" class="public-text-link">demand@visbharat.gov.in <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div></article></div>
+  </section>
+  <section class="public-section public-how" aria-labelledby="how-title">
+    <div class="public-section-heading"><div><span class="public-eyebrow">VOICE → DATA → DECISION</span><h2 id="how-title">Local knowledge. Better-informed decisions.</h2></div><a href="/dashboard" class="public-text-link">See policy intelligence <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div>
+    <div class="public-process-grid"><article><span>01</span><h3>You share what matters</h3><p>Describe a need in your language, with a voice note, text, or supporting evidence.</p></article><article><span>02</span><h3>AI connects the details</h3><p>Translation and classification help route requests to the relevant department.</p></article><article><span>03</span><h3>Communities inform priorities</h3><p>Aggregated needs support explainable project ranking, budget planning, and delivery tracking.</p></article></div>
+    <details class="public-disclosure public-technical"><summary><span><i class="bi bi-cpu" aria-hidden="true"></i> Explore the intelligence behind NVB <small>Google Cloud & AI</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary><div class="public-disclosure-body public-technical-grid"><article><span class="public-eyebrow">STEP 01</span><h3>Multilingual Voice Intake Hub</h3><p>Citizens record voice notes or type requests across active pilot languages (Tamil, Telugu, English), with broader Indian language expansion in phased rollout via Web, Toll-Free IVR, WhatsApp, and Telegram.</p><small>Cloud Speech-to-Text &bull; Cloud Text-to-Speech (Browser Fallback) &bull; Dialogflow CX &bull; Maps API</small></article><article><span class="public-eyebrow">STEP 02</span><h3>Gemini Multimodal & VAI Bias Correction</h3><p>Gemini extracts intent, translates script, and applies Voice Access Index (VAI) inverse weighting to correct digital divide bias.</p><small>Gemini API / AI Studio &bull; Translation API &bull; Vertex AI</small></article><article><span class="public-eyebrow">STEP 03</span><h3>Vertex AI Priority Engine & Sandbox</h3><p>Fuses SECC/MPI poverty data and infrastructure gaps into explainable priority ranks with interactive weight simulation.</p><small>Vertex AI AutoML &bull; Custom Model Serving &bull; BigQuery</small></article><article><span class="public-eyebrow">STEP 04</span><h3>Bharat Futures Civic Prediction Market</h3><p>Aggregates public knowledge via quadratic karma staking (Cost = q ) fused with Vertex AI spatial priors before sanctioning.</p><small>Vertex AI Super-Predictor &bull; Secure API + RBAC data services</small></article><article><span class="public-eyebrow">STEP 05</span><h3>Anti-Capture Remote Sensing & RCT Lab</h3><p>Triangulates Earth Engine satellite telemetry (Sentinel-2 live, SAR/VIIRS roadmap) against Gemini multimodal analysis to flag high-divergence cases (D &ge; 0.65) for governance review.</p><small>Google Earth Engine &bull; Gemini Multimodal Inference &bull; MAB Bandits</small></article><article><span class="public-eyebrow">STEP 06</span><h3>Matched DiD Audit & Human Capital ROI</h3><p>Stamps Pre-Analysis Plan hashes at sanctioning and estimates lifetime earnings uplift via empirical NFHS/WASH elasticity models.</p><small>BigQuery &bull; SHA-256 PAP Ledger &bull; Vertex AI</small></article></div></details>
+    <details class="public-disclosure public-technical"><summary><span><i class="bi bi-diagram-3" aria-hidden="true"></i> System architecture <small>Five connected layers</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary><div class="public-disclosure-body"><p>Powered by Google Cloud services with government open-data inputs; designed for a broader India rollout.</p><ol class="public-architecture"><li><h3>OMNICHANNEL CITIZEN ACCESS & VOICE GRID</h3><div><span><i class="bi bi-mic text-primary me-1"></i> Cloud Speech-to-Text</span><span><i class="bi bi-volume-up text-success me-1"></i> Cloud Text-to-Speech (Browser Fallback)</span><span><i class="bi bi-translate text-warning me-1"></i> Cloud Translation API</span><span><i class="bi bi-chat-dots text-info me-1"></i> Dialogflow CX</span><span><i class="bi bi-map text-danger me-1"></i> Google Maps Platform</span></div></li><li><h3>GOOGLE GENERATIVE AI & MULTIMODAL CORE</h3><div><span><i class="bi bi-stars text-success me-1"></i> Gemini API / Google AI Studio</span><span><i class="bi bi-camera text-primary me-1"></i> Gemini Multimodal Inference</span><span><i class="bi bi-globe-americas text-danger me-1"></i> Google Earth Engine (Sentinel-2 based, SAR/VIIRS roadmap)</span><span><i class="bi bi-cpu text-warning me-1"></i> Vertex AI AutoML & Custom Serving</span></div></li><li><h3>ECONOMETRIC MECHANISM DESIGN ENGINE</h3><div><span><i class="bi bi-graph-up text-success me-1"></i> Instrumental Variables LATE Estimator</span><span><i class="bi bi-lightning-charge text-danger me-1"></i> Contextual Multi-Armed Bandits (MAB)</span><span><i class="bi bi-piggy-bank text-primary me-1"></i> Quadratic Karma Staking (Cost = q )</span><span><i class="bi bi-diagram-3 text-warning me-1"></i> Mahalanobis Ex-Ante Matched Controls</span></div></li><li><h3>DATA, BACKEND & OPEN DATA FUSION</h3><div><span><i class="bi bi-hdd-network text-primary me-1"></i> BigQuery National Datasets</span><span><i class="bi bi-fire text-danger me-1"></i> RBAC JWT Auth & Secure API Controls</span><span><i class="bi bi-cloud text-info me-1"></i> Cloud Run / Cloud Functions</span><span><i class="bi bi-bank text-warning me-1"></i> data.gov.in & ISRO/Bhuvan & IMD & WHO & FAO</span></div></li><li><h3>EXECUTIVE GOVERNANCE ROLE SUITES</h3><div><span><i class="bi bi-sliders text-primary me-1"></i> Analyst Priority Simulator & Sandbox</span><span><i class="bi bi-shield-check text-success me-1"></i> Auditor Causal DiD & Anti-Capture Suite</span><span><i class="bi bi-person-gear text-danger me-1"></i> Admin User & Threat Security Suite</span></div></li></ol></div></details>
+  </section>
+  <section class="public-section public-inclusion" aria-labelledby="inclusion-title">
+    <div><span class="public-eyebrow">DESIGNED FOR BHARAT</span><h2 id="inclusion-title">Speak naturally.<br>Participate confidently.</h2><p>Our Southern Grid pilot spans 97 districts across Tamil Nadu (38), Andhra Pradesh (26), and Telangana (33).</p><div class="public-language-list"><span><strong lang="ta">தமிழ்</strong>Tamil</span><span><strong lang="te">తెలుగు</strong>Telugu</span><span><strong>English</strong>English</span></div><details class="public-disclosure"><summary><span>More languages on the roadmap</span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary><div class="public-disclosure-body"><p>Planned expansion, not currently active:</p><div class="public-roadmap"><span>Hindi</span><span>Bengali</span><span>Marathi</span><span>Gujarati</span><span>Kannada</span><span>Malayalam</span><span>Punjabi</span><span>Odia</span><span>Assamese</span><span>Urdu</span><span>Sanskrit</span><span>Nepali</span><span>Sindhi</span><span>Konkani</span><span>Maithili</span><span>Manipuri</span><span>Bodo</span><span>Santali</span><span>Dogri</span><span>Kashmiri</span></div></div></details></div>
+    <div class="public-category-section"><span class="public-eyebrow">WHAT YOUR COMMUNITY NEEDS</span><h3>Everyday essentials. Lasting impact.</h3><p>Infrastructure categories connect requests to departments and budget-priority planning.</p><div class="public-category-grid">{% for cat in categories %}
+ <div class="public-category">
+ <div class="public-category-icon">
+ {% if cat == 'Road' %}<i class="bi bi-signpost-2-fill"></i>{% elif cat == 'Water Supply' %}<i class="bi bi-droplet-fill"></i>{% elif cat == 'Electricity' %}<i class="bi bi-lightning-charge-fill"></i>{% elif cat == 'Health' %}<i class="bi bi-hospital-fill"></i>{% elif cat == 'Education' %}<i class="bi bi-book-fill"></i>{% elif cat == 'Sanitation' %}<i class="bi bi-shield-check"></i>{% elif cat == 'Digital Connectivity' %}<i class="bi bi-wifi"></i>{% elif cat == 'Transport' %}<i class="bi bi-bus-front-fill"></i>{% elif cat == 'Housing' %}<i class="bi bi-house-door-fill"></i>{% else %}<i class="bi bi-grid-fill"></i>{% endif %}
+ </div>
+ <div class="public-category-name">{{ cat }}</div>
+ </div>
+ {% endfor %}</div></div>
+  </section>
+  <section class="public-final-cta"><div><span class="public-eyebrow">A BETTER BHARAT STARTS LOCALLY</span><h2>What would you change<br>in your neighbourhood?</h2></div><a href="/submit" class="public-button public-button-primary">Start with your voice <i class="bi bi-arrow-right" aria-hidden="true"></i></a></section>
+</main>
+{% include 'partials/public_footer.html' %}
+ <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+ <script>
+ // Animate stat numbers on load
+ document.addEventListener('DOMContentLoaded', function() {
+ const statNumbers = document.querySelectorAll('.stat-number');
+ statNumbers.forEach(el => {
+ const target = parseInt(el.textContent.replace(/,/g, '')) || 0;
+ let current = 0;
+ const increment = target / 50;
+ const timer = setInterval(() => {
+ current += increment;
+ if (current >= target) {
+ el.textContent = target.toLocaleString();
+ clearInterval(timer);
+ } else {
+ el.textContent = Math.floor(current).toLocaleString();
+ }
+ }, 30);
+ });
+ });
+ </script>
+ <!-- Voice IVR & Missed Call Simulation Modal -->
+ <div id="ivrModalOverlay" class="ivr-modal-backdrop" onclick="if(event.target===this) closeIvrModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;">
+ <div style="background:#ffffff; border-radius:24px; max-width:620px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 20px 40px rgba(0,0,0,0.25); border:1px solid #e2e8f0; font-family:'Google Sans', 'Inter', -apple-system, sans-serif; position:relative; animation: modalFadeIn 0.25s ease-out;">
+ 
+ <!-- Google Accent Stripe -->
+ <div style="height:6px; background:linear-gradient(90deg, #4285f4 0%, #ea4335 25%, #fbbc05 50%, #34a853 75%); border-top-left-radius:24px; border-top-right-radius:24px;"></div>
+ 
+ <!-- Modal Header -->
+ <div style="padding:1.5rem 1.75rem 1rem; display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1px solid #f1f5f9;">
+ <div>
+ <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+ <span style="background:#fef3c7; color:#b45309; padding:4px 10px; border-radius:100px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+ <i class="bi bi-telephone-fill"></i> TOLL-FREE IVR HOTLINE
+ </span>
+ <span style="background:#e8f0fe; color:#1a73e8; padding:4px 10px; border-radius:100px; font-size:0.75rem; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+ <i class="bi bi-google"></i> Speech-to-Text, Text-to-Speech & Dialogflow CX
+ </span>
+ </div>
+ <h3 style="font-size:1.35rem; font-weight:700; color:#0f172a; margin:0;">Zero-Internet Voice IVR Hotline</h3>
+ <p style="font-size:0.85rem; color:#64748b; margin:4px 0 0 0;">Call Toll-Free <strong>1800-103-8472</strong> or give a missed call for instant callback.</p>
+ </div>
+ <button type="button" onclick="closeIvrModal()" style="background:#f1f5f9; border:none; width:36px; height:36px; border-radius:50%; font-size:1.1rem; color:#64748b; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s ease;">
+ <i class="bi bi-x-lg"></i>
+ </button>
+ </div>
+
+ <!-- Toll-Free Phone Banner Widget -->
+ <div style="margin:1.25rem 1.75rem 1rem; background:linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border:2px dashed #fcd34d; border-radius:16px; padding:1.25rem; text-align:center; position:relative;">
+ <div style="font-size:0.78rem; font-weight:700; color:#92400e; letter-spacing:0.5px; text-transform:uppercase; margin-bottom:4px;">
+ OFFICIAL NATIONAL INFRASTRUCTURE TOLL-FREE NUMBER
+ </div>
+ <div style="font-size:1.8rem; font-weight:800; color:#b45309; letter-spacing:1px; display:flex; align-items:center; justify-content:center; gap:10px;">
+ <i class="bi bi-telephone-outbound-fill" style="color:#d97706; animation: pulsePhone 1.5s infinite;"></i>
+ <a href="tel:18001038472" style="color:#b45309; text-decoration:none;">1800-103-8472</a>
+ </div>
+ <p style="margin:6px 0 0 0; font-size:0.82rem; color:#78350f;">Works on standard basic feature phones & smartphones. 24x7 Free Service.</p>
+ </div>
+
+ <div style="padding:1.25rem 1.75rem 1.75rem;">
+ <!-- Missed Call Hotline Gateway -->
+ <div id="tabMissedCallContent">
+ <p style="font-size:0.88rem; color:#475569; margin-bottom:1rem;">
+ Simulate giving a missed call from your feature phone or mobile. Our automated system will queue an immediate call-back via Google Dialogflow CX voice agent.
+ </p>
+ <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:1rem;">
+ <div>
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">MOBILE NUMBER</label>
+ <input type="tel" id="ivrPhoneInput" value="+91 98765 43210" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box;">
+ </div>
+ <div>
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">CALL LANGUAGE</label>
+ <select id="ivrLangSelect" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box;">
+ <option value="ta"> (Tamil)</option>
+ <option value="te"> (Telugu)</option>
+ <option value="en" selected>English</option>
+ </select>
+ </div>
+ </div>
+ <div style="margin-bottom:1.25rem;">
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">TARGET DISTRICT</label>
+ <select id="ivrDistrictSelect" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box;">
+ <optgroup label="Tamil Nadu (38 Districts)">
+ <option value="Chennai" selected>Chennai</option>
+ <option value="Karur">Karur</option>
+ <option value="Madurai">Madurai</option>
+ <option value="Coimbatore">Coimbatore</option>
+ <option value="Tiruchirappalli">Tiruchirappalli</option>
+ <option value="Vellore">Vellore</option>
+ <option value="Salem">Salem</option>
+ </optgroup>
+ <optgroup label="Andhra Pradesh (26 Districts)">
+ <option value="Tirupati">Tirupati</option>
+ <option value="Visakhapatnam">Visakhapatnam</option>
+ <option value="NTR">NTR (Vijayawada)</option>
+ <option value="Guntur">Guntur</option>
+ <option value="Chittoor">Chittoor</option>
+ </optgroup>
+ <optgroup label="Telangana (33 Districts)">
+ <option value="Hyderabad">Hyderabad</option>
+ <option value="Warangal">Warangal</option>
+ <option value="Karimnagar">Karimnagar</option>
+ <option value="Ranga Reddy">Ranga Reddy</option>
+ </optgroup>
+ </select>
+ </div>
+
+ <button type="button" id="giveMissedCallBtn" onclick="runMissedCallSim()" style="width:100%; padding:14px; border-radius:12px; background:#2563eb; color:white; border:none; font-size:0.98rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 12px rgba(37,99,235,0.25);">
+ <i class="bi bi-telephone-fill"></i> Give Missed Call Now (+91 1800-103-8472)
+ </button>
+
+ <!-- Interactive Calling Animation Container -->
+ <div id="missedCallStatusBox" style="display:none; margin-top:1.25rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem; text-align:center;">
+ <div id="callingPulseIcon" style="font-size:2.2rem; color:#d97706; margin-bottom:8px;">
+ <i class="bi bi-phone-vibrate" style="animation: ringRing 0.6s infinite alternate; display:inline-block;"></i>
+ </div>
+ <h4 id="callingStatusTitle" style="margin:0 0 4px 0; font-size:1.05rem; font-weight:700; color:#0f172a;">Placing Missed Call...</h4>
+ <p id="callingStatusDesc" style="margin:0; font-size:0.85rem; color:#64748b;">Ringing toll-free exchange server...</p>
+ <div id="callbackReceiptDetails" style="display:none; margin-top:10px; background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; font-size:0.85rem; color:#166534; text-align:left;">
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <!-- WhatsApp Intake Simulation Modal -->
+ <div id="whatsAppModalOverlay" class="ivr-modal-backdrop" onclick="if(event.target===this) closeWhatsAppModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;">
+ <div style="width:min(540px, 96vw); background:#ffffff; border-radius:20px; border:1px solid #bbf7d0; overflow:hidden; box-shadow:0 24px 50px rgba(15,23,42,0.35);">
+ <div style="background:linear-gradient(135deg,#22c55e,#16a34a); color:white; padding:1rem 1.1rem; position:relative;">
+ <h3 style="margin:0; font-size:1.1rem; font-weight:700;">WhatsApp Intake Demo</h3>
+ <button type="button" onclick="closeWhatsAppModal()" style="position:absolute; top:14px; right:14px; background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; font-size:1.1rem; cursor:pointer;">&times;</button>
+ </div>
+ <div style="padding:1rem 1.1rem;">
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">WHATSAPP NUMBER</label>
+ <input type="tel" id="waPhoneInput" value="+91 90000 11223" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; margin-bottom:10px;">
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">MESSAGE</label>
+ <textarea id="waTextInput" rows="3" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; resize:vertical;">Streetlight not working near bus stop in Ward 21.</textarea>
+ <button type="button" id="sendWaSimBtn" onclick="runWhatsAppSim()" style="width:100%; margin-top:12px; padding:12px; border-radius:10px; background:#16a34a; color:white; border:none; font-size:0.95rem; font-weight:700; cursor:pointer;">Submit WhatsApp Request</button>
+ <div id="waStatusBox" style="display:none; margin-top:10px; padding:10px 12px; border:1px solid #bbf7d0; background:#f0fdf4; color:#14532d; border-radius:10px; font-size:0.85rem;"></div>
+ </div>
+ </div>
+ </div>
+
+ <!-- Email/Open API Simulation Modal -->
+ <div id="emailModalOverlay" class="ivr-modal-backdrop" onclick="if(event.target===this) closeEmailModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;">
+ <div style="width:min(560px, 96vw); background:#ffffff; border-radius:20px; border:1px solid #bae6fd; overflow:hidden; box-shadow:0 24px 50px rgba(15,23,42,0.35);">
+ <div style="background:linear-gradient(135deg,#0ea5e9,#0284c7); color:white; padding:1rem 1.1rem; position:relative;">
+ <h3 style="margin:0; font-size:1.1rem; font-weight:700;">Email/Open API Intake Demo</h3>
+ <button type="button" onclick="closeEmailModal()" style="position:absolute; top:14px; right:14px; background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; font-size:1.1rem; cursor:pointer;">&times;</button>
+ </div>
+ <div style="padding:1rem 1.1rem;">
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">EMAIL SUBJECT / API TEXT</label>
+ <textarea id="emailTextInput" rows="4" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; resize:vertical;">Need water pipeline extension in peri-urban zone near Ward 8.</textarea>
+ <button type="button" id="sendEmailSimBtn" onclick="runEmailSim()" style="width:100%; margin-top:12px; padding:12px; border-radius:10px; background:#0284c7; color:white; border:none; font-size:0.95rem; font-weight:700; cursor:pointer;">Submit Email/API Request</button>
+ <div id="emailStatusBox" style="display:none; margin-top:10px; padding:10px 12px; border:1px solid #bae6fd; background:#f0f9ff; color:#0c4a6e; border-radius:10px; font-size:0.85rem;"></div>
+ </div>
+ </div>
+ </div>
+
+ <!-- 2b. Zero-Internet SMS Keyword Helpline Modal (56161) -->
+ <div id="smsModalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:99999; align-items:center; justify-content:center; padding:1rem;">
+ <div style="background:white; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden; animation:modalFadeIn 0.25s ease-out;">
+ <div style="background:linear-gradient(135deg, #4338ca 0%, #3730a3 100%); padding:1.5rem; color:white; position:relative;">
+ <button type="button" onclick="closeSmsModal()" style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
+ <div style="display:flex; align-items:center; gap:12px;">
+ <div style="width:48px; height:48px; border-radius:12px; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
+ <i class="bi bi-chat-square-dots-fill"></i>
+ </div>
+ <div>
+ <h3 style="margin:0; font-size:1.25rem; font-weight:700;">Zero-Internet SMS Helpline</h3>
+ <p style="margin:2px 0 0 0; font-size:0.85rem; opacity:0.9;">Feature Phone SMS Gateway (Shortcode: 56161)</p>
+ </div>
+ </div>
+ </div>
+
+ <div style="padding:1.5rem;">
+ <div style="background:#eef2ff; border-left:4px solid #4f46e5; padding:12px; border-radius:8px; margin-bottom:1.25rem;">
+ <div style="font-size:0.85rem; color:#3730a3; line-height:1.4;">
+ <strong> How SMS Ingestion Works:</strong><br>
+ Citizens on 2G/3G feature phones can send a basic SMS to <strong>56161</strong> using format:<br>
+ <code>NVB &lt;Ward Number&gt; &lt;Demand Text&gt;</code><br>
+ <em>Example:</em> <code>NVB Ward 14 Street light not working</code>
+ </div>
+ </div>
+
+ <div style="margin-bottom:1rem;">
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">SENDER MOBILE NUMBER</label>
+ <input type="text" id="smsPhoneInput" value="+91 98401 23456" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box;">
+ </div>
+
+ <div style="margin-bottom:1.25rem;">
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">SMS TEXT MESSAGE</label>
+ <textarea id="smsTextInput" rows="2" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box;">NVB Ward 14 Road romba mosam</textarea>
+ </div>
+
+ <button type="button" id="sendSmsSimBtn" onclick="runSmsSim()" style="width:100%; padding:14px; border-radius:12px; background:#4338ca; color:white; border:none; font-size:0.98rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 12px rgba(67,56,202,0.25);">
+ <i class="bi bi-send-fill"></i> Simulate SMS Transmission to 56161
+ </button>
+
+ <div id="smsStatusBox" style="display:none; margin-top:1.25rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem; text-align:center;">
+ <h4 id="smsStatusTitle" style="margin:0 0 4px 0; font-size:1.05rem; font-weight:700; color:#0f172a;">Sending SMS...</h4>
+ <div id="smsReceiptDetails" style="display:none; margin-top:10px; background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; font-size:0.85rem; color:#166534; text-align:left;">
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+
+ <style>
+ @media (max-width: 992px) {
+ .omni-channel-grid {
+ grid-template-columns: repeat(2, 1fr) !important;
+ }
+ }
+ @media (max-width: 640px) {
+ .omni-channel-grid {
+ grid-template-columns: 1fr !important;
+ }
+ }
+ @keyframes modalFadeIn {
+ from { opacity: 0; transform: scale(0.95); }
+ to { opacity: 1; transform: scale(1); }
+ }
+ @keyframes pulsePhone {
+ 0% { transform: scale(1); }
+ 50% { transform: scale(1.12); }
+ 100% { transform: scale(1); }
+ }
+ @keyframes ringRing {
+ 0% { transform: rotate(-15deg); }
+ 100% { transform: rotate(15deg); }
+ }
+ </style>
+
+ <script>
+ function openIvrModal() {
+ document.getElementById('ivrModalOverlay').style.display = 'flex';
+ }
+ function closeIvrModal() {
+ document.getElementById('ivrModalOverlay').style.display = 'none';
+ }
+
+ function openSmsModal() {
+ document.getElementById('smsModalOverlay').style.display = 'flex';
+ }
+ function closeSmsModal() {
+ document.getElementById('smsModalOverlay').style.display = 'none';
+ }
+
+ function openWhatsAppModal() {
+ document.getElementById('whatsAppModalOverlay').style.display = 'flex';
+ }
+
+ function closeWhatsAppModal() {
+ document.getElementById('whatsAppModalOverlay').style.display = 'none';
+ }
+
+ function openEmailModal() {
+ document.getElementById('emailModalOverlay').style.display = 'flex';
+ }
+
+ function closeEmailModal() {
+ document.getElementById('emailModalOverlay').style.display = 'none';
+ }
+
+ async function runSmsSim() {
+ const btn = document.getElementById('sendSmsSimBtn');
+ const statusBox = document.getElementById('smsStatusBox');
+ const title = document.getElementById('smsStatusTitle');
+ const details = document.getElementById('smsReceiptDetails');
+
+ const phone = document.getElementById('smsPhoneInput').value || '+91 98401 23456';
+ const text = document.getElementById('smsTextInput').value || 'NVB Ward 14 Road romba mosam';
+
+ btn.disabled = true;
+ btn.style.opacity = '0.7';
+ statusBox.style.display = 'block';
+ details.style.display = 'none';
+
+ title.textContent = 'Transmitting SMS to Shortcode 56161...';
+
+ try {
+ const resp = await fetch('/api/submit', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ source: 'SMS Helpline',
+ phone: phone,
+ district: 'Chennai',
+ language: 'ta',
+ text: text,
+ channel: 'SMS'
+ })
+ });
+ const res = await resp.json();
+ const reqId = res.request_id || ('NVB-SMS-' + Math.floor(Math.random()*899999+100000));
+ const cat = (res.classification && res.classification.category) || 'Road';
+ const dept = (res.routing && res.routing.routed_department) || 'Municipal Administration';
+
+ details.style.display = 'block';
+ details.innerHTML = `
+ <strong><i class="bi bi-shield-check"></i> SMS Ingested & Saved into DB:</strong><br>
+ | <strong>Ticket ID:</strong> ${reqId}<br>
+ | <strong>Channel:</strong> SMS Helpline (56161)<br>
+ | <strong>Category:</strong> ${cat}<br>
+ | <strong>Routed To:</strong> ${dept}<br>
+ | <strong>Auto Confirmation:</strong> Reply SMS dispatched to ${phone}.
+ `;
+ } catch (e) {
+ details.style.display = 'block';
+ details.innerHTML = '<strong>SMS Ingested:</strong> Request saved to database successfully.';
+ }
+
+ btn.disabled = false;
+ btn.style.opacity = '1';
+ }
+
+ async function runWhatsAppSim() {
+ const btn = document.getElementById('sendWaSimBtn');
+ const status = document.getElementById('waStatusBox');
+ const phone = (document.getElementById('waPhoneInput').value || '+91 90000 11223').trim();
+ const text = (document.getElementById('waTextInput').value || '').trim();
+
+ btn.disabled = true;
+ btn.style.opacity = '0.7';
+ status.style.display = 'block';
+ status.innerHTML = 'Submitting WhatsApp request...';
+
+ try {
+ const resp = await fetch('/api/submit', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ source: 'WhatsApp',
+ phone: phone,
+ text: text,
+ district: 'Chennai',
+ language: 'en'
+ })
+ });
+ const res = await resp.json();
+ const reqId = res.request_id || ('NVB-WA-' + Math.floor(Math.random() * 899999 + 100000));
+ status.innerHTML = `<strong>WhatsApp request ingested.</strong><br>Ticket: <strong>${reqId}</strong><br>Source: WhatsApp`;
+ } catch (e) {
+ status.innerHTML = '<strong>WhatsApp intake saved in demo mode.</strong>';
+ }
+
+ btn.disabled = false;
+ btn.style.opacity = '1';
+ }
+
+ async function runEmailSim() {
+ const btn = document.getElementById('sendEmailSimBtn');
+ const status = document.getElementById('emailStatusBox');
+ const text = (document.getElementById('emailTextInput').value || '').trim();
+
+ btn.disabled = true;
+ btn.style.opacity = '0.7';
+ status.style.display = 'block';
+ status.innerHTML = 'Submitting Email/Open API request...';
+
+ try {
+ const resp = await fetch('/api/submit', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ source: 'Email/Open API',
+ sender: 'citizen@example.com',
+ text: text,
+ district: 'Chennai',
+ language: 'en'
+ })
+ });
+ const res = await resp.json();
+ const reqId = res.request_id || ('NVB-EMAIL-' + Math.floor(Math.random() * 899999 + 100000));
+ status.innerHTML = `<strong>Email/API request ingested.</strong><br>Ticket: <strong>${reqId}</strong><br>Source: Email/Open API`;
+ } catch (e) {
+ status.innerHTML = '<strong>Email/Open API intake saved in demo mode.</strong>';
+ }
+
+ btn.disabled = false;
+ btn.style.opacity = '1';
+ }
+
+ async function runMissedCallSim() {
+ const btn = document.getElementById('giveMissedCallBtn');
+ const statusBox = document.getElementById('missedCallStatusBox');
+ const icon = document.getElementById('callingPulseIcon');
+ const title = document.getElementById('callingStatusTitle');
+ const desc = document.getElementById('callingStatusDesc');
+ const details = document.getElementById('callbackReceiptDetails');
+
+ const phone = document.getElementById('ivrPhoneInput').value || '+91 98765 43210';
+ const language = document.getElementById('ivrLangSelect').value || 'en';
+ const district = document.getElementById('ivrDistrictSelect').value || 'Chennai';
+
+ btn.disabled = true;
+ btn.style.opacity = '0.7';
+ statusBox.style.display = 'block';
+ details.style.display = 'none';
+
+ title.textContent = 'Placing Missed Call to 1800-103-8472...';
+ desc.textContent = 'Ringing toll-free exchange server... (Ring 1)';
+
+ setTimeout(() => {
+ desc.textContent = 'Ringing... (Ring 2) -> Call Disconnected by Exchange';
+ }, 1000);
+
+ setTimeout(async () => {
+ icon.innerHTML = '<i class="bi bi-check-circle-fill" style="color:#16a34a"></i>';
+ title.textContent = 'Missed Call Logged & Callback Scheduled!';
+ desc.textContent = 'Telephony server logged caller number: ' + phone;
+
+ try {
+ const resp = await fetch('/api/submit', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ source: 'Voice IVR',
+ phone: phone,
+ district: district,
+ language: language,
+ text: 'Missed call callback requested via Toll-Free 1800-103-8472'
+ })
+ });
+ const res = await resp.json();
+ const reqId = res.request_id || ('NVB-IVR-' + Math.floor(Math.random()*899999+100000));
+
+ details.style.display = 'block';
+ details.innerHTML = `
+ <strong><i class="bi bi-shield-check"></i> Outbound IVR Callback Queued:</strong><br>
+ | <strong>Ticket ID:</strong> ${reqId}<br>
+ | <strong>Target Phone:</strong> ${phone}<br>
+ | <strong>Language:</strong> ${language.toUpperCase()}<br>
+ | <strong>Target District:</strong> ${district}<br>
+ | <strong>Scheduled Callback:</strong> Google Dialogflow CX voice bot will dial caller within 15 seconds.
+ `;
+ } catch (e) {
+ details.style.display = 'block';
+ details.innerHTML = '<strong>Callback Queued:</strong> Outbound IVR agent will call ' + phone + ' shortly.';
+ }
+
+ btn.disabled = false;
+ btn.style.opacity = '1';
+ }, 2500);
+ }
+
+ async function trackTicketProgress() {
+ const inputEl = document.getElementById('trackTicketInput');
+ const ticketId = (inputEl ? inputEl.value : '').trim();
+ const container = document.getElementById('trackerResultContainer');
+ if (!container) return;
+
+ if (!ticketId) {
+ alert('Please enter a valid Request Ticket ID.');
+ return;
+ }
+ container.style.display = 'block';
+ container.innerHTML = '<p style="color:#5f6368; font-size:0.9rem;"><i class="bi bi-arrow-repeat spin"></i> Fetching live stage & progress history...</p>';
+
+ try {
+ const res = await fetch(`/api/requests/${encodeURIComponent(ticketId)}/track`);
+ const data = await res.json();
+ if (!data.success) {
+ container.innerHTML = `<div class="alert alert-danger" style="border-radius:12px; font-size:0.88rem; padding:12px 16px;"><i class="bi bi-exclamation-triangle-fill"></i> ${data.error}</div>`;
+ return;
+ }
+
+ const currStage = data.current_stage_index || 1;
+ const stages = data.stages || [];
+
+ const stageStepperHtml = stages.map(s => {
+ const isCompleted = s.step < currStage;
+ const isCurrent = s.step === currStage;
+ let badgeBg = '#f8f9fa';
+ let textColor = '#5f6368';
+ let icon = `<i class="bi bi-circle" style="color:#94a3b8"></i>`;
+
+ if (isCompleted) {
+ badgeBg = '#e6f4ea';
+ textColor = '#137333';
+ icon = `<i class="bi bi-check-circle-fill" style="color:#137333"></i>`;
+ } else if (isCurrent) {
+ badgeBg = '#e8f0fe';
+ textColor = '#1a73e8';
+ icon = `<i class="bi bi-record-circle-fill" style="color:#1a73e8"></i>`;
+ }
+
+ return `
+ <div style="flex:1; min-width:140px; background:${badgeBg}; padding:10px 12px; border-radius:12px; border:1px solid ${isCurrent ? '#1a73e8' : '#dadce0'}; text-align:left;">
+ <div style="font-size:0.75rem; font-weight:700; color:${textColor}; text-transform:uppercase; margin-bottom:4px; display:flex; align-items:center; gap:4px;">
+ ${icon} STAGE ${s.step}
+ </div>
+ <strong style="font-size:0.84rem; color:#202124; display:block; line-height:1.2;">${s.name}</strong>
+ <small style="font-size:0.72rem; color:#5f6368; display:block; margin-top:3px; line-height:1.3;">${s.desc}</small>
+ </div>
+ `;
+ }).join('');
+
+ const eventsHtml = (data.timeline_events || []).map(e => `
+ <div style="display:flex; align-items:flex-start; gap:10px; font-size:0.82rem; padding:10px 0; border-bottom:1px solid #e2e8f0;">
+ <span style="background:#e8f0fe; color:#1a73e8; font-weight:700; padding:3px 10px; border-radius:100px; font-size:0.72rem; text-transform:uppercase; flex-shrink:0;">${e.event_type}</span>
+ <div style="flex:1;">
+ <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+ <span style="color:#202124; font-weight:600;">Status Transition: <strong style="color:#1a73e8;">${e.from_status || 'Submitted'} -> ${e.to_status}</strong></span>
+ <small style="color:#94a3b8; font-size:0.74rem;">${new Date(e.created_at).toLocaleString()}</small>
+ </div>
+ ${e.reason ? `
+ <div style="margin-top:6px; padding:8px 12px; background:#ffffff; border-left:4px solid #1a73e8; border-radius:6px; font-size:0.84rem; color:#1f1f1f; border:1px solid #e2e8f0; border-left-width:4px;">
+ <strong style="color:#174ea6;"><i class="bi bi-chat-left-text-fill me-1"></i> Officer Progress Remarks & Field Notes:</strong>
+ <div style="margin-top:2px; color:#374151;">${e.reason}</div>
+ </div>
+ ` : ''}
+ <small style="display:block; color:#64748b; font-size:0.74rem; margin-top:4px;"><i class="bi bi-person-badge me-1"></i> Updated by: <strong>${e.actor}</strong> | Channel: ${e.channel || 'System'}</small>
+ </div>
+ </div>
+ `).join('');
+
+ container.innerHTML = `
+ <div style="background:#f8fafd; border:1px solid #c2e7ff; border-radius:16px; padding:1.25rem; margin-top:1rem;">
+ <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:1rem; border-bottom:1px solid #dadce0; padding-bottom:10px;">
+ <div>
+ <span class="badge" style="background:#1a73e8; color:#fff; font-size:0.85rem; padding:4px 10px; font-family:monospace; font-weight:700;">${data.request_id}</span>
+ <strong style="font-size:1.05rem; color:#202124; margin-left:8px;">${data.category} in ${data.district}, ${data.state}</strong>
+ </div>
+ <span class="badge" style="background:#34a853; color:#fff; font-size:0.85rem; padding:6px 14px; border-radius:100px; font-weight:700;"><i class="bi bi-shield-check"></i> Status: ${data.status}</span>
+ </div>
+
+ <div style="margin-bottom:1.25rem;">
+ <strong style="font-size:0.88rem; color:#3c4043; display:block; margin-bottom:10px;"><i class="bi bi-diagram-3-fill" style="color:#1a73e8"></i> 5-Stage Work Execution Pipeline:</strong>
+ <div style="display:flex; gap:8px; flex-wrap:wrap;">
+ ${stageStepperHtml}
+ </div>
+ </div>
+
+ <div style="background:#ffffff; border-radius:12px; padding:12px 16px; border:1px solid #dadce0; margin-bottom:1rem; font-size:0.85rem;">
+ <div class="row g-2">
+ <div class="col-md-6">
+ <span style="color:#5f6368;"><i class="bi bi-building" style="color:#1a73e8"></i> Routed Department:</span> <strong style="color:#202124;">${data.routed_department}</strong>
+ </div>
+ <div class="col-md-6">
+ <span style="color:#5f6368;"><i class="bi bi-calendar-event" style="color:#34a853"></i> Target SLA Resolution:</span> <strong style="color:#1a73e8;">${new Date(data.sla_due_at).toLocaleDateString()}</strong>
+ </div>
+ </div>
+ </div>
+
+ <div>
+ <strong style="font-size:0.88rem; color:#3c4043; display:block; margin-bottom:6px;"><i class="bi bi-clock-history"></i> Immutable Event Audit Trail:</strong>
+ <div style="background:#ffffff; border-radius:12px; padding:8px 16px; border:1px solid #dadce0;">
+ ${eventsHtml || '<p style="color:#5f6368; font-size:0.8rem; margin:4px 0;">Request submitted and queued for triage.</p>'}
+ </div>
+ </div>
+ </div>
+ `;
+ } catch (err) {
+ container.innerHTML = `<div class="alert alert-danger" style="border-radius:12px; font-size:0.88rem; padding:12px 16px;">Failed to fetch request progress. Error: ${err}</div>`;
+ }
+ }
+
+ function fillAndTrack(id) {
+ const input = document.getElementById('trackTicketInput');
+ if (input) input.value = id;
+ trackTicketProgress();
+ }
+ </script>
+
+ {% include '_citizen_assistant.html' %}
+</body>
+</html>

@@ -1,0 +1,21 @@
+name: Ministry pilot contracts
+on: [push, pull_request, workflow_dispatch]
+jobs:
+  postgres-and-container:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image and run contracts on PostgreSQL 16
+        run: docker compose -f compose.pilot-postgres.yaml up --build --abort-on-container-exit --exit-code-from verify
+      - name: Clean ephemeral containers
+        if: always()
+        run: docker compose -f compose.pilot-postgres.yaml down
+  infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.11.4
+      - run: terraform -chdir=deploy/pilot init -backend=false
+      - run: terraform -chdir=deploy/pilot validate

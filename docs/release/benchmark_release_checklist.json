@@ -1,0 +1,153 @@
+{
+  "checklist_name": "External Benchmark to Nexus Feature Gap Operational Checklist",
+  "version": "v1.1",
+  "generated_at": "2026-09-08T00:00:00Z",
+  "items": [
+    {
+      "id": "RG-001",
+      "title": "Citizen timeline and request ID parity across channels",
+      "priority": "Must",
+      "phase_gates": ["phase2_processing", "phase5_transparency"],
+      "criterion": "All in-scope channels produce unique request IDs and consistent citizen-visible status timeline",
+      "status": "PASS",
+      "evidence": ["scripts/burnin_phase2_processing.py", "scripts/burnin_phase5_transparency.py"],
+      "owner": "Platform Ops",
+      "machine_check": {
+        "type": "composite",
+        "checks": [
+          { "type": "phase_runner_pass", "required_phase_gates": ["phase2_processing", "phase5_transparency"] },
+          { "type": "evidence_files_exist" }
+        ]
+      }
+    },
+    {
+      "id": "RG-002",
+      "title": "State-district-service routing matrix readiness",
+      "priority": "Must",
+      "phase_gates": ["phase2_processing", "phase4_policy_workflow"],
+      "criterion": "Routing resolves for all pilot states/districts without fallback",
+      "status": "PASS",
+      "evidence": ["visbharat/services/repository.py", "scripts/burnin_phase2_processing.py"],
+      "owner": "Ingestion Team",
+      "machine_check": {
+        "type": "composite",
+        "checks": [
+          { "type": "phase_runner_pass", "required_phase_gates": ["phase2_processing", "phase4_policy_workflow"] },
+          { "type": "evidence_files_exist" }
+        ]
+      }
+    },
+    {
+      "id": "RG-003",
+      "title": "Re-open and escalation audit trail",
+      "priority": "Must",
+      "phase_gates": ["phase4_policy_workflow", "phase5_transparency"],
+      "criterion": "Re-open actions are captured with reason/actor/time and retrievable for audit",
+      "status": "PASS",
+      "evidence": ["scripts/burnin_phase4_policy_workflow.py", "docs/reports/Phase4_GoLive_Readiness_Report.md"],
+      "owner": "Policy Ops",
+      "machine_check": {
+        "type": "composite",
+        "checks": [
+          { "type": "phase_runner_pass", "required_phase_gates": ["phase4_policy_workflow", "phase5_transparency"] },
+          { "type": "report_contains", "file_path": "docs/reports/Phase4_GoLive_Readiness_Report.md", "patterns": ["PASS", "Checklist Results"] }
+        ]
+      }
+    },
+    {
+      "id": "RG-004",
+      "title": "Post-closure feedback loop",
+      "priority": "Must",
+      "phase_gates": ["phase5_transparency"],
+      "criterion": "Feedback capture is operational and tied to closure quality reporting",
+      "status": "PASS",
+      "evidence": ["scripts/burnin_phase5_transparency.py", "docs/reports/Phase5_GoLive_Readiness_Report.md"],
+      "owner": "Citizen Success",
+      "machine_check": {
+        "type": "composite",
+        "checks": [
+          { "type": "phase_runner_pass", "required_phase_gates": ["phase5_transparency"] },
+          { "type": "evidence_files_exist" }
+        ]
+      }
+    },
+    {
+      "id": "RG-005",
+      "title": "Channel parity burn-in",
+      "priority": "Must",
+      "phase_gates": ["phase2_processing"],
+      "criterion": "Web, voice, and configured channel connectors pass ingestion burn-in",
+      "status": "PASS",
+      "evidence": ["scripts/burnin_phase2_processing.py", "tests/test_channel_ingestion.py"],
+      "owner": "Channel Integrations",
+      "machine_check": {
+        "type": "composite",
+        "checks": [
+          { "type": "phase_runner_pass", "required_phase_gates": ["phase2_processing"] },
+          { "type": "evidence_files_exist" }
+        ]
+      }
+    },
+    {
+      "id": "RG-006",
+      "title": "Assisted intake fallback process",
+      "priority": "Should",
+      "phase_gates": ["phase2_processing"],
+      "criterion": "Call-center/email-assisted intake SOP exists and is testable",
+      "status": "PASS",
+      "evidence": ["docs/reports/Phase2_Ops_Handoff_Pack.md"],
+      "owner": "Ops",
+      "machine_check": { "type": "evidence_files_exist" }
+    },
+    {
+      "id": "RG-007",
+      "title": "AI confidence and fallback guardrails",
+      "priority": "Should",
+      "phase_gates": ["phase3_policy", "phase4_policy_workflow"],
+      "criterion": "Low-confidence AI outcomes route to human review",
+      "status": "PASS",
+      "evidence": ["scripts/burnin_phase3_policy.py", "scripts/burnin_phase4_policy_workflow.py"],
+      "owner": "AI Quality",
+      "machine_check": {
+        "type": "phase_runner_pass",
+        "required_phase_gates": ["phase3_policy", "phase4_policy_workflow"]
+      }
+    },
+    {
+      "id": "RG-008",
+      "title": "Taxonomy signal flow to intelligence and policy",
+      "priority": "Should",
+      "phase_gates": ["phase3_policy", "phase4_policy_workflow"],
+      "criterion": "Ward/service metadata influences hotspot and ranking outputs",
+      "status": "PASS",
+      "evidence": ["visbharat/services/intelligence.py", "scripts/burnin_phase3_policy.py"],
+      "owner": "Data Science",
+      "machine_check": { "type": "evidence_files_exist" }
+    },
+    {
+      "id": "RG-009",
+      "title": "Export and audit retrieval",
+      "priority": "Should",
+      "phase_gates": ["phase5_transparency"],
+      "criterion": "Audit/export flows produce reproducible compliance artifacts",
+      "status": "PASS",
+      "evidence": ["visbharat/blueprints/api.py", "scripts/burnin_phase5_transparency.py"],
+      "owner": "Governance",
+      "machine_check": {
+        "type": "phase_runner_pass",
+        "required_phase_gates": ["phase5_transparency"]
+      }
+    },
+    {
+      "id": "RG-010",
+      "title": "Field/mobile operational readiness",
+      "priority": "Could",
+      "phase_gates": ["phase2_processing", "phase5_transparency"],
+      "criterion": "Field/mobile execution path is available or implementation plan exists",
+      "status": "PASS",
+      "evidence": ["README.md", "docs/reports/Phase5_Ops_Handoff_Pack.md"],
+      "owner": "Program Management",
+      "machine_check": { "type": "evidence_files_exist" }
+    }
+  ]
+}

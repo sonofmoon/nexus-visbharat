@@ -1,0 +1,19 @@
+services:
+  nvb:
+    build: .
+    ports:
+      - "127.0.0.1:5000:8080"
+    environment:
+      NVB_DISABLE_EXTERNAL_SERVICES: "1"
+      JURY_REQUIRE_LIVE_MODELS: "false"
+      DEMO_MODE: "true"
+      DATABASE_URL: ""
+      DATABASE_PATH: /data/nvb.db
+      ADMIN_API_TOKEN: "${NVB_ADMIN_TOKEN:?Set a private demo admin token}"
+      ANALYST_API_TOKEN: "${NVB_ANALYST_TOKEN:?Set a private demo analyst token}"
+      AUDITOR_API_TOKEN: "${NVB_AUDITOR_TOKEN:?Set a private demo auditor token}"
+    volumes:
+      - nvb_demo:/data
+    restart: unless-stopped
+volumes:
+  nvb_demo:

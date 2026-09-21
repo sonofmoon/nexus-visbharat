@@ -1,0 +1,18 @@
+﻿{
+  "demo_scope": {
+    "states": ["Tamil Nadu", "Andhra Pradesh", "Telangana"],
+    "districts": [
+      "Chennai",
+      "Vellore",
+      "Karur",
+      "Visakhapatnam",
+      "Tirupati",
+      "Hyderabad"
+    ]
+  },
+  "default_filters": {
+    "state": "Tamil Nadu",
+    "district": "Chennai",
+    "language_priority": ["ta", "te", "en"]
+  }
+}

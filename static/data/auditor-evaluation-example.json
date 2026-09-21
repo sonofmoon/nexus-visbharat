@@ -1,0 +1,10 @@
+{
+  "dataset_version": "illustrative-example-v1",
+  "model_version": "example-predictions-not-a-live-model",
+  "label_status": "provisional",
+  "samples": [
+    {"language":"ta","state":"Tamil Nadu","channel":"Web Form","expected_category":"Water Supply","predicted_category":"Water Supply","expected_urgency":"Routine","predicted_urgency":"Routine"},
+    {"language":"te","state":"Telangana","channel":"Voice IVR","expected_category":"Road","predicted_category":"Transport","expected_urgency":"Emergency","predicted_urgency":"High"},
+    {"language":"en","state":"Andhra Pradesh","channel":"WhatsApp","expected_category":"Health","predicted_category":"Health","expected_urgency":"Emergency","predicted_urgency":"Emergency"}
+  ]
+}

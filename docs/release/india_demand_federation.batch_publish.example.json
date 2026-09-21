@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "source": "state-demand-grid",
+      "external_event_id": "SDG-20260909-000124",
+      "language": "en",
+      "district": "Chennai",
+      "text": "Potholes near bus stand causing accidents",
+      "sender": "federation-node-tn-01"
+    },
+    {
+      "source": "state-demand-grid",
+      "external_event_id": "SDG-20260909-000125",
+      "language": "te",
+      "district": "Hyderabad",
+      "text": "Drainage overflow near market area",
+      "sender": "federation-node-tg-01"
+    }
+  ]
+}

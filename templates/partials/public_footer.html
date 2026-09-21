@@ -1,0 +1,16 @@
+<footer class="public-footer">
+  {% if pilot_page %}
+  <div><a class="public-footer-brand" href="/pilot">Nexus VisBharat · Ministry Pilot</a><p>Local needs. Accountable district development.</p></div>
+  <small>Tamil Nadu · Vellore &nbsp; / &nbsp; Andhra Pradesh · Tirupati<br>{{ 'Synthetic rehearsal' if demo else 'Controlled programme' }} · தமிழ் / తెలుగు / English</small>
+  {% else %}
+  <div><a class="public-footer-brand" href="/">Nexus VisBharat</a><p>A digital public good. Built for Bharat, together.</p></div>
+  <nav aria-label="Footer navigation">
+    <a href="/submit">Submit a request</a>
+    <a href="/pilot">Ministry Pilot (Vellore &amp; Tirupati)</a>
+    <a href="/dashboard">Policy dashboard</a>
+    <a href="https://github.com/citizenvoice-india" target="_blank" rel="noopener noreferrer">GitHub <span class="public-sr-only">(opens in a new tab)</span><i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+    <a href="https://data.gov.in" target="_blank" rel="noopener noreferrer">Data sources <span class="public-sr-only">(opens in a new tab)</span><i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
+  </nav>
+  <small>Southern Grid Pilot · Tamil Nadu / Andhra Pradesh / Telangana</small>
+  {% endif %}
+</footer>

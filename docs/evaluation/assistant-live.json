@@ -1,0 +1,119 @@
+{
+  "recorded_at": "2026-09-19T15:31:50.826338+00:00",
+  "scope": "Fictional requests; synthesized-speech smoke test. No tickets submitted. Not a human/dialect ASR benchmark.",
+  "checks": [
+    {
+      "language": "en",
+      "kind": "cx_text",
+      "intent": "new request",
+      "expected_intent": "new request",
+      "confidence": 1.0,
+      "passed": true,
+      "latency_ms": 860
+    },
+    {
+      "language": "en",
+      "kind": "cx_track",
+      "intent": "check status",
+      "expected_intent": "check status",
+      "confidence": 1.0,
+      "passed": true,
+      "latency_ms": 698
+    },
+    {
+      "language": "en",
+      "kind": "cx_location",
+      "intent": "location confirm",
+      "expected_intent": "location confirm",
+      "confidence": 1.0,
+      "passed": true,
+      "latency_ms": 176
+    },
+    {
+      "language": "en",
+      "kind": "tts_stt_roundtrip",
+      "passed": true,
+      "transcript": "how streat receives water for only Van on every De",
+      "reference_text": "Our street receives water for only one hour every day.",
+      "confidence": 0.54,
+      "provider_mode": "google_stt_live",
+      "latency_ms": 2300
+    },
+    {
+      "language": "ta",
+      "kind": "cx_text",
+      "intent": "new request",
+      "expected_intent": "new request",
+      "confidence": 1.0,
+      "passed": true,
+      "latency_ms": 882
+    },
+    {
+      "language": "ta",
+      "kind": "cx_track",
+      "intent": "check status",
+      "expected_intent": "check status",
+      "confidence": 1.0,
+      "passed": true,
+      "latency_ms": 242
+    },
+    {
+      "language": "ta",
+      "kind": "cx_location",
+      "intent": "location confirm",
+      "expected_intent": "location confirm",
+      "confidence": 1.0,
+      "passed": true,
+      "latency_ms": 205
+    },
+    {
+      "language": "ta",
+      "kind": "tts_stt_roundtrip",
+      "passed": true,
+      "transcript": "எங்கள் தெருவில் குடிநீர் தினமும் ஒரு மணி நேரம் மட்டுமே வருகிறது",
+      "reference_text": "எங்கள் தெருவில் குடிநீர் தினமும் ஒரு மணி நேரம் மட்டுமே வருகிறது.",
+      "confidence": 0.69,
+      "provider_mode": "google_stt_live",
+      "latency_ms": 1752
+    },
+    {
+      "language": "te",
+      "kind": "cx_text",
+      "intent": "new request",
+      "expected_intent": "new request",
+      "confidence": 1.0,
+      "passed": true,
+      "latency_ms": 838
+    },
+    {
+      "language": "te",
+      "kind": "cx_track",
+      "intent": "check status",
+      "expected_intent": "check status",
+      "confidence": 1.0,
+      "passed": true,
+      "latency_ms": 824
+    },
+    {
+      "language": "te",
+      "kind": "cx_location",
+      "intent": "location confirm",
+      "expected_intent": "location confirm",
+      "confidence": 1.0,
+      "passed": true,
+      "latency_ms": 207
+    },
+    {
+      "language": "te",
+      "kind": "tts_stt_roundtrip",
+      "passed": true,
+      "transcript": "మా వీధిలో తాగునీరు రోజుకు ఒక గంట మాత్రమే వస్తుంది",
+      "reference_text": "మా వీధిలో తాగునీరు రోజుకు ఒక గంట మాత్రమే వస్తోంది.",
+      "confidence": 0.73,
+      "provider_mode": "google_stt_live",
+      "latency_ms": 1848
+    }
+  ],
+  "passed": 12,
+  "total": 12
+}

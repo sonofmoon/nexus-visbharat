@@ -1,0 +1,143 @@
+{
+  "job_id": "NVB-EVAL-20260919053655514826-a7fb2793",
+  "status": "completed",
+  "result": {
+    "overall": {
+      "n": 27,
+      "category_macro_f1": 0.88,
+      "accuracy": 0.962963,
+      "accuracy_ci95": [
+        0.817161,
+        0.993432
+      ],
+      "emergency_n": 9,
+      "emergency_recall": 1.0,
+      "emergency_recall_ci95": [
+        0.700847,
+        1.0
+      ]
+    },
+    "groups": {
+      "language": {
+        "items": {
+          "en": {
+            "n": 9,
+            "category_macro_f1": 1.0,
+            "accuracy": 1.0,
+            "accuracy_ci95": [
+              0.700847,
+              1.0
+            ],
+            "emergency_n": 3,
+            "emergency_recall": 1.0,
+            "emergency_recall_ci95": [
+              0.438494,
+              1.0
+            ]
+          },
+          "ta": {
+            "n": 9,
+            "category_macro_f1": 0.8,
+            "accuracy": 0.888889,
+            "accuracy_ci95": [
+              0.564994,
+              0.98011
+            ],
+            "emergency_n": 3,
+            "emergency_recall": 1.0,
+            "emergency_recall_ci95": [
+              0.438494,
+              1.0
+            ]
+          },
+          "te": {
+            "n": 9,
+            "category_macro_f1": 1.0,
+            "accuracy": 1.0,
+            "accuracy_ci95": [
+              0.700847,
+              1.0
+            ],
+            "emergency_n": 3,
+            "emergency_recall": 1.0,
+            "emergency_recall_ci95": [
+              0.438494,
+              1.0
+            ]
+          }
+        },
+        "accuracy_gap": 0.11111099999999996
+      },
+      "state": {
+        "items": {
+          "Unknown": {
+            "n": 27,
+            "category_macro_f1": 0.88,
+            "accuracy": 0.962963,
+            "accuracy_ci95": [
+              0.817161,
+              0.993432
+            ],
+            "emergency_n": 9,
+            "emergency_recall": 1.0,
+            "emergency_recall_ci95": [
+              0.700847,
+              1.0
+            ]
+          }
+        },
+        "accuracy_gap": null
+      },
+      "channel": {
+        "items": {
+          "Unknown": {
+            "n": 27,
+            "category_macro_f1": 0.88,
+            "accuracy": 0.962963,
+            "accuracy_ci95": [
+              0.817161,
+              0.993432
+            ],
+            "emergency_n": 9,
+            "emergency_recall": 1.0,
+            "emergency_recall_ci95": [
+              0.700847,
+              1.0
+            ]
+          }
+        },
+        "accuracy_gap": null
+      }
+    },
+    "model_version": "gemini-3.6-flash",
+    "dataset_version": "independent-scenarios-v1:recorded-predictions",
+    "dataset_sha256": "367715e3b27b4c5ab9f95b2ce85d52c778e28c84ea9aeca200023788bb02a793",
+    "label_status": "provisional",
+    "review_reference": null,
+    "independently_verified": false,
+    "notice": "Metrics describe the submitted evaluation set; reviewer provenance and representativeness still require independent checking.",
+    "speech": {
+      "n": 0,
+      "wer": null,
+      "cer": null
+    },
+    "translation_correct": {
+      "n": 0,
+      "accuracy": null,
+      "ci95": null
+    },
+    "location_correct": {
+      "n": 0,
+      "accuracy": null,
+      "ci95": null
+    },
+    "duplicates": {
+      "n": 0,
+      "precision": null,
+      "recall": null
+    },
+    "distribution_drift": {
+      "status": "baseline_required"
+    }
+  }
+}

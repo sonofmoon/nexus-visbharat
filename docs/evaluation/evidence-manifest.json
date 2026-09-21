@@ -1,0 +1,97 @@
+{
+  "recorded_at": "2026-09-19T04:36:17.387238+00:00",
+  "algorithm": "sha256",
+  "files": [
+    {
+      "path": "docs/evaluation/quality.json",
+      "bytes": 15140,
+      "sha256": "5e809378b458756e7780346e5fd86b99d070a989238eedec9727326746deb522"
+    },
+    {
+      "path": "docs/evaluation/baseline-quality.json",
+      "bytes": 12533,
+      "sha256": "996a7e9c34c45720d88aa19a6835aec31d8b201732b8583d7fd04bde9b2218b8"
+    },
+    {
+      "path": "docs/evaluation/review-pack.json",
+      "bytes": 10773,
+      "sha256": "ba8515a42ec9861e2e9e8778b9eacc67d6750a694244c27713a7ce5cfd929b56"
+    },
+    {
+      "path": "docs/evaluation/load.json",
+      "bytes": 1848,
+      "sha256": "31cf5531a66092938fbf95523ccf33caa099e256ef28909d6788e345d09948c2"
+    },
+    {
+      "path": "docs/evaluation/interoperability.json",
+      "bytes": 571,
+      "sha256": "28278fa9727446facaf93af73c477d8a888ab1c49a517356d4e474db776e03e0"
+    },
+    {
+      "path": "docs/release/analyst-decision.schema.json",
+      "bytes": 1565,
+      "sha256": "2c135a7939649261953d25a19922a7c3a82de630311aa76e0c81f30569d69453"
+    },
+    {
+      "path": "docs/ANALYST_IMPLEMENTATION_STATUS.md",
+      "bytes": 8251,
+      "sha256": "e266e365252900809bf7a801fd296df6a441029ff381bf79f0c34cacac6a25fc"
+    },
+    {
+      "path": "scratch/analyst-implementation/browser/results.json",
+      "bytes": 778,
+      "sha256": "b05a9f65103f7467f1c6e8cbe377d58a02343fbe53871bea582f63c8c95cf56d"
+    },
+    {
+      "path": "scratch/analyst-implementation/regression-final.log",
+      "bytes": 19182,
+      "sha256": "e16c2787f819798175ccb59c7ddeadd56f436815d4eb28c6302d1e0346614444"
+    },
+    {
+      "path": "scratch/jury-demo-v2/live-verification.json",
+      "bytes": 382,
+      "sha256": "f3365a3f8f873c088d089c5b5e7c834d2a4a143eef2b706a82e078c2855aaf82"
+    },
+    {
+      "path": "visbharat/services/analyst_workbench.py",
+      "bytes": 36210,
+      "sha256": "82505b67a2a637f3c251201b5b25979ef0c818cfd7af42e601194773e420b57d"
+    },
+    {
+      "path": "visbharat/services/analyst_compat.py",
+      "bytes": 4632,
+      "sha256": "410b044982dad2e50f30dbb2a6faa783a07e21483e1fb82b61ac50e0b3a94497"
+    },
+    {
+      "path": "visbharat/blueprints/analyst.py",
+      "bytes": 12175,
+      "sha256": "a1854ce82f5a869cb0a3ae0dc114639d801c4f314b0c4a51a9211ef7e5784066"
+    },
+    {
+      "path": "templates/analyst_workbench.html",
+      "bytes": 6358,
+      "sha256": "fcd41d74d2e152ac8efe3103cec9d4b549a94e91b61917383d251f8560271326"
+    },
+    {
+      "path": "static/js/analyst-workbench.js",
+      "bytes": 25082,
+      "sha256": "816809485ae029fcbaec90a1793530441b08e14acbc9ff2c63546ab160e25966"
+    },
+    {
+      "path": "static/css/analyst-workbench.css",
+      "bytes": 2658,
+      "sha256": "af4efde6635cf1390d0d9e2a1d756794401a888b00bf59b37707a8ca13d544b9"
+    },
+    {
+      "path": "tests/test_analyst_workbench.py",
+      "bytes": 12882,
+      "sha256": "efb6425f630a77d238b6b69b6c0e9ebc4abcc6098ff84110097c4f70bf31b32e"
+    },
+    {
+      "path": "tests/test_dashboard_deployment.py",
+      "bytes": 1531,
+      "sha256": "65e6d3a0df4dd2587543dd0ca9fef8a3cccda22e55ce4f475d4f862a48af2598"
+    }
+  ],
+  "meaning": "Local artifact integrity record; not a signature, external authentication or human validation."
+}

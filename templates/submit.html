@@ -1,0 +1,986 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Submit Request - Nexus VisBharat (Google Material 3 Edition)</title>
+ <link rel="stylesheet" href="/static/css/style.css">
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+ {% include 'partials/public_head.html' %}
+ {% if pilot_page %}<link rel="stylesheet" href="/static/css/pilot-portal.css">{% endif %}
+</head>
+<body class="public-page submit-page {{ 'pilot-public' if pilot_page else '' }}">
+
+{% set public_page = 'submit' %}
+{% include 'partials/public_nav.html' %}
+<main id="main-content" class="public-main submit-main" tabindex="-1">
+  <a class="public-back" href="{{ '/pilot' if pilot_page else '/' }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to overview</a>
+  <header class="submit-intro">
+    <div><span class="public-eyebrow">YOUR VOICE. YOUR NEIGHBOURHOOD.</span><h1>Let's make a difference.</h1><p>Tell us what your community needs. Speak or type in your language — we’ll help route your request.</p></div>
+    <span class="public-pill"><i class="bi bi-stars" aria-hidden="true"></i> Assisted by Gemini</span>
+  </header>
+  <div class="submit-layout">
+    <div class="submit-form-wrapper">
+      <form id="complaintForm" class="complaint-form" data-max-audio-bytes="{{ 3145728 if pilot_page else config.VOICE_MAX_BYTES }}" data-max-request-bytes="{{ config.MAX_CONTENT_LENGTH }}">
+        <section class="m3-card" id="request-location" aria-labelledby="location-title">
+          <div class="m3-card-header"><span class="m3-step-number" aria-hidden="true">1</span><div><h2 class="m3-card-title" id="location-title">Your language & location</h2><p class="m3-card-subtitle">Help us connect your request to the right place.</p></div></div>
+          <fieldset class="public-fieldset"><legend id="languageChipLabel">I’d like to use</legend>
+            <div class="m3-lang-chips">
+              <button type="button" class="m3-chip" data-lang="ta" aria-pressed="false" aria-label="Tamil language input"><span lang="ta">தமிழ்</span><span>Tamil</span></button>
+              <button type="button" class="m3-chip" data-lang="te" aria-pressed="false" aria-label="Telugu language input"><span lang="te">తెలుగు</span><span>Telugu</span></button>
+              <button type="button" class="m3-chip active" data-lang="en" aria-pressed="true" aria-label="English language input"><i class="bi bi-globe2" aria-hidden="true"></i> English</button>
+            </div>
+            <p class="form-hint" id="languageModeHint" role="status">Active script: English. You can switch script without losing typed text.</p>
+            <div class="hidden"><label for="language">Your language</label><select id="language" name="language" class="m3-select">{% for code, name in languages.items() %}<option value="{{ code }}" {% if code == 'en' %}selected{% endif %}>{{ name }} ({{ code }})</option>{% endfor %}</select></div>
+          </fieldset>
+          <div class="m3-grid-2">
+            <div class="m3-form-group"><label for="state">State <span class="public-required">(required)</span></label><select id="state" name="state" class="m3-select" required><option value="">Select your state...</option></select></div>
+            <div class="m3-form-group"><label for="district">District <span class="public-required">(required)</span></label><select id="district" name="district" class="m3-select" required disabled aria-describedby="districtStatusHint"><option value="">Select your district...</option></select><span id="districtStatusHint" class="form-hint" role="status">Select state first to load districts.</span></div>
+          </div>
+          {% if pilot_page %}<div class="m3-form-group"><label for="pilotLocation">Participating community (required)</label><select id="pilotLocation" class="m3-select" required><option value="">Select your district first</option></select><span class="form-hint">Choose your enrolled ward or panchayat. Location descriptions are retained for officer review.</span></div>{% endif %}
+          <div class="public-inset">
+            <div class="public-row"><label for="ward"><i class="bi bi-geo-alt" aria-hidden="true"></i> Local ward <span class="public-required">(optional)</span></label><span id="wardStatusBadge" class="public-pill">Municipal ward mapping</span></div>
+            <input id="ward" name="ward" type="text" class="m3-input" placeholder="e.g. Ward 114, GCC" aria-describedby="wardStatus">
+            <div class="public-actions"><button type="button" class="m3-btn m3-btn-outline" id="captureLocationBtn"><i class="bi bi-crosshair" aria-hidden="true"></i> Use my location</button><button type="button" class="m3-btn m3-btn-outline" id="suggestWardBtn"><i class="bi bi-pin-map" aria-hidden="true"></i> Suggest a ward</button></div>
+            <p id="locationStatus" class="form-hint" role="status">Location access is optional. You can enter your ward manually.</p>
+            <span id="wardStatus" class="form-hint" role="status">Select a district to get a municipal ward suggestion.</span>
+            <input type="hidden" id="location-lat" name="location_lat"><input type="hidden" id="location-lng" name="location_lng">
+          </div>
+        </section>
+        <section class="m3-card" id="request-description" aria-labelledby="description-title">
+          <div class="m3-card-header"><span class="m3-step-number" aria-hidden="true">2</span><div><h2 class="m3-card-title" id="description-title">What needs attention?</h2><p class="m3-card-subtitle">A street, a service, a shared space. Every detail helps.</p></div></div>
+          <div class="g-voice-hero">
+            <div class="g-mic-wrapper"><div class="g-mic-pulse-ring" aria-hidden="true"></div><button type="button" class="record-btn" id="recordBtn" aria-label="Start voice recording" aria-pressed="false" aria-describedby="voiceLanguageHint"><span class="record-icon" aria-hidden="true"><i class="bi bi-mic-fill"></i></span></button></div>
+            <div class="public-voice-copy"><span class="record-text" id="recordBtnText">Click or hold to record your voice</span><span class="form-hint" id="voiceLanguageHint">Click to start and click again to stop. You can also press and hold.</span><div class="recording-indicator hidden" id="recordingIndicator" role="status"><span class="pulse" aria-hidden="true"></span> Listening… <span id="recordTimer">0:00</span></div></div>
+          </div>
+          <div id="voice-result" class="voice-result-box hidden"><p id="voice-transcript"></p></div>
+          <p id="voiceStatus" class="form-hint public-voice-status" role="status"></p>
+          <div class="m3-form-group"><div class="public-row"><label for="complaint-text">Or write your request</label><button type="button" class="m3-btn m3-btn-text" id="clearRequestBtn"><i class="bi bi-trash3" aria-hidden="true"></i> Clear</button></div><textarea id="complaint-text" name="text" rows="5" class="m3-textarea" aria-describedby="requestTextHint" placeholder="For example: The streetlight near our bus stop has not worked for a week. It is on Main Road, opposite the school."></textarea><p id="requestTextHint" class="form-hint">Include the issue, how long it has been happening, and a nearby landmark.</p></div>
+          <details class="public-disclosure" id="request-evidence"><summary><span><i class="bi bi-paperclip" aria-hidden="true"></i> Add photos or documents <small>Optional</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+            <div class="public-disclosure-body">
+              <div class="m3-grid-2">
+                <div class="m3-form-group"><label for="photo-attachments">Photos</label><input id="photo-attachments" name="photo_attachments" type="file" accept="image/*" class="m3-input" multiple aria-describedby="photoCountHint photoUploadHint"><span id="photoCountHint" class="form-hint" role="status">No photos selected.</span><small id="photoUploadHint" class="form-hint">{{ 'JPG, PNG or WebP. Up to 5 MiB each; 8 MiB total evidence.' if pilot_page else 'Recommended: JPG/PNG, up to 10 images, ~5 MB each.' }}</small></div>
+                <div class="m3-form-group"><label for="file-attachments">Supporting documents</label><input id="file-attachments" name="file_attachments" type="file" class="m3-input" multiple aria-describedby="fileCountHint fileUploadHint"><span id="fileCountHint" class="form-hint" role="status">No files selected.</span><small id="fileUploadHint" class="form-hint">{{ 'PDF, DOC or DOCX. Up to 15 total evidence files.' if pilot_page else 'Recommended: PDF/DOC/DOCX, up to 5 files, ~10 MB each.' }}</small></div>
+              </div>
+              <div class="public-inset"><h3>Use your camera</h3><div class="public-actions"><button type="button" class="m3-btn m3-btn-tonal" id="openCameraBtn"><i class="bi bi-camera" aria-hidden="true"></i> Open camera</button><button type="button" class="m3-btn m3-btn-primary hidden" id="captureCameraBtn">Capture photo</button><button type="button" class="m3-btn m3-btn-outline hidden" id="closeCameraBtn">Close camera</button><button type="button" class="m3-btn m3-btn-outline hidden" id="clearCameraCapturesBtn">Clear captures</button></div><video id="cameraPreview" class="hidden" autoplay playsinline muted aria-label="Camera preview"></video><canvas id="cameraCanvas" class="hidden"></canvas><input id="camera-captures-json" name="camera_captures_json" type="hidden" value="[]"><div id="cameraCaptureThumbs" class="hidden"></div><span id="cameraCountHint" class="form-hint" role="status">No camera photo captured.</span></div>
+            </div>
+          </details>
+        </section>
+        <section class="m3-card" id="request-review" aria-labelledby="review-title">
+          <div class="m3-card-header"><span class="m3-step-number" aria-hidden="true">3</span><div><h2 class="m3-card-title" id="review-title">Review the AI-assisted routing</h2><p class="m3-card-subtitle">Check the category and translation before you send.</p></div><i class="bi bi-stars public-ai-icon" aria-hidden="true"></i></div>
+          <div class="m3-grid-2">
+            <div class="m3-form-group"><label for="category">Request category</label><select id="category" name="category" class="m3-select">
+              <option value="Road">Roads & Highways</option><option value="Water Supply">Water Supply & Drainage</option><option value="Electricity">Electricity & Street Lighting</option><option value="Health">Public Health & Sanitation</option><option value="Education">Schools & Education</option><option value="Sanitation">Sanitation & Waste</option><option value="Digital Connectivity">Digital Connectivity</option><option value="Transport">Public Transport</option><option value="Housing">Housing & Shelter</option><option value="Other">Other Infrastructure</option>
+            </select></div>
+            <div class="m3-form-group"><label for="routedDepartment">Routed department</label><input type="text" id="routedDepartment" readonly value="Public Works Department" class="m3-input"></div>
+          </div>
+          <div class="public-urgency"><span>Current urgency</span><span id="currentUrgencyBadge" class="public-pill">Routine</span><span id="urgencySourceBadge" class="public-pill"><i class="bi bi-stars" aria-hidden="true"></i> AI assessment</span></div>
+          <input type="hidden" id="urgency" name="urgency" value="Routine"><input type="hidden" id="urgencySource" name="urgency_source" value="ai">
+          <div id="translation-result" class="m3-form-group translation-box"><label for="translated-text-box">English translation <span class="public-required">(editable)</span></label><textarea id="translated-text-box" name="translated_text_box" rows="3" class="m3-textarea" placeholder="Your English translation will appear here as you type or speak."></textarea><span id="translated-text" class="hidden"></span></div>
+          <div class="m3-ai-card" id="aiPreview">
+            <div class="public-row"><h3><i class="bi bi-stars" aria-hidden="true"></i> Behind the recommendation</h3><span class="public-pill">Gemini AI</span></div>
+            <div class="public-ai-metrics"><div><span>Category</span><strong id="ai-category">—</strong></div><div><span>Urgency</span><strong id="ai-urgency">—</strong></div><div><span>Sentiment</span><strong id="ai-sentiment">—</strong></div><div><span>Confidence</span><strong id="ai-confidence">—</strong><div class="public-confidence"><div id="aiConfidenceBar" style="width:0%"></div></div></div></div>
+            <p id="ai-rationale">Add your request to see its AI classification and routing rationale.</p>
+            <small>AI suggestions can be imperfect. Review the details before submitting.</small>
+          </div>
+          <div class="public-actions public-actions-end"><button type="button" class="m3-btn m3-btn-outline" id="translateBtn"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Re-run AI analysis</button></div>
+        </section>
+        <section class="m3-card" id="request-consent" aria-labelledby="consent-title">
+          <div class="m3-card-header"><span class="m3-step-number" aria-hidden="true">4</span><div><h2 class="m3-card-title" id="consent-title">Your data. Your choice.</h2><p class="m3-card-subtitle">Review how your information will be used.</p></div></div>
+          <label class="public-consent" for="consentGranted"><input type="checkbox" id="consentGranted" {% if not pilot_page %}checked{% else %}required{% endif %} aria-describedby="consentHint"><span>{% if pilot_page %}I agree to processing my request, optional location and evidence for this programme. {{ portal_config.privacy.consent_notice }}{% else %}I consent to processing my request and location data for public grievance resolution and policy analytics under DPDP Act 2023 guidelines.{% endif %}</span></label><input type="hidden" id="consentScope" value="request_processing">
+          <p id="consentHint" class="form-hint">Data usage scope: request processing, routing, SLA tracking, and anonymized policy analytics. Media attachments are optional.</p>
+          <div id="submissionError" class="public-submission-error hidden" role="alert" tabindex="-1"><p id="submissionErrorText"></p><button type="button" class="m3-btn m3-btn-outline hidden" id="submitTextInsteadBtn">Use written text instead</button></div>
+          <p id="submissionStatus" class="form-hint" role="status"></p>
+          <button type="submit" class="m3-btn m3-btn-primary m3-btn-large" id="submitBtn"><i class="bi bi-send" aria-hidden="true"></i> Submit request</button><p class="public-submit-note"><i class="bi bi-ticket-perforated" aria-hidden="true"></i> You’ll receive a request ID to track progress.</p>
+        </section>
+      </form>
+      <section class="m3-success-card hidden" id="successMessage" aria-labelledby="success-title" tabindex="-1">
+        <div class="m3-success-icon" aria-hidden="true"><i class="bi bi-check-lg"></i></div><span class="public-eyebrow">YOUR VOICE IS ON ITS WAY</span><h2 id="success-title">Request submitted.</h2><p>Save your request ID to follow its progress.</p><strong id="complaintId" class="public-request-id"></strong>{% if pilot_page %}<p>Private tracking code — save this with your ticket:</p><p id="pilotReceiptSecret" class="pilot-private-code"></p><p>Request received. AI processing and officer review may still be pending.</p>{% endif %}
+        <div id="assignedWardInfo" class="public-inset"><p>Concerned ward: <strong id="successWard">Ward 01</strong></p><p>Routed department: <strong id="successDept">Municipal Administration & Public Works</strong></p></div><p>{{ 'The district review team has received your request.' if pilot_page else 'Your request has been classified and routed to the concerned department.' }}</p><div class="public-actions"><a href="{{ '/pilot/submit' if pilot_page else '/submit' }}" class="m3-btn m3-btn-outline">Submit another</a>{% if pilot_page %}<a href="/pilot#track" class="m3-btn m3-btn-primary">Track my request</a>{% else %}<a href="/dashboard" class="m3-btn m3-btn-primary">View dashboard</a>{% endif %}</div>
+        <p id="submissionAttachmentNotice" class="public-evidence-notice hidden" role="status"></p><button type="button" class="m3-btn m3-btn-outline hidden" id="retryAttachmentsBtn">Retry evidence registration</button>
+      </section>
+    </div>
+    <aside class="submit-aside" aria-label="Request guidance and tracking">
+      <div class="public-guide m3-card"><span class="public-eyebrow">A LITTLE GUIDANCE</span><h2>From your voice<br>to local action.</h2><nav aria-label="Request sections"><ol class="public-step-list"><li><a href="#request-location"><span>1</span> Language & location</a></li><li><a href="#request-description"><span>2</span> Your request</a></li><li><a href="#request-review"><span>3</span> Review AI routing</a></li><li><a href="#request-consent"><span>4</span> Consent & submit</a></li></ol></nav><div class="public-guide-tip"><i class="bi bi-lightbulb" aria-hidden="true"></i><p>Be specific, not formal. A nearby landmark and a short description are a great start.</p></div><div class="public-guide-languages"><span lang="ta">தமிழ்</span><span lang="te">తెలుగు</span><span>English</span></div></div>
+      <section class="m3-card public-track-card" aria-labelledby="track-title"><span class="public-circle" aria-hidden="true"><i class="bi bi-search"></i></span><h2 id="track-title">Already sent a request?</h2><p>Follow its status and department routing using your ticket ID.</p><label for="trackRequestIdInput">Request ID</label><input type="text" id="trackRequestIdInput" class="m3-input" placeholder="e.g. NVB-20260912A8F3" autocomplete="off" spellcheck="false">{% if pilot_page %}<label for="trackSecret">Private tracking code</label><input id="trackSecret" class="m3-input" type="password" autocomplete="off">{% endif %}<button type="button" class="m3-btn m3-btn-outline" id="trackStatusBtn">Track request <i class="bi bi-arrow-right" aria-hidden="true"></i></button><div id="trackResultContainer" class="public-track-result hidden" role="status"></div>{% if not pilot_page %}<a class="public-text-link" href="/dashboard">Explore the public policy dashboard</a>{% endif %}</section>
+    </aside>
+  </div>
+</main>
+{% include 'partials/public_footer.html' %}
+ {% if pilot_page %}<script>window.NVBPilotPublic={{ {'locations':locations,'categories':categories,'languages':languages,'csrf':csrf,'routing':programme.config.routing}|tojson }};</script><script src="/static/js/pilot-public.js"></script><script src="/static/js/pilot-submit.js"></script>{% endif %}
+ <script>
+ const citizenFetch=(...args)=>window.NVBPilotPublic?window.pilotCitizenFetch(...args):fetch(...args);
+ async function loadStates() {
+ try {
+ const res = await citizenFetch('/api/states');
+ const payload = await res.json();
+ const states = Array.isArray(payload) ? payload : (payload.states || []);
+
+ const stateSelect = document.getElementById('state');
+ stateSelect.innerHTML = '<option value="">Select your state...</option>';
+ states.forEach(state => {
+ const option = document.createElement('option');
+ option.value = state;
+ option.textContent = state;
+ stateSelect.appendChild(option);
+ });
+ window.pilotInitialLocation?.();
+ } catch (err) {
+ console.error('Failed to load states', err);
+ }
+ }
+
+ async function loadDistrictsForState(state) {
+ const districtSelect = document.getElementById('district');
+ const districtHint = document.getElementById('districtStatusHint');
+ districtSelect.innerHTML = '<option value="">Select your district...</option>';
+ districtSelect.disabled = !state;
+ if (!state) {
+ if (districtHint) districtHint.textContent = 'Select state first to load districts.';
+ return;
+ }
+
+ if (districtHint) districtHint.textContent = 'Loading district list...';
+
+ try {
+ const res = await citizenFetch(`/api/districts?state=${encodeURIComponent(state)}`);
+ const payload = await res.json();
+ const districts = Array.isArray(payload) ? payload : (payload.districts || []);
+
+ districts.forEach(item => {
+ const districtName = (typeof item === 'string') ? item : (item.district || item.name || '');
+ if (!districtName) return;
+ const option = document.createElement('option');
+ option.value = districtName;
+ option.textContent = districtName;
+ districtSelect.appendChild(option);
+ });
+ if (districtHint) {
+ districtHint.textContent = districts.length
+ ? `Loaded ${districts.length} district${districts.length > 1 ? 's' : ''}.`
+ : 'No districts found for selected state.';
+ }
+ } catch (err) {
+ console.error('Failed to load districts for state', err);
+ if (districtHint) districtHint.textContent = 'Unable to load districts. Please retry.';
+ }
+ }
+
+ function updateAttachmentCounts() {
+ const photos = Array.from(document.getElementById('photo-attachments').files || []);
+ const cameraCaptures = JSON.parse(document.getElementById('camera-captures-json').value || '[]');
+ const files = Array.from(document.getElementById('file-attachments').files || []);
+
+ const photoHint = document.getElementById('photoCountHint');
+ const cameraHint = document.getElementById('cameraCountHint');
+ const fileHint = document.getElementById('fileCountHint');
+
+ photoHint.textContent = photos.length === 0
+ ? 'No photos selected.'
+ : `${photos.length} photo${photos.length > 1 ? 's' : ''} selected.`;
+
+ const cameraTotal = cameraCaptures.length;
+ cameraHint.textContent = cameraTotal === 0
+ ? 'No camera photo captured.'
+ : `${cameraTotal} camera photo${cameraTotal > 1 ? 's' : ''} captured.`;
+
+ fileHint.textContent = files.length === 0
+ ? 'No files selected.'
+ : `${files.length} file${files.length > 1 ? 's' : ''} selected.`;
+ }
+
+ function renderCameraCaptureThumbs() {
+ const wraps = document.getElementById('cameraCaptureThumbs');
+ const captures = JSON.parse(document.getElementById('camera-captures-json').value || '[]');
+
+ if (!captures.length) {
+ wraps.innerHTML = '';
+ wraps.classList.add('hidden');
+ return;
+ }
+
+ wraps.classList.remove('hidden');
+ wraps.innerHTML = captures.map((data, idx) =>
+ `<img src="${data}" alt="Camera Capture ${idx + 1}" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0"/>`
+ ).join('');
+ }
+
+ function captureLocation() {
+ const statusEl = document.getElementById('locationStatus');
+ const latEl = document.getElementById('location-lat');
+ const lngEl = document.getElementById('location-lng');
+
+ if (!navigator.geolocation) {
+ statusEl.textContent = 'Location is not supported on this browser.';
+ return;
+ }
+
+ statusEl.textContent = 'Capturing location...';
+ navigator.geolocation.getCurrentPosition(
+ (position) => {
+ const lat = Number(position.coords.latitude || 0).toFixed(6);
+ const lng = Number(position.coords.longitude || 0).toFixed(6);
+ latEl.value = lat;
+ lngEl.value = lng;
+ statusEl.textContent = `Location captured: ${lat}, ${lng}`;
+ suggestWardFromLocation();
+ },
+ () => {
+ statusEl.textContent = 'Unable to capture location. Please allow location access.';
+ },
+ { enableHighAccuracy: true, timeout: 10000 }
+ );
+ }
+
+ let cameraStream = null;
+
+ async function suggestWardFromLocation() {
+ const district = (document.getElementById('district').value || '').trim();
+ const wardEl = document.getElementById('ward');
+ const statusEl = document.getElementById('wardStatus');
+ const lat = (document.getElementById('location-lat').value || '').trim();
+ const lng = (document.getElementById('location-lng').value || '').trim();
+ const text = getCurrentRequestText();
+
+ if (!district) {
+ statusEl.textContent = 'Select district first for ward suggestion.';
+ return;
+ }
+
+ try {
+ const res = await citizenFetch('/api/v1/geo/ward-suggest', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ district, lat: lat || null, lng: lng || null, text, ward: wardEl.value || '' }),
+ });
+ const payload = await res.json();
+ if (!res.ok || !payload.success) {
+ throw new Error(payload.error || 'Ward suggestion failed.');
+ }
+ wardEl.value = payload.ward || wardEl.value;
+ statusEl.textContent = `Ward suggestion: ${payload.ward || '-'} (${payload.ward_source || 'manual'}).`;
+ } catch (err) {
+ statusEl.textContent = err.message || 'Ward suggestion failed.';
+ }
+ }
+
+ async function openCameraPreview() {
+ const preview = document.getElementById('cameraPreview');
+ const openBtn = document.getElementById('openCameraBtn');
+ const captureBtn = document.getElementById('captureCameraBtn');
+ const closeBtn = document.getElementById('closeCameraBtn');
+ const clearBtn = document.getElementById('clearCameraCapturesBtn');
+ const hint = document.getElementById('cameraCountHint');
+
+ if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+ hint.textContent = 'Camera preview is not supported in this browser. You can still use Choose Files.';
+ return;
+ }
+
+ try {
+ cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+ preview.srcObject = cameraStream;
+ preview.classList.remove('hidden');
+ captureBtn.classList.remove('hidden');
+ closeBtn.classList.remove('hidden');
+ clearBtn.classList.remove('hidden');
+ openBtn.classList.add('hidden');
+ hint.textContent = 'Camera ready. Click Capture Photo.';
+ } catch (err) {
+ hint.textContent = 'Unable to access camera. You can still use Choose Files.';
+ }
+ }
+
+ function closeCameraPreview() {
+ const preview = document.getElementById('cameraPreview');
+ const openBtn = document.getElementById('openCameraBtn');
+ const captureBtn = document.getElementById('captureCameraBtn');
+ const closeBtn = document.getElementById('closeCameraBtn');
+ const clearBtn = document.getElementById('clearCameraCapturesBtn');
+
+ if (cameraStream) {
+ cameraStream.getTracks().forEach(track => track.stop());
+ cameraStream = null;
+ }
+
+ preview.srcObject = null;
+ preview.classList.add('hidden');
+ captureBtn.classList.add('hidden');
+ closeBtn.classList.add('hidden');
+ clearBtn.classList.add('hidden');
+ openBtn.classList.remove('hidden');
+ }
+
+ function clearCameraCaptures() {
+ document.getElementById('camera-captures-json').value = '[]';
+ renderCameraCaptureThumbs();
+ updateAttachmentCounts();
+ }
+
+ function captureFromCamera() {
+ const preview = document.getElementById('cameraPreview');
+ const canvas = document.getElementById('cameraCanvas');
+ const hint = document.getElementById('cameraCountHint');
+
+ if (!preview.videoWidth || !preview.videoHeight) {
+ hint.textContent = 'Camera not ready yet. Try again in a second.';
+ return;
+ }
+
+ canvas.width = preview.videoWidth;
+ canvas.height = preview.videoHeight;
+ const ctx = canvas.getContext('2d');
+ ctx.drawImage(preview, 0, 0, canvas.width, canvas.height);
+
+ const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+ const existing = JSON.parse(document.getElementById('camera-captures-json').value || '[]');
+ existing.push(dataUrl);
+ document.getElementById('camera-captures-json').value = JSON.stringify(existing);
+ hint.textContent = `${existing.length} camera photo${existing.length > 1 ? 's' : ''} captured.`;
+ renderCameraCaptureThumbs();
+ updateAttachmentCounts();
+ }
+
+ function getCurrentRequestText() {
+ const typedText = (document.getElementById('complaint-text').value || '').trim();
+ if (typedText) return typedText;
+ return (document.getElementById('voice-transcript').textContent || '').trim();
+ }
+
+ function updateLanguageInputHint(languageCode) {
+ const hint = document.getElementById('voiceLanguageHint');
+ const modeHint = document.getElementById('languageModeHint');
+ if (languageCode === 'ta' || languageCode === 'te') {
+ hint.textContent = 'Voice-first mode: press and hold to record, then release to auto-transcribe.';
+ if (modeHint) {
+ modeHint.textContent = languageCode === 'ta'
+ ? 'Active script: Tamil. Voice input is recommended for faster capture.'
+ : 'Active script: Telugu. Voice input is recommended for faster capture.';
+ }
+ return;
+ }
+ hint.textContent = 'Type your request or use mic. Click once to start/stop voice capture.';
+ if (modeHint) modeHint.textContent = 'Active script: English. You can switch script without losing typed text.';
+ }
+
+ function getDepartmentForCategory(cat) {
+ const deptMap = {
+ 'Road': 'Public Works Department',
+ 'Water Supply': 'Water Supply & Drainage Board',
+ 'Electricity': 'Electricity Board (TNEB / Discom)',
+ 'Health': 'Public Health Department',
+ 'Education': 'School Education Department',
+ 'Sanitation': 'Municipal Sanitation & Waste Mgmt',
+ 'Digital Connectivity': 'IT & Telecommunications Dept',
+ 'Transport': 'Public Transport Department',
+ 'Housing': 'Housing & Urban Development',
+ 'Other': 'District Grievance Cell'
+ };
+ return deptMap[cat] || 'District Grievance Cell';
+ }
+
+ function updateRoutedDepartment() {
+ if(window.NVBPilotPublic){document.getElementById('routedDepartment').value=window.NVBPilotPublic.routing[document.getElementById('district').value]||'Select your district';return;}
+ const catSelect = document.getElementById('category');
+ const deptInput = document.getElementById('routedDepartment');
+ if (catSelect && deptInput) {
+ deptInput.value = getDepartmentForCategory(catSelect.value);
+ }
+ }
+
+ function setUrgency(urgencyLevel, source = 'ai') {
+ const hiddenUrgency = document.getElementById('urgency');
+ const hiddenSource = document.getElementById('urgencySource');
+ const sourceBadge = document.getElementById('urgencySourceBadge');
+ const currentUrgencyBadge = document.getElementById('currentUrgencyBadge');
+
+ if (hiddenUrgency) hiddenUrgency.value = urgencyLevel;
+ if (hiddenSource) hiddenSource.value = source;
+
+ if (sourceBadge) {
+ if (source === 'officer_override') {
+ sourceBadge.innerHTML = '<i class="bi bi-person-fill-gear"></i> Officer Override (Ground Inspected)';
+ sourceBadge.style.background = '#fef7e0';
+ sourceBadge.style.color = '#b06000';
+ sourceBadge.style.borderColor = '#fde293';
+ } else {
+ sourceBadge.innerHTML = '<i class="bi bi-cpu-fill"></i> Auto-Determined by Gemini AI';
+ sourceBadge.style.background = '#e8f0fe';
+ sourceBadge.style.color = '#0b57d0';
+ sourceBadge.style.borderColor = '#aecbfa';
+ }
+ }
+
+ if (currentUrgencyBadge) {
+ const normalized = (urgencyLevel || 'Routine').toLowerCase();
+ currentUrgencyBadge.textContent = urgencyLevel || 'Routine';
+ if (normalized === 'emergency') {
+ currentUrgencyBadge.style.background = '#fdecea';
+ currentUrgencyBadge.style.color = '#b3261e';
+ currentUrgencyBadge.style.borderColor = '#f6aea9';
+ } else if (normalized === 'urgent') {
+ currentUrgencyBadge.style.background = '#fff4e5';
+ currentUrgencyBadge.style.color = '#b06000';
+ currentUrgencyBadge.style.borderColor = '#ffd8a8';
+ } else {
+ currentUrgencyBadge.style.background = '#e8f0fe';
+ currentUrgencyBadge.style.color = '#0b57d0';
+ currentUrgencyBadge.style.borderColor = '#aecbfa';
+ }
+ }
+
+ document.querySelectorAll('.urgency-pill').forEach(pill => {
+ const pillUrgency = pill.getAttribute('data-urgency');
+ if (pillUrgency.toLowerCase() === (urgencyLevel || '').toLowerCase()) {
+ pill.classList.add('active');
+ pill.style.border = pillUrgency === 'Emergency' ? '2px solid #ea4335' : (pillUrgency === 'Urgent' ? '2px solid #fbbc04' : '2px solid #1a73e8');
+ pill.style.background = pillUrgency === 'Emergency' ? '#fce8e6' : (pillUrgency === 'Urgent' ? '#fef7e0' : '#e8f0fe');
+ } else {
+ pill.classList.remove('active');
+ pill.style.border = pillUrgency === 'Emergency' ? '1px solid #ea4335' : (pillUrgency === 'Urgent' ? '1px solid #fbbc04' : '1px solid #1a73e8');
+ pill.style.background = pillUrgency === 'Emergency' ? '#fff5f5' : (pillUrgency === 'Urgent' ? '#fffdf5' : '#f8f9fa');
+ }
+ });
+ }
+
+ async function classifyText(text, language) {
+ if (!text || !text.trim()) return;
+ try {
+ const res = await citizenFetch('/api/classify', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ text, language })
+ });
+ const payload = await res.json();
+ if(!res.ok || payload.success===false)throw new Error(payload.error || 'AI assistance unavailable');
+ const result = payload.result || payload;
+
+ document.getElementById('ai-category').textContent = result.category || '-';
+ const urgency = result.urgency || 'Routine';
+ document.getElementById('ai-urgency').textContent = urgency;
+ document.getElementById('ai-sentiment').textContent = result.sentiment || '-';
+ const confidence = Number(result.confidence || 0);
+ const confPct = (confidence * 100).toFixed(1);
+ document.getElementById('ai-confidence').textContent = confPct + '%';
+
+ const confBar = document.getElementById('aiConfidenceBar');
+ if (confBar) confBar.style.width = confPct + '%';
+
+ const rationaleEl = document.getElementById('ai-rationale');
+ if (rationaleEl) {
+ const slaTarget = urgency === 'Emergency' ? '2-Hour' : (urgency === 'Urgent' ? '24-Hour' : '48-Hour');
+ rationaleEl.textContent = `Suggested category: ${result.category || 'General'}. Urgency: ${urgency}. Model confidence: ${confPct}%. Officer review confirms routing and priority.`;
+ }
+
+ document.getElementById('aiPreview').classList.remove('hidden');
+
+ if (result.category) {
+ const catSelect = document.getElementById('category');
+ const validOptions = Array.from(catSelect.options).map(o => o.value);
+ if (validOptions.includes(result.category)) {
+ catSelect.value = result.category;
+ } else {
+ catSelect.value = 'Other';
+ }
+ updateRoutedDepartment();
+ }
+
+ if (result.urgency) {
+ setUrgency(result.urgency, 'ai');
+ }
+ } catch (err) {
+ document.getElementById('ai-rationale').textContent=err.message;
+ }
+ }
+
+ let autoTranslateTimer = null;
+ function triggerAutoTranslateAndClassify() {
+ if(window.NVBPilotPublic && !document.getElementById('consentGranted').checked)return;
+ if (autoTranslateTimer) clearTimeout(autoTranslateTimer);
+ autoTranslateTimer = setTimeout(() => {
+ translateCurrentText();
+ }, 1000);
+ }
+
+ async function translateCurrentText() {
+ const text = getCurrentRequestText();
+ const language = document.getElementById('language').value;
+ const textBox = document.getElementById('translated-text-box');
+
+ if (!text || !text.trim()) {
+ if (textBox) textBox.value = '';
+ document.getElementById('translated-text').textContent = '';
+ document.getElementById('ai-category').textContent = '-';
+ document.getElementById('ai-urgency').textContent = '-';
+ document.getElementById('ai-sentiment').textContent = '-';
+ document.getElementById('ai-confidence').textContent = '-';
+ return;
+ }
+
+ const btn = document.getElementById('translateBtn');
+ if (btn) btn.innerHTML = '<i class="bi bi-hourglass-split" aria-hidden="true"></i> Analyzing...';
+ try {
+ const res = await citizenFetch('/api/translate', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ text, source_lang: language, target_lang: 'en' })
+ });
+ const payload = await res.json();
+ if(!res.ok || payload.success===false)throw new Error(payload.error || 'AI assistance unavailable');
+ const result = payload.result || payload;
+ let cleanTrans = (result.translated_text || text || '').trim();
+ cleanTrans = cleanTrans.replace(/^(Citizen Request \([a-z]+\):|Tamil Citizen Request:|Telugu Citizen Request:|Translation:|English Translation:)\s*/i, '');
+ 
+ if (textBox) textBox.value = cleanTrans;
+ document.getElementById('translated-text').textContent = cleanTrans;
+ await classifyText(text, language);
+ } catch (err) {
+ document.getElementById('ai-rationale').textContent=err.message;
+ } finally {
+ if (btn) btn.innerHTML = '<i class="bi bi-arrow-repeat" aria-hidden="true"></i> Re-Run AI Analysis';
+ }
+ }
+
+ let recording = false;
+ let voiceFinalizing = false;
+ let recordInterval = null;
+ let seconds = 0;
+ let mediaRecorder = null;
+ let mediaStream = null;
+ let recordedChunks = [];
+ let lastVoiceAudioBase64 = '';
+ let lastVoiceMimeType = 'audio/webm';
+ let speechRecognition = null;
+ let liveRealSpeechTranscript = '';
+
+ function updateVoiceStatus(message, isError = false) {
+ const statusEl = document.getElementById('voiceStatus');
+ if (!statusEl) return;
+ statusEl.textContent = message;
+ statusEl.style.color = isError ? 'var(--public-error)' : 'var(--public-muted)';
+ }
+
+ async function ensureAudioStream() {
+ if (mediaStream && mediaStream.active) {
+ return mediaStream;
+ }
+ if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+ throw new Error('This browser does not support microphone recording.');
+ }
+ mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+ return mediaStream;
+ }
+
+ function blobToBase64(blob) {
+ return new Promise((resolve, reject) => {
+ const reader = new FileReader();
+ reader.onloadend = () => {
+ const result = reader.result || '';
+ if (typeof result !== 'string') {
+ resolve('');
+ return;
+ }
+ const parts = result.split(',');
+ resolve(parts.length > 1 ? parts[1] : '');
+ };
+ reader.onerror = () => reject(new Error('Failed to encode recorded audio.'));
+ reader.readAsDataURL(blob);
+ });
+ }
+
+ function resetRecordingUi() {
+ document.getElementById('recordingIndicator').classList.add('hidden');
+ document.getElementById('recordBtn').classList.remove('recording');
+ }
+
+ let baseTextBeforeVoice = '';
+
+ async function startRecording(e) {
+ if (e && e.preventDefault) e.preventDefault();
+ if (recording) return;
+
+ try {
+ const stream = await ensureAudioStream();
+ recordedChunks = [];
+ lastVoiceAudioBase64 = '';
+ liveRealSpeechTranscript = '';
+ baseTextBeforeVoice = (document.getElementById('complaint-text').value || '').trim();
+
+ const preferredMimeTypes = [
+ 'audio/webm;codecs=opus',
+ 'audio/webm',
+ 'audio/ogg;codecs=opus',
+ 'audio/ogg'
+ ];
+ let recorderOptions = {};
+ for (const mime of preferredMimeTypes) {
+ if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(mime)) {
+ recorderOptions = { mimeType: mime };
+ break;
+ }
+ }
+
+ mediaRecorder = new MediaRecorder(stream, recorderOptions);
+ lastVoiceMimeType = mediaRecorder.mimeType || recorderOptions.mimeType || 'audio/webm';
+
+ mediaRecorder.ondataavailable = (event) => {
+ if (event.data && event.data.size > 0) {
+ recordedChunks.push(event.data);
+ }
+ };
+
+ mediaRecorder.start();
+
+ // LIVE REAL-TIME BROWSER SPEECH RECOGNITION (Tamil, Telugu, English)
+ const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+ if (SpeechRec && !window.NVBPilotPublic) {
+ try {
+ speechRecognition = new SpeechRec();
+ const langSelected = document.getElementById('language').value || 'en';
+ const langMap = { 'ta': 'ta-IN', 'te': 'te-IN', 'en': 'en-IN' };
+ speechRecognition.lang = langMap[langSelected] || 'en-IN';
+ speechRecognition.continuous = true;
+ speechRecognition.interimResults = true;
+
+ speechRecognition.onresult = (event) => {
+ let text = '';
+ for (let i = 0; i < event.results.length; i++) {
+ let chunk = (event.results[i][0].transcript || '').trim();
+ if (chunk) {
+ chunk = chunk.charAt(0).toUpperCase() + chunk.slice(1);
+ if (event.results[i].isFinal && !/[.?!]$/.test(chunk)) {
+ chunk += '.';
+ }
+ text += (text ? ' ' : '') + chunk;
+ }
+ }
+ liveRealSpeechTranscript = text.trim();
+ if (liveRealSpeechTranscript) {
+ const existing = baseTextBeforeVoice ? baseTextBeforeVoice + ' ' : '';
+ let fullCombined = (existing + liveRealSpeechTranscript).replace(/\s+\./g, '.');
+ document.getElementById('voice-transcript').textContent = fullCombined;
+ document.getElementById('complaint-text').value = fullCombined;
+ updateVoiceStatus('Transcribing live voice speech...', false);
+ triggerAutoTranslateAndClassify();
+ }
+ };
+ speechRecognition.start();
+ } catch (recErr) {
+ console.warn('Web Speech API not started:', recErr);
+ }
+ }
+
+ recording = true;
+ seconds = 0;
+ document.getElementById('recordingIndicator').classList.remove('hidden');
+ document.getElementById('recordBtn').classList.add('recording');
+ document.getElementById('recordTimer').textContent = '0:00';
+ updateVoiceStatus('Listening to your voice... Click or release to stop.', false);
+
+ recordInterval = setInterval(() => {
+ seconds += 1;
+ const mins = Math.floor(seconds / 60);
+ const secs = seconds % 60;
+ document.getElementById('recordTimer').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+ }, 1000);
+ } catch (err) {
+ resetRecordingUi();
+ recording = false;
+ updateVoiceStatus(err.message || 'Microphone permission is required to record voice.', true);
+ }
+ }
+
+ async function stopRecording(e) {
+ if (e && e.preventDefault) e.preventDefault();
+ if (!recording) return;
+ recording = false;
+ voiceFinalizing = true;
+ clearInterval(recordInterval);
+ resetRecordingUi();
+
+ if (speechRecognition) {
+ try { speechRecognition.stop(); } catch (err) {}
+ }
+
+ try {
+ if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+ await new Promise((resolve) => {
+ mediaRecorder.onstop = resolve;
+ mediaRecorder.stop();
+ });
+ }
+
+ let currentVal = (document.getElementById('complaint-text').value || '').trim();
+ if (currentVal && !/[.?!]$/.test(currentVal)) {
+ currentVal += '.';
+ document.getElementById('complaint-text').value = currentVal;
+ document.getElementById('voice-transcript').textContent = currentVal;
+ }
+
+ if (!recordedChunks.length) {
+ updateVoiceStatus('No audio captured. Try recording again.', true);
+ return;
+ }
+
+ const audioBlob = new Blob(recordedChunks, { type: lastVoiceMimeType || 'audio/webm' });
+ lastVoiceAudioBase64 = await blobToBase64(audioBlob);
+
+ if (liveRealSpeechTranscript && liveRealSpeechTranscript.trim()) {
+ updateVoiceStatus('Voice transcribed live from microphone! Request updated below.', false);
+ triggerAutoTranslateAndClassify();
+ return;
+ }
+
+ // BACKEND ASR TRANSCRIPTION FALLBACK
+ updateVoiceStatus('Transcribing voice audio via Cloud Speech-to-Text...', false);
+ document.getElementById('voice-transcript').textContent = 'Transcribing voice audio...';
+
+ const lang = document.getElementById('language').value || 'en';
+ const res = await citizenFetch('/api/transcribe-voice', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({
+ audio_base64: lastVoiceAudioBase64,
+ language: lang,
+ audio_mime_type: lastVoiceMimeType || 'audio/webm'
+ })
+ });
+
+ const data = await res.json();
+ if (res.ok && data.success && data.transcript) {
+ let fetchedTranscript = (data.transcript || '').trim();
+ if (fetchedTranscript && !/[.?!]$/.test(fetchedTranscript)) {
+ fetchedTranscript += '.';
+ }
+ const existing = baseTextBeforeVoice ? baseTextBeforeVoice + ' ' : '';
+ let fullCombined = (existing + fetchedTranscript).replace(/\s+\./g, '.');
+
+ document.getElementById('voice-transcript').textContent = fullCombined;
+ document.getElementById('complaint-text').value = fullCombined;
+ updateVoiceStatus(`Voice transcribed (${data.stt_mode || 'Speech-to-Text'})! Auto-filled request text below.`, false);
+ triggerAutoTranslateAndClassify();
+ } else {
+ const errText = data.error || 'Speech-to-Text returned empty transcript.';
+ document.getElementById('voice-transcript').textContent = errText;
+ updateVoiceStatus(errText, true);
+ }
+ } catch (err) {
+ updateVoiceStatus(err.message || 'Could not finalize recording. Please retry.', true);
+ } finally {
+ voiceFinalizing = false;
+ }
+ }
+
+
+ async function trackRequestStatus() {
+ if(window.NVBPilotPublic)return window.trackPilotRequest();
+ const reqId = (document.getElementById('trackRequestIdInput').value || '').trim();
+ const container = document.getElementById('trackResultContainer');
+ if (!reqId) {
+ alert('Please enter a valid Request Ticket ID');
+ return;
+ }
+
+ container.classList.remove('hidden');
+ container.innerHTML = '<p style="color:#5f6368;font-size:0.9rem"><i class="bi bi-arrow-repeat spin"></i> Searching live ticket status...</p>';
+
+ try {
+ const res = await citizenFetch(`/api/requests/${encodeURIComponent(reqId)}/timeline`);
+ const data = await res.json();
+
+ if (!res.ok || !data.success || !data.request) {
+ container.innerHTML = `<p style="color:#ea4335;font-weight:600;font-size:0.9rem;margin:0"><i class="bi bi-exclamation-triangle-fill"></i> No request found matching ID "${reqId}". Please verify your ticket number.</p>`;
+ return;
+ }
+
+ const r = data.request;
+ container.innerHTML = `
+ <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+ <strong style="font-size:1.05rem;color:#1a73e8">${r.request_id}</strong>
+ <span style="background:#e6f4ea;color:#137333;font-weight:700;padding:2px 10px;border-radius:12px;font-size:0.8rem">${r.status || 'New'}</span>
+ </div>
+ <div style="display:flex;gap:12px;font-size:0.85rem;color:#444746;flex-wrap:wrap;margin-bottom:8px">
+ <span><i class="bi bi-geo-alt-fill" style="color:#ea4335"></i> <strong>${r.ward || 'Ward Assigned'}</strong> | ${r.district}, ${r.state}</span>
+ <span><i class="bi bi-building"></i> <strong>${r.routed_department || 'Municipal Administration'}</strong></span>
+ <span><i class="bi bi-tag-fill" style="color:#0b57d0"></i> ${r.category}</span>
+ </div>
+ <p style="margin:4px 0;font-size:0.92rem;color:#1f1f1f;background:white;padding:8px 12px;border-radius:8px;border:1px solid #e0e2e0">${r.translated_text || r.original_text || ''}</p>
+ <div style="margin-top:8px;font-size:0.8rem;color:#5f6368;display:flex;justify-content:space-between">
+ <span>Target SLA Due: <strong>${r.sla_due_at ? r.sla_due_at.slice(0, 16).replace('T', ' ') : 'Within SLA Window'}</strong></span>
+ <span>Submitted: ${r.created_at ? r.created_at.slice(0, 10) : 'Today'}</span>
+ </div>
+ `;
+ } catch (err) {
+ container.innerHTML = '<p style="color:#ea4335;font-weight:600;font-size:0.9rem;margin:0">Failed to retrieve status. Please check network connection.</p>';
+ }
+ }
+
+ document.addEventListener('DOMContentLoaded', () => {
+ loadStates();
+ const trackBtn = document.getElementById('trackStatusBtn');
+ if (trackBtn) trackBtn.addEventListener('click', trackRequestStatus);
+
+ // Category change & department routing
+ const catSelect = document.getElementById('category');
+ if (catSelect) {
+ catSelect.addEventListener('change', updateRoutedDepartment);
+ updateRoutedDepartment();
+ }
+
+
+
+ // Language Pills click logic
+ document.querySelectorAll('.m3-chip').forEach(chip => {
+ chip.addEventListener('click', function() {
+ document.querySelectorAll('.m3-chip').forEach(c => c.classList.remove('active'));
+ document.querySelectorAll('.m3-chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
+ this.classList.add('active');
+ this.setAttribute('aria-pressed', 'true');
+ const langVal = this.getAttribute('data-lang');
+ const langSelect = document.getElementById('language');
+ if (langSelect) {
+ langSelect.value = langVal;
+ langSelect.dispatchEvent(new Event('change'));
+ }
+ });
+
+ chip.addEventListener('keydown', function(e) {
+ if (e.key === 'Enter' || e.key === ' ') {
+ e.preventDefault();
+ this.click();
+ }
+ });
+ });
+
+ const initialUrlLang = new URLSearchParams(window.location.search).get('language');
+ if (initialUrlLang) {
+ const matchingChip = document.querySelector(`.m3-chip[data-lang="${initialUrlLang}"]`);
+ if (matchingChip) {
+ matchingChip.click();
+ } else {
+ const langSelect = document.getElementById('language');
+ if (langSelect && [...langSelect.options].some(o => o.value === initialUrlLang)) {
+ langSelect.value = initialUrlLang;
+ langSelect.dispatchEvent(new Event('change'));
+ }
+ }
+ }
+
+ document.getElementById('language').addEventListener('change', (e) => {
+ updateLanguageInputHint(e.target.value);
+ triggerAutoTranslateAndClassify();
+ });
+
+ document.getElementById('state').addEventListener('change', (e) => {
+ loadDistrictsForState(e.target.value);
+ });
+
+ document.getElementById('captureLocationBtn').addEventListener('click', captureLocation);
+ document.getElementById('suggestWardBtn').addEventListener('click', suggestWardFromLocation);
+
+ document.getElementById('photo-attachments').addEventListener('change', updateAttachmentCounts);
+ document.getElementById('file-attachments').addEventListener('change', updateAttachmentCounts);
+ document.getElementById('openCameraBtn').addEventListener('click', openCameraPreview);
+ document.getElementById('captureCameraBtn').addEventListener('click', captureFromCamera);
+ document.getElementById('closeCameraBtn').addEventListener('click', closeCameraPreview);
+ document.getElementById('clearCameraCapturesBtn').addEventListener('click', clearCameraCaptures);
+ renderCameraCaptureThumbs();
+ updateAttachmentCounts();
+
+ document.getElementById('translateBtn').addEventListener('click', translateCurrentText);
+
+ // Clear Request button listener
+ const clearBtn = document.getElementById('clearRequestBtn');
+ if (clearBtn) {
+ clearBtn.addEventListener('click', (e) => {
+ e.preventDefault();
+ document.getElementById('complaint-text').value = '';
+ const textBox = document.getElementById('translated-text-box');
+ if (textBox) textBox.value = '';
+ document.getElementById('translated-text').textContent = '';
+ document.getElementById('voice-transcript').textContent = '';
+ lastVoiceAudioBase64 = '';
+ liveRealSpeechTranscript = '';
+ baseTextBeforeVoice = '';
+ document.getElementById('aiPreview').classList.add('hidden');
+ updateVoiceStatus('Request form cleared. Click mic or type to begin.', false);
+ });
+ }
+
+ // Automatic 1s debounced translation on typing, pasting, keyup, change
+ const complaintInput = document.getElementById('complaint-text');
+ if (complaintInput) {
+ ['input', 'keyup', 'paste', 'change'].forEach(evt => {
+ complaintInput.addEventListener(evt, () => {
+ triggerAutoTranslateAndClassify();
+ });
+ });
+ }
+
+ // Sync editable translation box to hidden text element
+ const textBox = document.getElementById('translated-text-box');
+ if (textBox) {
+ textBox.addEventListener('input', (e) => {
+ document.getElementById('translated-text').textContent = e.target.value;
+ });
+ }
+
+ const recordBtn = document.getElementById('recordBtn');
+ const recordBtnText = document.getElementById('recordBtnText');
+ const selectedLanguage = document.getElementById('language').value;
+ updateLanguageInputHint(selectedLanguage);
+
+ let holdTimer = null;
+ let isHoldMode = false;
+
+ recordBtn.addEventListener('mousedown', (e) => {
+ isHoldMode = false;
+ holdTimer = setTimeout(() => {
+ isHoldMode = true;
+ if (!recording) startRecording(e);
+ }, 300);
+ });
+
+ recordBtn.addEventListener('mouseup', (e) => {
+ if (holdTimer) clearTimeout(holdTimer);
+ if (isHoldMode && recording) {
+ stopRecording(e);
+ }
+ });
+
+ recordBtn.addEventListener('touchstart', (e) => {
+ isHoldMode = false;
+ holdTimer = setTimeout(() => {
+ isHoldMode = true;
+ if (!recording) startRecording(e);
+ }, 300);
+ }, { passive: true });
+
+ recordBtn.addEventListener('touchend', (e) => {
+ if (holdTimer) clearTimeout(holdTimer);
+ if (isHoldMode && recording) {
+ stopRecording(e);
+ }
+ });
+
+ recordBtn.addEventListener('click', async (e) => {
+ e.preventDefault();
+ if (isHoldMode) {
+ isHoldMode = false;
+ return;
+ }
+ if (recording) {
+ await stopRecording(e);
+ if (recordBtnText) recordBtnText.textContent = 'Click or Hold to Record Voice';
+ } else {
+ await startRecording(e);
+ if (recordBtnText) recordBtnText.textContent = recording ? 'Recording... Click to stop' : 'Click or hold to record your voice';
+ }
+ });
+
+ document.getElementById('complaintForm').addEventListener('submit', submitComplaint);
+ });
+ </script>
+ <script src="/static/js/submit-request.js"></script>
+</body>
+</html>

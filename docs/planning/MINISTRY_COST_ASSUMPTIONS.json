@@ -1,0 +1,160 @@
+{
+  "status": "IMPLEMENTATION_APPROVED_COSTS_UNVERIFIED",
+  "prepared_date": "2026-09-19",
+  "pilot_scope": {
+    "status": "Local implementation authorised and prepared; ministry participation and paid deployment pending",
+    "locations": [
+      {
+        "state": "Tamil Nadu",
+        "district": "Vellore"
+      },
+      {
+        "state": "Andhra Pradesh",
+        "district": "Tirupati"
+      }
+    ],
+    "languages": [
+      "Tamil",
+      "Telugu",
+      "English"
+    ],
+    "review_note": "The two-district workload calculation is unchanged. Requote language usage, 900-item evaluation, staffing, travel and cross-state coordination for this revised scope before committing a budget."
+  },
+  "currency": "USD",
+  "usd_to_inr_assumption": 90,
+  "fx_status": "Planning assumption, not a verified exchange rate",
+  "contingency_fraction": 0.25,
+  "illustrative_tax_fraction": 0.18,
+  "price_status": "Unverified planning allowances; replace with region/SKU-specific vendor quotes before budget commitment. No free tiers, credits or committed-use discounts assumed.",
+  "workload": {
+    "voice_share": 0.3,
+    "mean_voice_minutes": 1,
+    "non_english_translation_share": 0.7,
+    "characters_per_translated_report": 500,
+    "model_input_tokens_per_report": 1800,
+    "model_output_tokens_per_report": 350,
+    "metered_usage_multiplier": 1.1
+  },
+  "unit_rates_usd": {
+    "speech_per_minute": 0.024,
+    "translation_per_million_characters": 20,
+    "model_per_million_input_tokens": 0.5,
+    "model_per_million_output_tokens": 3
+  },
+  "formulas": {
+    "speech": "reports * voice_share * mean_voice_minutes * metered_usage_multiplier * speech_per_minute",
+    "translation": "reports * non_english_translation_share * characters_per_translated_report * metered_usage_multiplier / 1000000 * translation_per_million_characters",
+    "model": "reports * metered_usage_multiplier / 1000000 * (model_input_tokens_per_report * model_per_million_input_tokens + model_output_tokens_per_report * model_per_million_output_tokens)",
+    "monthly_inr": "(sum(platform_allowances_usd) + speech + translation + model) * (1 + contingency_fraction) * usd_to_inr_assumption"
+  },
+  "scenarios": [
+    {
+      "name": "Two-district pilot",
+      "districts": 2,
+      "reports_per_month": 10000,
+      "officer_accounts": 25,
+      "data_cells": 1,
+      "platform_allowances_usd": {
+        "primary_cloud_sql_ha": 350,
+        "delhi_cross_region_sql_replica": 250,
+        "cloud_run_api_workers_jobs": 70,
+        "load_balancer_waf_network": 45,
+        "object_storage_backups": 35,
+        "bigquery_storage_and_queries": 20,
+        "queue_secrets_artifacts_observability": 20,
+        "identity_static_hosting": 10,
+        "cross_region_replication_egress": 20,
+        "isolated_nonproduction": 100
+      },
+      "calculated": {
+        "platform_usd": 920,
+        "speech_usd": 79.20000000000002,
+        "translation_usd": 77.00000000000001,
+        "model_usd": 21.45,
+        "subtotal_usd": 1097.65,
+        "monthly_inr_ex_tax": 123485.625,
+        "illustrative_inr_with_tax": 145713.0375,
+        "inr_per_report": 12.3485625
+      }
+    },
+    {
+      "name": "Twenty-district expansion",
+      "districts": 20,
+      "reports_per_month": 100000,
+      "officer_accounts": 250,
+      "data_cells": 1,
+      "platform_allowances_usd": {
+        "primary_cloud_sql_ha": 900,
+        "delhi_cross_region_sql_replica": 500,
+        "cloud_run_api_workers_jobs": 300,
+        "load_balancer_waf_network": 80,
+        "object_storage_backups": 120,
+        "bigquery_storage_and_queries": 100,
+        "queue_secrets_artifacts_observability": 100,
+        "identity_static_hosting": 30,
+        "cross_region_replication_egress": 60,
+        "isolated_nonproduction": 250
+      },
+      "calculated": {
+        "platform_usd": 2440,
+        "speech_usd": 792,
+        "translation_usd": 770,
+        "model_usd": 214.50000000000003,
+        "subtotal_usd": 4216.5,
+        "monthly_inr_ex_tax": 474356.25,
+        "illustrative_inr_with_tax": 559740.375,
+        "inr_per_report": 4.7435625
+      }
+    },
+    {
+      "name": "Ministry planning scenario",
+      "districts": 100,
+      "reports_per_month": 1000000,
+      "officer_accounts": 2000,
+      "data_cells": 4,
+      "platform_allowances_usd": {
+        "primary_cloud_sql_ha": 6400,
+        "delhi_cross_region_sql_replica": 3200,
+        "cloud_run_api_workers_jobs": 2000,
+        "load_balancer_waf_network": 300,
+        "object_storage_backups": 500,
+        "bigquery_storage_and_queries": 750,
+        "queue_secrets_artifacts_observability": 300,
+        "identity_static_hosting": 150,
+        "cross_region_replication_egress": 300,
+        "isolated_nonproduction": 800
+      },
+      "calculated": {
+        "platform_usd": 14700,
+        "speech_usd": 7920,
+        "translation_usd": 7700.000000000001,
+        "model_usd": 2145,
+        "subtotal_usd": 32465,
+        "monthly_inr_ex_tax": 3652312.5,
+        "illustrative_inr_with_tax": 4309728.75,
+        "inr_per_report": 3.6523125
+      }
+    }
+  ],
+  "exclusions": [
+    "Engineering and district staff unless separately budgeted in the roadmap",
+    "Telephony, SMS, WhatsApp/BSP contracts",
+    "Maps paid usage",
+    "Private circuits and premium cloud support",
+    "Enterprise identity/SSO licence uplifts",
+    "Unapproved models or provider-training usage",
+    "Procurement costs and applicable taxes beyond the illustrative tax calculation"
+  ],
+  "sources_to_requote": [
+    "https://cloud.google.com/products/calculator",
+    "https://cloud.google.com/run/pricing",
+    "https://cloud.google.com/sql/pricing",
+    "https://cloud.google.com/vertex-ai/generative-ai/pricing",
+    "https://cloud.google.com/speech-to-text/pricing",
+    "https://cloud.google.com/translate/pricing",
+    "https://cloud.google.com/bigquery/pricing",
+    "https://firebase.google.com/pricing"
+  ],
+  "implementation_approved_date": "2026-09-19",
+  "implementation_cost_note": "The implemented pilot uses Vertex translation plus classification. The existing Translation API per-character line remains a conservative reserved allowance, not a metered implementation estimate. Reprice with returned provider tokens and exact region/model SKU before procurement."
+}

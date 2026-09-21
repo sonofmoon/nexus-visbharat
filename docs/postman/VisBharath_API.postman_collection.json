@@ -1,0 +1,412 @@
+{
+    "info": {
+        "name": "Nexus VisBharath API",
+        "description": "Postman collection for public, voice, and secure RBAC endpoints.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5000"
+        },
+        {
+            "key": "adminToken",
+            "value": "visbharat-admin-token"
+        },
+        {
+            "key": "analystToken",
+            "value": "visbharat-analyst-token"
+        },
+        {
+            "key": "auditorToken",
+            "value": "visbharat-auditor-token"
+        },
+        {
+            "key": "demoState",
+            "value": "Tamil Nadu"
+        },
+        {
+            "key": "district",
+            "value": "Chennai"
+        },
+        {
+            "key": "demoDistricts",
+            "value": "Chennai,Vellore,Karur,Visakhapatnam,Tirupati,Hyderabad"
+        },
+        {
+            "key": "webhookToken",
+            "value": "visbharat-webhook-token"
+        },
+        {
+            "key": "jobId",
+            "value": "JOB-REPLACE-ME"
+        }
+    ],
+    "item": [
+        {
+            "name": "Health",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/health"
+            }
+        },
+        {
+            "name": "AI Status",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/ai/status"
+            }
+        },
+        {
+            "name": "DB Status",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/db/status"
+            }
+        },
+        {
+            "name": "States",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/states"
+            }
+        },
+        {
+            "name": "Districts by Demo State",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/districts?state={{demoState}}"
+            }
+        },
+        {
+            "name": "Submit Text Complaint",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"text\": \"Road is damaged and water supply disrupted\",\n  \"language\": \"en\",\n  \"district\": \"{{district}}\",\n  \"source\": \"Web\"\n}"
+                },
+                "url": "{{baseUrl}}/api/submit"
+            }
+        },
+        {
+            "name": "Submit Voice (Strict JSON base64)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"language\": \"te\",\n  \"district\": \"{{district}}\",\n  \"source\": \"IVR\",\n  \"audio_mime_type\": \"audio/wav\",\n  \"audio_base64\": \"<BASE64_AUDIO_BYTES>\"\n}"
+                },
+                "url": "{{baseUrl}}/api/submit-voice"
+            }
+        },
+        {
+            "name": "Submit Voice (Strict multipart)",
+            "request": {
+                "method": "POST",
+                "body": {
+                    "mode": "formdata",
+                    "formdata": [
+                        {
+                            "key": "language",
+                            "value": "te",
+                            "type": "text"
+                        },
+                        {
+                            "key": "district",
+                            "value": "{{district}}",
+                            "type": "text"
+                        },
+                        {
+                            "key": "source",
+                            "value": "WhatsApp",
+                            "type": "text"
+                        },
+                        {
+                            "key": "audio",
+                            "type": "file",
+                            "src": ""
+                        }
+                    ]
+                },
+                "url": "{{baseUrl}}/api/submit-voice"
+            }
+        },
+        {
+            "name": "Hotspots",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/hotspots"
+            }
+        },
+        {
+            "name": "Policy Brief",
+            "request": {
+                "method": "GET",
+                "url": "{{baseUrl}}/api/policy-brief/{{district}}"
+            }
+        },
+        {
+            "name": "Secure Requests (Analyst)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{analystToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/requests"
+            }
+        },
+        {
+            "name": "Audit Logs (Auditor)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{auditorToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/audit-logs"
+            }
+        },
+        {
+            "name": "Users (Admin)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{adminToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/users"
+            }
+        },
+        {
+            "name": "WhatsApp Webhook (POST)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "X-Webhook-Token",
+                        "value": "{{webhookToken}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\"text\":\"Road blocked near market\",\"language\":\"en\",\"district\":\"{{district}}\",\"from\":\"wa-user-1\"}"
+                },
+                "url": "{{baseUrl}}/api/channels/whatsapp/webhook"
+            }
+        },
+        {
+            "name": "Telegram Webhook",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "X-Webhook-Token",
+                        "value": "{{webhookToken}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\"district\":\"{{district}}\",\"language\":\"en\",\"message\":{\"text\":\"Need drainage fix\",\"from\":{\"id\":12345}}}"
+                },
+                "url": "{{baseUrl}}/api/channels/telegram/webhook"
+            }
+        },
+        {
+            "name": "SMS Webhook",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "X-Webhook-Token",
+                        "value": "{{webhookToken}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\"body\":\"Street light not working\",\"language\":\"en\",\"district\":\"{{district}}\",\"from\":\"+911234567890\"}"
+                },
+                "url": "{{baseUrl}}/api/channels/sms/webhook"
+            }
+        },
+        {
+            "name": "IVR Webhook",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "X-Webhook-Token",
+                        "value": "{{webhookToken}}"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\"transcript\":\"Water issue in ward 8\",\"language\":\"en\",\"district\":\"{{district}}\",\"caller\":\"+911234567890\"}"
+                },
+                "url": "{{baseUrl}}/api/channels/ivr/webhook"
+            }
+        },
+        {
+            "name": "Webhook Security Status (Admin)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{adminToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/security/webhook-status"
+            }
+        },
+        {
+            "name": "Pipeline Jobs (Admin)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{adminToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/pipeline/jobs"
+            }
+        },
+        {
+            "name": "Pipeline Job By Id (Admin)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{adminToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/pipeline/jobs/{{jobId}}"
+            }
+        },
+        {
+            "name": "Pipeline Workers (Admin/Auditor)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{adminToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/pipeline/workers"
+            }
+        },
+        {
+            "name": "Pipeline Metrics (Admin/Auditor)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{adminToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/pipeline/metrics"
+            }
+        },
+        {
+            "name": "Pipeline Job Retry (Admin)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{adminToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/pipeline/jobs/{{jobId}}/retry"
+            }
+        },
+        {
+            "name": "Pipeline Job Cancel (Admin)",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{adminToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/pipeline/jobs/{{jobId}}/cancel"
+            }
+        },
+        {
+            "name": "Intelligence Gap Analysis (Analyst/Admin/Auditor)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{analystToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/intelligence/gap-analysis"
+            }
+        },
+        {
+            "name": "Intelligence Hotspot Predictions (Analyst/Admin/Auditor)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{analystToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/intelligence/hotspot-predictions"
+            }
+        },
+        {
+            "name": "Policy Priority Rankings + Budget Draft (Analyst/Admin/Auditor)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{analystToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/policy/priority-rankings?limit=5&total_budget_lakh=1200"
+            }
+        },
+        {
+            "name": "Policy Impact Metrics + Auto Brief (Analyst/Admin/Auditor)",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{analystToken}}"
+                    }
+                ],
+                "url": "{{baseUrl}}/api/v1/policy/impact-brief?limit=5&total_budget_lakh=1200"
+            }
+        }
+    ]
+}

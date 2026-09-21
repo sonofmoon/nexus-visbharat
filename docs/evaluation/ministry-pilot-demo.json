@@ -1,0 +1,13 @@
+{
+  "data_mode": "synthetic",
+  "source_records_unchanged": true,
+  "pilot_id": "vellore-tirupati-water",
+  "reports": 63,
+  "new_reports": 63,
+  "source_distribution": {
+    "Vellore": 32,
+    "Tirupati": 31
+  },
+  "google_model_calls": 0,
+  "locations": "Six proposed demonstration catchments; official communities have not been selected."
+}

@@ -1,0 +1,64 @@
+{
+  "status": "measured_local_sqlite",
+  "generated_at": "2026-09-19T04:33:19Z",
+  "results": [
+    {
+      "rows": 12500,
+      "requests": 20,
+      "concurrency": 1,
+      "p50_ms": 357.84,
+      "p95_ms": 605.53,
+      "p99_ms": 605.78,
+      "throughput_per_second": 2.28,
+      "failure_rate": 0,
+      "assertion": "Full scoped channel totals reconcile"
+    },
+    {
+      "rows": 12500,
+      "requests": 20,
+      "concurrency": 4,
+      "p50_ms": 1294.33,
+      "p95_ms": 1708.14,
+      "p99_ms": 1725.39,
+      "throughput_per_second": 2.92,
+      "failure_rate": 0,
+      "assertion": "Full scoped channel totals reconcile"
+    },
+    {
+      "rows": 100000,
+      "requests": 20,
+      "concurrency": 1,
+      "p50_ms": 1310.31,
+      "p95_ms": 1570.13,
+      "p99_ms": 1896.94,
+      "throughput_per_second": 0.72,
+      "failure_rate": 0,
+      "assertion": "Full scoped channel totals reconcile"
+    },
+    {
+      "rows": 100000,
+      "requests": 20,
+      "concurrency": 4,
+      "p50_ms": 2189.41,
+      "p95_ms": 3130.45,
+      "p99_ms": 3242.57,
+      "throughput_per_second": 1.69,
+      "failure_rate": 0,
+      "assertion": "Full scoped channel totals reconcile"
+    }
+  ],
+  "environment": {
+    "python": "3.14.7",
+    "platform": "win32",
+    "database": "SQLite copy",
+    "http": "Flask test client; excludes network and model latency"
+  },
+  "limitations": [
+    "Synthetic replication, not a national deployment benchmark.",
+    "Small request sample; tail percentiles require a longer deployment soak test.",
+    "Queue age, external-provider throughput and cloud billing cost were not measured."
+  ],
+  "external_cost_per_request": null,
+  "queue_age_seconds": null,
+  "artifact": "scratch\\analyst-implementation\\load\\load-1789792326783391100.db"
+}

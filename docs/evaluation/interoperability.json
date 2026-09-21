@@ -1,0 +1,16 @@
+{
+  "status": "passed",
+  "checks": [
+    "Export from the actual project API",
+    "Schema validation",
+    "Lossless API validation round-trip without persistence",
+    "Invalid import rejected",
+    "Unauthenticated read rejected",
+    "Auditor mutation rejected"
+  ],
+  "schema": "docs/release/analyst-decision.schema.json",
+  "geography": "Stable NVB local codes; official LGD crosswalk remains unverified",
+  "limitations": [
+    "This validates the local exchange contract, not interoperability certification or another government deployment."
+  ]
+}
