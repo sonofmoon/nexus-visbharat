@@ -1,6 +1,6 @@
-{
+﻿{
     "info": {
-        "name": "Nexus VisBharath API",
+        "name": "Nexus VisBharat API",
         "description": "Postman collection for public, voice, and secure RBAC endpoints.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },

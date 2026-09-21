@@ -3368,7 +3368,7 @@ def telegram_webhook():
             f"Category: {cat}\n"
             f"Urgency: {urg}\n"
             f"Routed To: {dept}\n\n"
-            f"Thank you for reporting to VisBharath!"
+            f"Thank you for reporting to VisBharat!"
         )
         try:
             requests.post(

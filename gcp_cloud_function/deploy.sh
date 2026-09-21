@@ -1,5 +1,5 @@
 #!/bin/bash
-# GCP Cloud Function Deployment Script for Nexus Visbharath Real-Time BigQuery Ingestion
+# GCP Cloud Function Deployment Script for Nexus Visbharat Real-Time BigQuery Ingestion
 
 PROJECT_ID="nexus-visbharat"
 REGION="asia-south1"

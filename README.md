@@ -1,4 +1,4 @@
-# Nexus VisBharath (NVB)
+# Nexus VisBharat (NVB)
 ### Scalable Multilingual AI for Citizen-Driven Infrastructure Prioritization
 **Track:** AI for Digital Public Infrastructure & Governance | **Theme:** Innovation  
 **Initiative:** Build with AI: Code for Communities (2nd Edition)  
@@ -19,7 +19,13 @@
 | **Executive Pitch Deck** | [**Pitch Deck (10–12 Slides)**](https://visbharat.nexusaitech.in/pitch-deck) | Problem, solution, Google AI architecture, DPI scalability, and pilot roadmap |
 
 > **Brief Solution Summary (2–3 Lines):**  
-> **Nexus VisBharath (NVB)** is a Digital Public Good candidate platform that bridges citizen feedback with national infrastructure planning. Using Google AI (Gemini on Vertex AI, Cloud STT, and Dialogflow CX), NVB ingests voice and text reports in Tamil, Telugu, and English, cross-references them against live open data (LGD, data.gov.in, NITI Aayog NDAP), and applies a 4-gate governance workflow to help policymakers prioritize high-impact capital investments without autonomous AI hallucination.
+> **Nexus VisBharat (NVB)** is a Digital Public Good candidate platform that bridges citizen feedback with national infrastructure planning. Using Google AI (Gemini on Vertex AI, Cloud STT, and Dialogflow CX), NVB ingests voice and text reports in Tamil, Telugu, and English, cross-references them against live open data (LGD, data.gov.in, NITI Aayog NDAP), and applies a 4-gate governance workflow to help policymakers prioritize high-impact capital investments without autonomous AI hallucination.
+
+<p align="center">
+  <img src="docs/screenshots/01_hero_portal.png" alt="Nexus VisBharat Platform Overview" width="100%" style="border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);"/>
+  <br/>
+  <em>Figure 1: Nexus VisBharat National Platform — Multilingual civic intelligence connecting grassroots citizen voice to national capital infrastructure allocation.</em>
+</p>
 
 ---
 
@@ -39,9 +45,9 @@ State and Central Governments across India manage hundreds of infrastructure pro
 
 ## 2. Platform Alignment with Core Evaluation Parameters
 
-Nexus VisBharath (NVB) is engineered as an open-source **Digital Public Good (DPG) Candidate** addressing each of the five core evaluation parameters defined for the **Build with AI: Code for Communities** initiative:
+Nexus VisBharat (NVB) is engineered as an open-source **Digital Public Good (DPG) Candidate** addressing each of the five core evaluation parameters defined for the **Build with AI: Code for Communities** initiative:
 
-### 1. Problem-Solution Fit (Weight: 20%)
+### 1. Problem-Solution Fit
 * **Evaluation Focus:** *Does the platform directly and specifically address the challenge of consolidating fragmented citizen feedback, closing unaddressed infrastructure gaps, and enabling empirical measurement of public investment?*
 * **Platform Architecture & Implementation:**
   * **Systemic Capital Planning Over Reactive Ticketing:** Moves beyond isolated grievance resolution (e.g., standard CPGRAMS ticket patching) by algorithmically clustering citizen demands into macro-level infrastructure proposals.
@@ -49,11 +55,17 @@ Nexus VisBharath (NVB) is engineered as an open-source **Digital Public Good (DP
   * **Fiscal Rationing Realism:** Integrates realistic capital constraints into proposal ranking—including capital expenditure caps, annual operating budget allowances (modeled at 3%), and project capacity quotas per district.
   * **Dual-Tier Operational Architecture:** Combines a macro-level **National Aggregation Engine** (12,500 synthetic stress records across 97 districts) with a micro-level **Turnkey Ministry Pilot Simulator** (controlled two-state administrative rehearsal across Vellore, Tamil Nadu and Tirupati, Andhra Pradesh).
 
-### 2. AI & Technical Execution (Weight: 25%)
+<p align="center">
+  <img src="docs/screenshots/03_national_dashboard.png" alt="National Aggregation Engine & Spatial Clustering" width="100%" style="border-radius: 8px;"/>
+  <br/>
+  <em>Figure 2: National Aggregation Engine — Synthesizing 12,500 citizen demands across 97 districts into prioritized infrastructure proposals.</em>
+</p>
+
+### 2. AI & Technical Execution
 * **Evaluation Focus:** *Is Google AI performing meaningful, production-grade work? Does the prototype function end-to-end?*
 * **Platform Architecture & Implementation:**
   * **End-to-End Google AI Integration:**
-    * **Gemini on Vertex AI / Google AI Studio:** Performs semantic clustering, multilingual translation, category classification, urgency grading, and automated policy brief generation with cited data sources.
+    * **Gemini 3.6 Flash on Vertex AI / Google AI Studio:** Performs semantic clustering, multilingual translation, category classification, urgency grading, and automated policy brief generation with cited data sources.
     * **Google Dialogflow CX:** Powers regional conversational citizen intake agents configured in `asia-south1`.
     * **Google Cloud Speech-to-Text & WebAudio:** Enables voice-first grievance intake directly from low-bandwidth mobile browsers.
     * **Predictive Demand Stress Modeling:** Machine learning models forecast next-quarter district grievance stress and service vulnerability indices.
@@ -64,7 +76,13 @@ Nexus VisBharath (NVB) is engineered as an open-source **Digital Public Good (DP
     4. *Gate 4 (Data Integrity):* Provenance verification comparing operational vs. synthetic demonstration baselines.
   * **Production Rigor & Resilience:** Includes seamless fallback simulation for offline evaluation alongside live Google Cloud IAM connectors, backed by 68+ automated unit, integration, and browser test suites with 100% pass rate.
 
-### 3. Depth & Reach Across India (Weight: 20%)
+<p align="center">
+  <img src="docs/screenshots/06_audit_dossier.png" alt="Accountable 4-Gate Audit Dossier" width="100%" style="border-radius: 8px;"/>
+  <br/>
+  <em>Figure 3: Accountable 4-Gate Audit Dossier — Cryptographic chain of custody verifying citizen source tickets and technical feasibility before capital sanction.</em>
+</p>
+
+### 3. Depth & Reach Across India
 * **Evaluation Focus:** *Can this realistically scale from a single town to diverse linguistic regions, states, and communities across India?*
 * **Platform Architecture & Implementation:**
   * **Honest Precision in Language Scope (Depth Over Superficial Claims):**
@@ -80,25 +98,37 @@ Nexus VisBharath (NVB) is engineered as an open-source **Digital Public Good (DP
     * Standardized webhook contracts for WhatsApp and SMS integrations.
     * Batch import mechanisms for field survey teams (ASHA, Anganwadi, and Gram Panchayat workers).
 
-### 4. Impact Potential (Weight: 15%)
+<p align="center">
+  <img src="docs/screenshots/02_citizen_intake_voice.png" alt="Citizen Multilingual Voice Intake" width="100%" style="border-radius: 8px;"/>
+  <br/>
+  <em>Figure 4: Inclusive Voice-First Intake — Low-bandwidth browser audio capture and multilingual text processing in Tamil, Telugu, and English with receipt tracking.</em>
+</p>
+
+### 4. Impact Potential
 * **Evaluation Focus:** *What is the scale of benefit — how many citizens, across how many states, and how meaningfully?*
 * **Platform Architecture & Implementation:**
   * **Data-Driven Capital Allocation:** Algorithmically steers high-value capital expenditure to high-deprivation catchments by fusing citizen demand with Census 2011 demographics, NITI Aayog Multidimensional Poverty Index (MPI), and PM Gati Shakti infrastructure indicators.
   * **Post-Delivery DPI Impact Measurement:** Includes an **Outcomes Monitoring Module** that analyzes pre- and post-intervention grievance volume changes across 28/60/90-day observation windows to empirically verify whether completed infrastructure investments resolved community pain points.
   * **Tamper-Evident Anti-Corruption Ledger:** Implements immutable audit logging and role-based access control (RBAC), ensuring that citizen evidence and recorded auditor findings cannot be altered or bypassed by contractors or line departments.
 
-### 5. Deployability & Scalability (Weight: 20%)
+### 5. Deployability & Scalability
 * **Evaluation Focus:** *Could this be piloted within a government ministry or across states in weeks?*
 * **Platform Architecture & Implementation:**
   * **Lightweight, High-Performance Tech Stack:** Built with Python/Flask and native Web Components, ensuring sub-second response times, zero frontend build overhead, and minimal operational maintenance.
   * **Turnkey Ministry Pilot Workspace (`/pilot/dashboard`):** Fully operational administrative portal with role-based switching (Analyst, Administrator, Auditor, District Officer), quota controls, cloud spending throttles, and activation checklist gates.
   * **Enterprise Infrastructure as Code:** Complete HashiCorp Terraform configuration in `deploy/pilot/` provisioning Google Cloud Run microservices, Cloud SQL (PostgreSQL 16 High Availability in `asia-south1` with asynchronous replica blueprint in `asia-south2`), BigQuery analytics datasets, Cloud Tasks queues, and Secret Manager encryption.
 
+<p align="center">
+  <img src="docs/screenshots/05_ministry_pilot_dashboard.png" alt="Turnkey Ministry Pilot Simulator" width="100%" style="border-radius: 8px;"/>
+  <br/>
+  <em>Figure 5: Turnkey Ministry Pilot Workspace — Isolated two-state administrative rehearsal across Vellore (Tamil Nadu) and Tirupati (Andhra Pradesh).</em>
+</p>
+
 ---
 
-## 3. What We Built: The Nexus VisBharath (NVB) Solution
+## 3. What We Built: The Nexus VisBharat (NVB) Solution
 
-**Nexus VisBharath (NVB)** is an open-source **Digital Public Good (DPG) Candidate** platform that connects multilingual citizen reports to empirical evidence, proposed capital projects, budget allocations, and delivery follow-up.
+**Nexus VisBharat (NVB)** is an open-source **Digital Public Good (DPG) Candidate** platform that connects multilingual citizen reports to empirical evidence, proposed capital projects, budget allocations, and delivery follow-up.
 
 Demonstrated across **3 states (Tamil Nadu, Andhra Pradesh, Telangana) and 97 districts**, NVB ingests voice and text requests in **Tamil, Telugu, and English**, normalizes them using Google AI, fuses them with live national indicators, and surfaces evidence-backed capital investment priorities for policymakers.
 
@@ -144,11 +174,17 @@ flowchart LR
 | **5. Delivery & Responsiveness** | Actual acknowledgment events, eligible SLA denominators, open aging, closure, citizen feedback, and linked decisions. |
 | **6. Outcomes & Evaluation** | Completed observation windows, descriptive reporting changes, and measured evaluation reports. |
 
+<p align="center">
+  <img src="docs/screenshots/04_jury_demo_hotspots.png" alt="Spatial Demand Hotspot Discovery & Scoring" width="100%" style="border-radius: 8px;"/>
+  <br/>
+  <em>Figure 6: Spatial Demand Hotspot Discovery — Fusing citizen reports with Census 2011, NITI Aayog MPI, and PM Gati Shakti indicators for ranked project proposals.</em>
+</p>
+
 ---
 
 ## 4. Comparison: Questions NVB Answers That India's Governance Systems Cannot
 
-| Capability | Conventional Systems (CPGRAMS, CM Helplines) | Nexus VisBharath (NVB) |
+| Capability | Conventional Systems (CPGRAMS, CM Helplines) | Nexus VisBharat (NVB) |
 | :--- | :--- | :--- |
 | **Primary Paradigm** | Reactive ticket resolution (isolated fix) | Systemic capital planning (hotspot discovery) |
 | **Linguistic Inclusion** | Text-heavy forms; predominantly English/Hindi | Native Voice-First + Dialect-tolerant in **Tamil, Telugu, English** via Google Cloud Speech & Gemini |
@@ -165,7 +201,45 @@ flowchart LR
 
 ---
 
-## 5. Scoring Algorithm & Fiscal Planning Model
+## 5. Architectural Topology: End-to-End Google Cloud & AI Fabric
+
+```mermaid
+graph TD
+    classDef citizen fill:#f0fdf4,stroke:#16a34a,stroke-width:2px;
+    classDef ai fill:#eff6ff,stroke:#2563eb,stroke-width:2px;
+    classDef gov fill:#fffbeb,stroke:#d97706,stroke-width:2px;
+    classDef cloud fill:#fdf2f8,stroke:#db2777,stroke-width:2px;
+
+    subgraph "1. Citizen Omnichannel Intake Layer"
+        A1["Citizen (Tamil, Telugu, English)"]:::citizen -->|Voice WebAudio| B1["Cloud Speech-to-Text API"]:::ai
+        A2["Citizen (Text / Regional)"]:::citizen -->|Natural Language| B2["Vertex AI Gemini 3.6 Flash"]:::ai
+        A3["Conversational Agent"]:::citizen -->|Interactive Intake| B3["Dialogflow CX (asia-south1)"]:::ai
+    end
+
+    subgraph "2. Core Pipeline & Fast-Path Processing"
+        B1 & B2 & B3 --> C["NVB Ingestion Gateway (Cloud Run)"]:::cloud
+        C -->|Urgent & Hazard| D1["Fast-Path Auto Triage (100% Recall)"]:::cloud
+        C -->|Standard Workflow| D2["Transactional Outbox Pattern"]:::cloud
+        D2 -->|Durable Async| E1["Cloud Pub/Sub Topics"]:::cloud
+        D2 -->|Analytics Replica| E2["BigQuery Data Warehouse"]:::cloud
+    end
+
+    subgraph "3. Policy Planning & 4-Gate Governance"
+        D1 & D2 --> F["Spatial Hotspot Clustering Engine"]:::gov
+        F --> G["National Data Fusion Layer (Census/MPI/Gati Shakti)"]:::gov
+        G --> H["Optimization Engine (Capital Allocation)"]:::gov
+        H --> I["4-Gate Independent Audit Engine"]:::gov
+    end
+
+    subgraph "4. Outcomes & Accountability"
+        I --> J["Executive Decision Dossier"]:::gov
+        J --> K["30/60/90 Day Outcomes Monitor"]:::gov
+    end
+```
+
+---
+
+## 6. Scoring Algorithm & Fiscal Planning Model
 
 ### Screening Score (`nvb-decision-v1`)
 The platform calculates capital priority using the versioned formula:
@@ -207,8 +281,8 @@ $$\text{Priority Score} = 0.40 \times \text{Demand Density} + 0.35 \times \text{
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/<your-username>/nexus-visbharath.git
-cd nexus-visbharath
+git clone https://github.com/sonofmoon/nexus-visbharat.git
+cd nexus-visbharat
 ```
 
 ### 2. Set Up Virtual Environment

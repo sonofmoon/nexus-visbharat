@@ -243,7 +243,7 @@ class MinistryPilotTest(unittest.TestCase):
 
     def test_pilot_vertex_transport_never_retries_an_ambiguous_call(self):
         from visbharat.services.pilot_ai import PilotGoogleAI
-        ai=PilotGoogleAI('test-project','asia-south1','gemini-2.5-flash')
+        ai=PilotGoogleAI('test-project','asia-south1','gemini-3.6-flash')
         with patch.object(ai,'_get_vertex_auth_header',return_value={}),patch('visbharat.services.pilot_ai.requests.post',side_effect=TimeoutError()) as post:
             with self.assertRaises(TimeoutError):ai.translate_text('Synthetic example','ta','en')
             self.assertEqual(post.call_count,1)
@@ -251,7 +251,7 @@ class MinistryPilotTest(unittest.TestCase):
 
     def test_successful_pilot_vertex_records_usage_and_actual_model(self):
         from visbharat.services.pilot_ai import PilotGoogleAI
-        ai=PilotGoogleAI('test-project','asia-south1','gemini-2.5-flash')
+        ai=PilotGoogleAI('test-project','asia-south1','gemini-3.6-flash')
         response=Mock();response.json.return_value={'candidates':[{'content':{'parts':[{'text':'{"translated_text":"Water supply is irregular."}'}]}}],
             'modelVersion':'test-served-model','usageMetadata':{'totalTokenCount':27}}
         with patch.object(ai,'_get_vertex_auth_header',return_value={}),patch('visbharat.services.pilot_ai.requests.post',return_value=response):

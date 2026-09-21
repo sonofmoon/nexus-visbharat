@@ -35,7 +35,7 @@ class Config:
     PILOT_ID = os.environ.get('PILOT_ID','')
     PILOT_ONLY = _as_bool('PILOT_ONLY',False)
     PILOT_MODEL_CALLS = _as_bool('PILOT_MODEL_CALLS',False)
-    PILOT_MODEL_NAME = os.environ.get('PILOT_MODEL_NAME','gemini-2.5-flash')
+    PILOT_MODEL_NAME = os.environ.get('PILOT_MODEL_NAME','gemini-3.6-flash')
     PILOT_ANALYTICS_SYNC = _as_bool('PILOT_ANALYTICS_SYNC',False)
     PILOT_BIGQUERY_TABLE = os.environ.get('PILOT_BIGQUERY_TABLE','')
     PILOT_WORKER_AUDIENCE = os.environ.get('PILOT_WORKER_AUDIENCE','')

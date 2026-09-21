@@ -89,7 +89,7 @@ def seed(base_url: str, per_district: int, timeout: int):
 
     counts = Counter([d for d, _, _ in submitted])
 
-    print("\n=== VisBharath Demo Seeder ===")
+    print("\n=== VisBharat Demo Seeder ===")
     print(f"Base URL: {base_url}")
     print(f"Source tag: {DEMO_SOURCE}")
     print(f"Target districts: {', '.join([d for d, _ in TARGET_DISTRICTS])}")

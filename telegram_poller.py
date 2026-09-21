@@ -50,7 +50,7 @@ def process_update(update):
     if text.startswith("/start"):
         start_msg = (
             f"👋 *Vanakkam & Welcome {user_name}!*\n\n"
-            f"🏛️ *Nexus-VisBharath (NVB) Omni-Channel Municipal Portal*\n"
+            f"🏛️ *Nexus-VisBharat (NVB) Omni-Channel Municipal Portal*\n"
             f"Zero-Internet Citizen Access & Request Routing Engine.\n\n"
             f"✍️ *How to submit a Request:*\n"
             f"Simply type your municipal demand in *English, Tamil, or Tanglish*!\n"
@@ -63,11 +63,11 @@ def process_update(update):
 
     if text.startswith("/help"):
         help_msg = (
-            f"ℹ️ *Nexus-VisBharath Help & Info*\n\n"
+            f"ℹ️ *Nexus-VisBharat Help & Info*\n\n"
             f"• *Submit Request*: Type your demand directly in chat.\n"
             f"• *Languages Supported*: English, Tamil (தமிழ்), Tanglish (Code-Mixed).\n"
             f"• *Toll-Free Helpline*: `1800-103-8472`\n"
-            f"• *AI Engines*: Google Gemini 1.5 Flash, Dialogflow CX & Vertex AI."
+            f"• *AI Engines*: Google Gemini 3.6 Flash, Dialogflow CX & Vertex AI."
         )
         send_message(chat_id, help_msg)
         return
@@ -91,7 +91,7 @@ def process_update(update):
                 )
                 send_message(chat_id, status_msg)
             else:
-                send_message(chat_id, f"⚠️ Request ID `{req_id}` not found in VisBharath records.")
+                send_message(chat_id, f"⚠️ Request ID `{req_id}` not found in VisBharat records.")
         except Exception as e:
             send_message(chat_id, "⚠️ System momentarily busy. Please try again.")
         return
@@ -110,7 +110,7 @@ def process_update(update):
         logging.info(f"Webhook forward response ({resp.status_code}): {resp.text}")
     except Exception as e:
         logging.error(f"Error forwarding to webhook: {e}")
-        send_message(chat_id, "⚠️ Failed to register request with VisBharath backend. Please retry.")
+        send_message(chat_id, "⚠️ Failed to register request with VisBharat backend. Please retry.")
 
 def main():
     delete_webhook()

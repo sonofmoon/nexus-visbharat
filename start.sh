@@ -1,7 +1,7 @@
 #!/bin/bash
-# CitizenVoice India - Quick Start Script
+# Nexus VisBharat - Quick Start Script
 
-echo "🇮🇳 CitizenVoice India - Starting Prototype"
+echo "🇮🇳 Nexus VisBharat - Starting Server"
 echo "============================================"
 
 # Check Python
