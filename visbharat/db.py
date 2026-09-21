@@ -308,6 +308,9 @@ def _sqlite_path_from_url(url: str):
 
     if os.name == 'nt' and raw_path.startswith('/') and not (len(raw_path) > 2 and raw_path[2] == ':'):
         raw_path = raw_path[1:]
+    elif os.name != 'nt' and not url.startswith('sqlite:////') and raw_path.startswith('/'):
+        if not os.path.exists(os.path.dirname(raw_path) or '/'):
+            raw_path = raw_path.lstrip('/')
 
     return raw_path
 
