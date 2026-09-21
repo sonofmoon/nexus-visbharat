@@ -85,7 +85,23 @@ class GoogleTranslationClient:
             except Exception:
                 pass
 
-        # 3. Live Online Neural Translation Service
+        # 3. Google Gemini 3.6 Flash Neural Translation
+        try:
+            from .google_ai import GoogleAIClient
+            ai_client = GoogleAIClient(project_id=self.project_id, api_key=self.api_key)
+            ai_res = ai_client.translate_text(text, source_language or 'auto', target_lang)
+            if ai_res and ai_res.get('translated_text') and not ai_res.get('fallback_used'):
+                return {
+                    'translated_text': ai_res['translated_text'],
+                    'source_language': ai_res.get('source_language') or source_language or 'en',
+                    'target_language': target_lang,
+                    'model': f"Google Vertex AI ({ai_res.get('model', 'gemini-3.6-flash')})",
+                    'provider_mode': 'google_ai_live',
+                }
+        except Exception:
+            pass
+
+        # 4. Secondary Community Fallback (Transparently labeled)
         try:
             import requests, urllib.parse
             src = source_language if source_language and source_language != 'auto' else 'ta'
@@ -99,7 +115,8 @@ class GoogleTranslationClient:
                         'translated_text': t_text,
                         'source_language': src,
                         'target_language': target_lang,
-                        'model': 'Google Translation Live Service',
+                        'model': 'Community Translation Fallback (MyMemory)',
+                        'provider_mode': 'community_fallback',
                     }
         except Exception:
             pass

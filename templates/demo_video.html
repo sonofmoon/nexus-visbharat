@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Walkthrough Video - Nexus VisBharat</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  {% include 'partials/public_head.html' %}
+  <style>
+    .video-hero {
+      text-align: center;
+      max-width: 960px;
+      margin: 40px auto 24px;
+      padding: 0 20px;
+    }
+    .video-hero h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 12px 0 8px;
+      letter-spacing: -0.02em;
+    }
+    .video-hero p {
+      font-size: 1.1rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+    .video-container {
+      max-width: 1080px;
+      margin: 0 auto 32px;
+      padding: 0 20px;
+    }
+    .video-card {
+      background: #0f172a;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.35);
+      border: 1px solid #334155;
+    }
+    .video-player {
+      width: 100%;
+      height: auto;
+      max-height: 620px;
+      display: block;
+      background: #000;
+    }
+    .video-chapters {
+      background: #1e293b;
+      padding: 16px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      border-top: 1px solid #334155;
+    }
+    .chapter-label {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-right: 6px;
+    }
+    .chapter-btn {
+      background: #334155;
+      color: #f1f5f9;
+      border: 1px solid #475569;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chapter-btn:hover {
+      background: #2563eb;
+      border-color: #3b82f6;
+      color: #fff;
+    }
+    .video-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin: 28px 0 48px;
+    }
+    .btn-action {
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn-action:hover {
+      transform: translateY(-1px);
+    }
+    .btn-pri {
+      background: #1a73e8;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(26, 115, 232, 0.3);
+    }
+    .btn-sec {
+      background: #ffffff;
+      color: #1e293b;
+      border: 1px solid #cbd5e1;
+    }
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 1080px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+    }
+    .spec-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .spec-card h3 {
+      font-size: 1.1rem;
+      color: #1e293b;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .spec-card p {
+      color: #64748b;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+  </style>
+</head>
+<body class="public-page">
+{% set public_page = 'video' %}
+{% include 'partials/public_nav.html' %}
+
+<main id="main-content" class="public-main">
+  <header class="video-hero">
+    <span class="public-eyebrow">OFFICIAL SUBMISSION ASSET · CODE FOR COMMUNITIES 2</span>
+    <h1>End-to-End System Walkthrough</h1>
+    <p>Multilingual Ingestion &rarr; Gemini 3.6 Flash Triage &rarr; Spatial Clustering &rarr; Auditor Cryptographic Ledger &rarr; Ministry Capex Rehearsal</p>
+  </header>
+
+  <div class="video-container">
+    <div class="video-card">
+      <video id="walkthroughVideo" controls playsinline preload="auto" class="video-player">
+        <source src="/static/videos/Nexus_VisBharat_Demo_Walkthrough.webm" type="video/webm">
+        Your browser does not support the video tag.
+      </video>
+      <div class="video-chapters">
+        <span class="chapter-label"><i class="bi bi-fast-forward"></i> Jump to:</span>
+        <button class="chapter-btn" onclick="seekTo(0)"><i class="bi bi-play-fill"></i> 0:00 Hero Overview</button>
+        <button class="chapter-btn" onclick="seekTo(22)"><i class="bi bi-mic"></i> 0:22 Multilingual Intake</button>
+        <button class="chapter-btn" onclick="seekTo(42)"><i class="bi bi-speedometer2"></i> 0:42 Policy Dashboard</button>
+        <button class="chapter-btn" onclick="seekTo(54)"><i class="bi bi-shield-check"></i> 0:54 Auditor Workbench</button>
+        <button class="chapter-btn" onclick="seekTo(72)"><i class="bi bi-layers"></i> 1:12 Jury Demo (12.5k Records)</button>
+        <button class="chapter-btn" onclick="seekTo(85)"><i class="bi bi-buildings"></i> 1:25 Ministry Pilot</button>
+      </div>
+    </div>
+
+    <div class="video-actions">
+      <a href="/static/videos/Nexus_VisBharat_Demo_Walkthrough.webm" download="Nexus_VisBharat_Demo_Walkthrough.webm" class="btn-action btn-pri">
+        <i class="bi bi-download"></i> Download Video (1080p WebM, 15.8 MB)
+      </a>
+      <a href="/pitch-deck" class="btn-action btn-sec">
+        <i class="bi bi-file-earmark-slides"></i> View Pitch Deck (12 Slides)
+      </a>
+      <a href="/dashboard" class="btn-action btn-sec">
+        <i class="bi bi-arrow-up-right-circle"></i> Open Live Dashboard
+      </a>
+    </div>
+
+    <div class="specs-grid">
+      <div class="spec-card">
+        <h3><i class="bi bi-stars text-primary"></i> Gemini 3.6 Flash Ingestion</h3>
+        <p>Zero-shot multilingual triage across Tamil, Telugu, and English. Categorizes grievances, extracts spatial entities, and flags emergencies in under 800 ms.</p>
+      </div>
+      <div class="spec-card">
+        <h3><i class="bi bi-diagram-3 text-success"></i> 12,500-Record Spatial Clustering</h3>
+        <p>Aggregates isolated complaints into municipal demand clusters. Fuses signals with PM Gati Shakti, NITI Aayog MPI, and Census data for objective prioritization.</p>
+      </div>
+      <div class="spec-card">
+        <h3><i class="bi bi-shield-lock text-warning"></i> Tamper-Evident Audit Ledger</h3>
+        <p>Cryptographic SHA-256 event chaining ensures every proposal, verification, and capex decision is permanently verifiable and accountable.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+{% include 'partials/public_footer.html' %}
+
+<script>
+  function seekTo(seconds) {
+    const video = document.getElementById('walkthroughVideo');
+    if (video) {
+      video.currentTime = seconds;
+      video.play();
+    }
+  }
+</script>
+</body>
+</html>

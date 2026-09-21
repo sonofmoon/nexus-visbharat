@@ -19,7 +19,7 @@
   "provenance": {
     "analytics_replica": "BigQuery (not queried for this snapshot)",
     "as_of": "2026-01-01T00:00:00Z",
-    "calculated_at": "2026-09-19T04:34:51.460596+00:00",
+    "calculated_at": "2026-09-21T19:05:32.809900+00:00",
     "data_mode": "synthetic",
     "operational_requests": 0,
     "quality": "Synthetic events demonstrate workflow; operational records still require verification.",

@@ -13,6 +13,8 @@
       {% else %}
       <a href="/" {% if public_page == 'home' %}aria-current="page"{% endif %}>Overview</a>
       <a href="/submit" {% if public_page == 'submit' %}aria-current="page"{% endif %}>Submit a request</a>
+      <a href="/demo-video" {% if public_page == 'video' %}aria-current="page"{% endif %}><i class="bi bi-play-circle" aria-hidden="true"></i> Demo Video</a>
+      <a href="/pitch-deck" {% if public_page == 'deck' %}aria-current="page"{% endif %}><i class="bi bi-file-earmark-slides" aria-hidden="true"></i> Pitch Deck</a>
       <a href="/pilot">Ministry Pilot <i class="bi bi-buildings" aria-hidden="true"></i></a>
       <a href="/dashboard">Policy dashboard <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
       {% endif %}

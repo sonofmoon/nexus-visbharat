@@ -55,3 +55,4 @@ instance/public-data/
 dist/
 build/
 .pytest_cache/
+docs/videos/

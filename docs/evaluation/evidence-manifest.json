@@ -1,11 +1,11 @@
 {
-  "recorded_at": "2026-09-19T04:36:17.387238+00:00",
+  "recorded_at": "2026-09-21T19:09:45.237190+00:00",
   "algorithm": "sha256",
   "files": [
     {
       "path": "docs/evaluation/quality.json",
-      "bytes": 15140,
-      "sha256": "5e809378b458756e7780346e5fd86b99d070a989238eedec9727326746deb522"
+      "bytes": 14612,
+      "sha256": "25a7112f079f43bae019cfc36950d22d65bb5d54e7bce8338d0d5de8056e80a3"
     },
     {
       "path": "docs/evaluation/baseline-quality.json",
@@ -29,13 +29,8 @@
     },
     {
       "path": "docs/release/analyst-decision.schema.json",
-      "bytes": 1565,
-      "sha256": "2c135a7939649261953d25a19922a7c3a82de630311aa76e0c81f30569d69453"
-    },
-    {
-      "path": "docs/ANALYST_IMPLEMENTATION_STATUS.md",
-      "bytes": 8251,
-      "sha256": "e266e365252900809bf7a801fd296df6a441029ff381bf79f0c34cacac6a25fc"
+      "bytes": 1582,
+      "sha256": "9d488e2a161147408268d2fe6ff1f631397f8a124dc93efa980ac3867cc60fc4"
     },
     {
       "path": "scratch/analyst-implementation/browser/results.json",
@@ -54,8 +49,8 @@
     },
     {
       "path": "visbharat/services/analyst_workbench.py",
-      "bytes": 36210,
-      "sha256": "82505b67a2a637f3c251201b5b25979ef0c818cfd7af42e601194773e420b57d"
+      "bytes": 44381,
+      "sha256": "27e9e3aef8a0c88d903f557d603db01c120763ff024639488e15100f197fbf38"
     },
     {
       "path": "visbharat/services/analyst_compat.py",
@@ -64,28 +59,28 @@
     },
     {
       "path": "visbharat/blueprints/analyst.py",
-      "bytes": 12175,
-      "sha256": "a1854ce82f5a869cb0a3ae0dc114639d801c4f314b0c4a51a9211ef7e5784066"
+      "bytes": 13292,
+      "sha256": "289c9e7abcef380abc458b7ff1fc3ca8cb269fb3212a43e5efe237069b7526bf"
     },
     {
       "path": "templates/analyst_workbench.html",
-      "bytes": 6358,
-      "sha256": "fcd41d74d2e152ac8efe3103cec9d4b549a94e91b61917383d251f8560271326"
+      "bytes": 6447,
+      "sha256": "6b4fc8bd313889773c82bab2b13b68900953285a11760dde9d9d86bf23ef8cc4"
     },
     {
       "path": "static/js/analyst-workbench.js",
-      "bytes": 25082,
-      "sha256": "816809485ae029fcbaec90a1793530441b08e14acbc9ff2c63546ab160e25966"
+      "bytes": 30826,
+      "sha256": "f55291d92dc80e0a829621910abcca9d02a76c49e0d051d501bf47d99acfdc18"
     },
     {
       "path": "static/css/analyst-workbench.css",
-      "bytes": 2658,
-      "sha256": "af4efde6635cf1390d0d9e2a1d756794401a888b00bf59b37707a8ca13d544b9"
+      "bytes": 4144,
+      "sha256": "2b3ba75089bb68a650457795b1be5008e8dd2f9e1c31adb54b17f4aba093553e"
     },
     {
       "path": "tests/test_analyst_workbench.py",
-      "bytes": 12882,
-      "sha256": "efb6425f630a77d238b6b69b6c0e9ebc4abcc6098ff84110097c4f70bf31b32e"
+      "bytes": 14285,
+      "sha256": "a7f60e3734cea3a8970a6435a23e12b472343f30040fefeeec70a9177fea06a0"
     },
     {
       "path": "tests/test_dashboard_deployment.py",

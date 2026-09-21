@@ -7,16 +7,15 @@
   "independent_human_review": false,
   "overall": {
     "samples": 27,
-    "category_macro_f1": 0.88,
-    "urgency_accuracy": 0.9259,
+    "category_macro_f1": 1.0,
+    "urgency_accuracy": 0.963,
     "emergency_recall": 1.0,
     "emergency_samples": 9,
     "urgency_confusion_matrix": {
       "Routine -> Routine": 9,
       "Urgent -> Emergency": 1,
-      "Urgent -> Urgent": 7,
-      "Emergency -> Emergency": 9,
-      "Urgent -> Routine": 1
+      "Urgent -> Urgent": 8,
+      "Emergency -> Emergency": 9
     },
     "fallback_count": 0,
     "median_latency_ms": 11553.67
@@ -39,15 +38,14 @@
     },
     "ta": {
       "samples": 9,
-      "category_macro_f1": 0.8,
-      "urgency_accuracy": 0.8889,
+      "category_macro_f1": 1.0,
+      "urgency_accuracy": 1.0,
       "emergency_recall": 1.0,
       "emergency_samples": 3,
       "urgency_confusion_matrix": {
         "Routine -> Routine": 3,
-        "Urgent -> Urgent": 2,
-        "Emergency -> Emergency": 3,
-        "Urgent -> Routine": 1
+        "Urgent -> Urgent": 3,
+        "Emergency -> Emergency": 3
       },
       "fallback_count": 0,
       "median_latency_ms": 11889.17
@@ -129,7 +127,7 @@
       "urgency": "Urgent",
       "model": "gemini-3.6-flash",
       "fallback": false,
-      "translated_text": "தாக்குறை அல்ல.\" -> This is not a drinking water shortage.\n    *   Draft Translation:\n        \"Sewage water is entering the school toilet in Chennai. Children cannot use it. Clear the sewage blockage today. This is not a drinking water shortage.\"\n        or",
+      "translated_text": "Sewage water is entering the school toilet in Chennai. Children cannot use it. Clear the sewage blockage today. This is not a drinking water shortage.",
       "latency_ms": 12902.6,
       "human_review": null
     },
@@ -142,7 +140,7 @@
       "urgency": "Urgent",
       "model": "gemini-3.6-flash",
       "fallback": false,
-      "translated_text": "{\n  \"translation\": \"Sewage water is entering Hyderabad school toilets. Children are unable to use them. Clear the drain blockage today. This is not a drinking water shortage.\"\n}",
+      "translated_text": "Sewage water is entering Hyderabad school toilets. Children are unable to use them. Clear the drain blockage today. This is not a drinking water shortage.",
       "latency_ms": 12908.74,
       "human_review": null
     },
@@ -168,7 +166,7 @@
       "urgency": "Emergency",
       "model": "gemini-3.6-flash",
       "fallback": false,
-      "translated_text": "string is just the translation, OR a JSON object?\n            Wait! A JSON string *is* valid JSON! E.g., `\"In Karur, an electric wire has fallen into water near the bus stop. People are walking near it. Disconnect the electricity immediately and send an emergency",
+      "translated_text": "In Karur, an electric wire has fallen into water near the bus stop. People are walking near it. Disconnect the electricity immediately and send an emergency team.",
       "latency_ms": 12699.77,
       "human_review": null
     },
@@ -220,7 +218,7 @@
       "urgency": "Emergency",
       "model": "gemini-3.6-flash",
       "fallback": false,
-      "translated_text": "is collapsing while people are crossing it. Stop traffic and send a rescue team immediately.\" -> \"The bridge people are crossing near Tirupati is collapsing. Stop traffic and send a rescue team immediately.\"\n\n    *   Let's translate naturally and accurately:\n        \"The bridge near",
+      "translated_text": "The bridge people are crossing near Tirupati is collapsing. Stop traffic and send a rescue team immediately.",
       "latency_ms": 13131.19,
       "human_review": null
     },
@@ -298,7 +296,7 @@
       "urgency": "Urgent",
       "model": "gemini-3.6-flash",
       "fallback": false,
-      "translated_text": "{\"translated_text\": \"There have been no fever medicines at Nalgonda Primary Health Centre for four days. Patients are being sent back. Supply medicines urgently.\"}",
+      "translated_text": "There have been no fever medicines at Nalgonda Primary Health Centre for four days. Patients are being sent back. Supply medicines urgently.",
       "latency_ms": 11553.67,
       "human_review": null
     },
@@ -359,11 +357,11 @@
       "language": "ta",
       "expected_category": "Digital Connectivity",
       "expected_urgency": "Urgent",
-      "category": "Other",
-      "urgency": "Routine",
+      "category": "Digital Connectivity",
+      "urgency": "Urgent",
       "model": "gemini-3.6-flash",
       "fallback": false,
-      "translated_text": "plain text?\n    System: `Respond with valid JSON only.`\n    User: `Output ONLY the English translation text. No JSON, no labels, no quotes, no explanation.`\n    Wait, why does User Rule 3 explicitly say \"No JSON\"?\n    Because users test if",
+      "translated_text": "There has been no internet at the Chennai Public Service Center for three days. We cannot submit pension applications. Please restore the connection quickly.",
       "latency_ms": 12209.79,
       "human_review": null
     },
@@ -376,7 +374,7 @@
       "urgency": "Urgent",
       "model": "gemini-3.6-flash",
       "fallback": false,
-      "translated_text": "```json\n{\n  \"translation\": \"There has been no internet at the Hyderabad Public Service Center for three days. We are unable to send pension applications. Please restore the connection quickly.\"\n}\n```",
+      "translated_text": "There has been no internet at the Hyderabad Public Service Center for three days. We are unable to send pension applications. Please restore the connection quickly.",
       "latency_ms": 12188.88,
       "human_review": null
     },
@@ -415,7 +413,7 @@
       "urgency": "Emergency",
       "model": "gemini-3.6-flash",
       "fallback": false,
-      "translated_text": "{\n  \"translation\": \"In Hyderabad, the wall of a government housing complex where people are living is leaning outwards. Families are inside. Evacuate immediately.\"\n}",
+      "translated_text": "In Hyderabad, the wall of a government housing complex where people are living is leaning outwards. Families are inside. Evacuate immediately.",
       "latency_ms": 12347.56,
       "human_review": null
     }

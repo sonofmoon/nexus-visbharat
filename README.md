@@ -12,11 +12,11 @@
 
 | Deliverable | Production Link / Endpoint | Description |
 |---|---|---|
-| **Live Showcase Prototype** | [**`https://visbharat.nexusaitech.in`**](https://visbharat.nexusaitech.in) | Production Cloud Run deployment with custom domain routing |
-| **GCP Cloud Run Service** | [`https://nexus-visbharath-510474645723.asia-south1.run.app`](https://nexus-visbharath-510474645723.asia-south1.run.app) | Direct Google Cloud Run microservice endpoint (`asia-south1`, Mumbai) |
+| **Live Showcase Prototype** | [**`https://visbharat.nexusaitech.in`**](https://visbharat.nexusaitech.in) · [Direct Cloud Run](https://nexus-visbharath-510474645723.asia-south1.run.app) | Production Cloud Run deployment (`asia-south1`, Mumbai) |
+| **GCP Cloud Run Service** | [`https://nexus-visbharath-510474645723.asia-south1.run.app`](https://nexus-visbharath-510474645723.asia-south1.run.app) | Direct Google Cloud Run microservice endpoint with auto-scaling |
 | **Source Code (Public)** | [**GitHub Repository**](https://github.com/sonofmoon/nexus-visbharat) | Complete source tree, Dockerfile, Terraform, and test suites |
-| **End-to-End Walkthrough** | [**Demo Video (3–5 Min)**](https://visbharat.nexusaitech.in/demo-video) | Working walkthrough: Multilingual intake &rarr; Planning &rarr; 4-Gate Audit |
-| **Executive Pitch Deck** | [**Pitch Deck (10–12 Slides)**](https://visbharat.nexusaitech.in/pitch-deck) | Problem, solution, Google AI architecture, DPI scalability, and pilot roadmap |
+| **End-to-End Walkthrough** | [**Demo Video (3–5 Min)**](https://nexus-visbharath-510474645723.asia-south1.run.app/demo-video) · [Custom Domain](https://visbharat.nexusaitech.in/demo-video) | Working walkthrough: Multilingual intake &rarr; Planning &rarr; 4-Gate Audit |
+| **Executive Pitch Deck** | [**Pitch Deck (12 Slides)**](https://nexus-visbharath-510474645723.asia-south1.run.app/pitch-deck) · [Custom Domain](https://visbharat.nexusaitech.in/pitch-deck) | Interactive 12-slide presentation covering problem, Google AI, DPI, and pilot |
 
 > **Brief Solution Summary (2–3 Lines):**  
 > **Nexus VisBharat (NVB)** is a Digital Public Good candidate platform that bridges citizen feedback with national infrastructure planning. Using Google AI (Gemini on Vertex AI, Cloud STT, and Dialogflow CX), NVB ingests voice and text reports in Tamil, Telugu, and English, cross-references them against live open data (LGD, data.gov.in, NITI Aayog NDAP), and applies a 4-gate governance workflow to help policymakers prioritize high-impact capital investments without autonomous AI hallucination.
@@ -485,21 +485,19 @@ curl http://localhost:5000/api/policy-brief/Chennai
 ```
 *Gemini synthesizes citizen request clusters, ward deprivation data, and ongoing capital projects into a structured policy brief with concrete recommendations.*
 
-### Step 5: Independent Auditor Suite & Cryptographic Logs
-- Visit `http://localhost:5000/auditor`.
-- Or query audit events via authorized token:
+### Step 5: Independent Auditor Suite & Cryptographic Receipts
+- Open the Auditor Suite directly at `http://localhost:5000/auditor` (or select the **Auditor** role on `/dashboard`).
+- Or query tamper-evident audit events via authorized token:
 ```bash
-curl -H "Authorization: Bearer visbharat-auditor-token" http://localhost:5000/api/v1/audit-logs
+curl -H "Authorization: Bearer visbharat-auditor-token" http://localhost:5000/api/v2/auditor/events
 ```
-*Displays immutable audit records, guaranteeing transparency from citizen intake to executive approval.*
+*Displays tamper-evident cryptographic records (SHA-256 hash chains), guaranteeing complete provenance from citizen intake to ministerial approval.*
 
-### Step 6: Automated Test Suite & Measured Quality Verification
-Run the regression suite and read-only UI checks:
+### Step 6: Automated Test Suites & Interoperability Validation
+Run the core regression test suites and schema validation:
 ```powershell
-python -m unittest discover -s tests -p "test_*.py"
-python scripts/check_analyst_workbench_ui.py
-python scripts/check_request_filters_ui.py
-python scripts/check_ministry_pilot_ui.py
+python -m unittest tests.test_outbox_and_fastpath tests.test_emergency_dispatch_and_telemetry tests.test_ministry_pilot tests.test_analyst_workbench tests.test_auditor_workbench tests.test_database_url_runtime tests.test_data_integrity
+python -m unittest tests.test_jury_demo
 python scripts/verify_analyst_exchange.py
 ```
 

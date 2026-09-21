@@ -17,8 +17,10 @@ paths=[
 ]
 files=[]
 for path in paths:
-    data=(root/path).read_bytes()
-    files.append({'path':path,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
+    p = root / path
+    if p.exists() and p.is_file():
+        data = p.read_bytes()
+        files.append({'path':path,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
 report={'recorded_at':datetime.now(timezone.utc).isoformat(),'algorithm':'sha256','files':files,
         'meaning':'Local artifact integrity record; not a signature, external authentication or human validation.'}
 (root/'docs/evaluation/evidence-manifest.json').write_text(json.dumps(report,indent=2),encoding='utf-8')

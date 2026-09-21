@@ -66,12 +66,17 @@ class GoogleAIClient:
             f"https://aiplatform.googleapis.com/v1/projects/{self.project_id}"
             f"/locations/{self.vertex_openai_location}/endpoints/openapi/chat/completions"
         )
+        system_content = (
+            'You are a civic infrastructure intelligence engine for India. Respond with valid JSON only.'
+            if json_mode
+            else 'You are a civic infrastructure intelligence engine and translator for India. Provide direct, accurate English text without JSON wrappers or metadata.'
+        )
         payload = {
             'model': f'google/{model}',
             'messages': [
                 {
                     'role': 'system',
-                    'content': 'You are a civic infrastructure intelligence engine for India. Respond with valid JSON only.',
+                    'content': system_content,
                 },
                 {'role': 'user', 'content': prompt},
             ],
@@ -281,10 +286,31 @@ Text:
 '''
         try:
             output, used_model = self._call_gemini('gemini-3.6-flash', prompt, json_mode=False)
-            t_text = output.strip().strip('"').strip()
+            t_text = output.strip()
+            # Robust unwrap if model returned JSON or code-fence
+            if t_text.startswith('{') or '```' in t_text:
+                try:
+                    import re, json
+                    clean_json = re.sub(r'^```(?:json)?\s*', '', t_text, flags=re.MULTILINE)
+                    clean_json = re.sub(r'```\s*$', '', clean_json, flags=re.MULTILINE).strip()
+                    parsed = json.loads(clean_json)
+                    if isinstance(parsed, dict):
+                        t_text = str(parsed.get('translation') or parsed.get('translated_text') or list(parsed.values())[0]).strip()
+                except Exception:
+                    pass
+            t_text = t_text.strip().strip('"').strip()
             for prefix in ["Translation:", "English Translation:", "English:"]:
                 if t_text.startswith(prefix):
                     t_text = t_text[len(prefix):].strip()
+
+            # Strict Output Validation: reject commentary, thought artifacts, or reasoning fragments
+            reject_markers = [
+                "wait!", "draft translation", "system:", "user:", "rule 1", "rule 2", "rule 3",
+                "respond with valid json", "plain text?", "why does user", "```"
+            ]
+            if any(marker in t_text.lower() for marker in reject_markers) or len(t_text.split()) < 2:
+                raise ValueError(f"Translation output failed quality validation: reasoning artifacts detected: {t_text[:80]}")
+
             return {
                 'translated_text': t_text,
                 'source_language': source_lang,
