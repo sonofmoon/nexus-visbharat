@@ -1,4 +1,0 @@
-scenario,reports_per_month,districts,platform_usd,speech_usd,translation_usd,model_usd,subtotal_usd,contingency_usd,total_usd,usd_to_inr,monthly_inr_ex_tax,illustrative_inr_with_18pct_tax,inr_per_report_ex_tax,pricing_status
-Two-district pilot,10000,2,920,79.2,77,21.45,1097.65,274.41,1372.06,90,123485.63,145713.04,12.35,Planning estimate; rates not verified
-Twenty-district expansion,100000,20,2440,792,770,214.5,4216.5,1054.13,5270.63,90,474356.25,559740.38,4.74,Planning estimate; rates not verified
-Ministry planning scenario,1000000,100,14700,7920,7700,2145,32465,8116.25,40581.25,90,3652312.5,4309728.75,3.65,Planning estimate; rates not verified
