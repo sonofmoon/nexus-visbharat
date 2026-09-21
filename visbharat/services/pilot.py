@@ -36,7 +36,7 @@ def user_memberships():
     if not m and current_app.config.get('DEMO_MODE'):
         state = 'Tamil Nadu' if 'Vellore' in user.get('name','') else 'Andhra Pradesh' if 'Tirupati' in user.get('name','') else ''
         district = 'Vellore' if 'Vellore' in user.get('name','') else 'Tirupati' if 'Tirupati' in user.get('name','') else ''
-        get_db().execute('INSERT OR IGNORE INTO pilot_memberships(pilot_id,user_id,state,district,active) VALUES(?,?,?,?,1)',(PILOT_ID,user['id'],state,district))
+        get_db().execute('INSERT INTO pilot_memberships(pilot_id,user_id,state,district,active) VALUES(?,?,?,?,1) ON CONFLICT(pilot_id,user_id) DO NOTHING',(PILOT_ID,user['id'],state,district))
         get_db().commit()
         m = rows('SELECT * FROM pilot_memberships WHERE user_id=? AND active=1',(user['id'],))
     return m
@@ -76,7 +76,7 @@ def resolve_scope(scope, args):
     member=next((m for m in memberships if m['pilot_id']==pid),None)
     if not member and not (user['role']=='admin' and not memberships):
         if current_app.config.get('DEMO_MODE'):
-            get_db().execute('INSERT OR IGNORE INTO pilot_memberships(pilot_id,user_id,state,district,active) VALUES(?,?,?,?,1)',(pid,user['id'],'',''))
+            get_db().execute('INSERT INTO pilot_memberships(pilot_id,user_id,state,district,active) VALUES(?,?,?,?,1) ON CONFLICT(pilot_id,user_id) DO NOTHING',(pid,user['id'],'',''))
             get_db().commit()
             member={'pilot_id':pid,'user_id':user['id'],'state':'','district':'','active':1}
         else:

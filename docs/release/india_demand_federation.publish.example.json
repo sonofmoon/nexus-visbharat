@@ -1,0 +1,16 @@
+{
+  "source": "state-demand-grid",
+  "external_event_id": "SDG-20260909-000123",
+  "channel": "Federation",
+  "language": "ta",
+  "district": "Chennai",
+  "state": "Tamil Nadu",
+  "text": "Ward 7 has severe drinking water shortage for 2 days",
+  "sender": "federation-node-tn-01",
+  "ward": "7",
+  "occurred_at": "2026-09-09T06:00:00Z",
+  "meta": {
+    "source_priority": "high",
+    "collector": "state-bot"
+  }
+}

@@ -1,0 +1,37 @@
+﻿name: CI Test Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Application Contracts & Test Suites
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run core unit & contract test suites
+        env:
+          PYTHONPATH: .
+          NVB_DISABLE_EXTERNAL_SERVICES: "1"
+          DEMO_MODE: "true"
+          SEED_DEMO_DATA: "false"
+        run: |
+          python -m unittest tests.test_outbox_and_fastpath tests.test_emergency_dispatch_and_telemetry tests.test_ministry_pilot tests.test_analyst_workbench tests.test_auditor_workbench tests.test_database_url_runtime tests.test_data_integrity

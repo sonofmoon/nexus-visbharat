@@ -1,0 +1,33 @@
+﻿{
+  "Chennai": [
+    {
+      "village": "Sample Village Block A",
+      "points": [
+        { "lat": 13.07, "lng": 80.26 },
+        { "lat": 13.09, "lng": 80.26 },
+        { "lat": 13.09, "lng": 80.29 },
+        { "lat": 13.07, "lng": 80.29 }
+      ]
+    },
+    {
+      "village": "Sample Village Block B",
+      "points": [
+        { "lat": 13.07, "lng": 80.29 },
+        { "lat": 13.09, "lng": 80.29 },
+        { "lat": 13.09, "lng": 80.32 },
+        { "lat": 13.07, "lng": 80.32 }
+      ]
+    }
+  ],
+  "Hyderabad": [
+    {
+      "village": "Sample Revenue Village 1",
+      "points": [
+        { "lat": 17.38, "lng": 78.47 },
+        { "lat": 17.4, "lng": 78.47 },
+        { "lat": 17.4, "lng": 78.49 },
+        { "lat": 17.38, "lng": 78.49 }
+      ]
+    }
+  ]
+}
