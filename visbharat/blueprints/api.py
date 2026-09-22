@@ -1382,6 +1382,15 @@ def ai_status():
     def operation(provider, name):
         return services[provider]['operations'][name]['status']
 
+    # Both intake paths can translate; summarize the latest attempted operation.
+    translations = [services[p]['operations']['translate_text']
+                    for p in ('google_translation', 'google_ai')]
+    attempted_translations = [item for item in translations if item['last_invocation']]
+    translation_status = (max(attempted_translations,
+        key=lambda item: item['last_invocation']['checked_at'])['status']
+        if attempted_translations else
+        'configured' if any(item['status'] == 'configured' for item in translations) else 'unavailable')
+
     # Retrieve recent verifiable invocation telemetry
     db = get_db()
     recent_invocations = []
@@ -1406,7 +1415,10 @@ def ai_status():
     except Exception:
         pass
 
-    latest_evidence = recent_invocations[0] if recent_invocations else None
+    inference_events = [dict(item['last_invocation'], status=item['status'])
+        for provider in ('google_ai', 'google_translation', 'google_stt', 'google_vertex', 'google_dialogflow')
+        for item in services[provider]['operations'].values() if item['last_invocation']]
+    latest_evidence = max(inference_events, key=lambda item: item['checked_at'], default=None)
     ai_client = current_app.extensions.get('google_ai_client')
     gemini_health = ai_client.get_health() if (ai_client and hasattr(ai_client, 'get_health')) else None
 
@@ -1416,15 +1428,15 @@ def ai_status():
         preferred_asr_provider='google',
         cloud_run_service_configured=bool(current_app.config.get('CLOUD_RUN_SERVICE_URL')),
         cloud_run_service_url=current_app.config.get('CLOUD_RUN_SERVICE_URL', ''),
-        translation_configured=bool(current_app.config.get('USE_REAL_GOOGLE_TRANSLATION')),
-        translation_status=operation('google_ai', 'translate_text'),
+        translation_configured=any(services[p]['configured'] for p in ('google_translation', 'google_ai')),
+        translation_status=translation_status,
         recent_invocations=recent_invocations,
         latest_inference=latest_evidence,
         gemini_health=gemini_health,
         supported_features=['multilingual_translation','request_classification','policy_brief_generation',
             'voice_input_stt','dialogflow_cx_guided_conversation','bigquery_analytics','vertex_prediction'],
         feature_status={
-            'multilingual_translation': operation('google_ai','translate_text'),
+            'multilingual_translation': translation_status,
             'request_classification': operation('google_ai','classify_request'),
             'policy_brief_generation': operation('google_ai','generate_policy_brief'),
             'voice_input_stt': operation('google_stt','transcribe_bytes'),

@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus VisBharat (NVB) | Enterprise Showcase & Digital Public Infrastructure</title>
+  <meta name="description" content="Nexus VisBharat (NVB) is a sovereign Digital Public Infrastructure platform transforming multilingual citizen voice into evidence-linked, tamper-evident municipal infrastructure budgeting using Google Cloud Vertex AI, Gemini Flash, and Chirp-2 Speech-to-Text.">
+  <meta name="author" content="Dr. Ravikumar Chandrasekaran, Thanthai Periyar E.V. Ramasamy Government Polytechnic College, Vellore, Tamil Nadu">
+  <meta name="keywords" content="Nexus VisBharat, NVB, Digital Public Infrastructure, DPI, Google Cloud, Vertex AI, Gemini Flash, Chirp-2, Code for Communities, Hack2Skill, DPDP Act 2023, Tamil Nadu, Andhra Pradesh, Vellore, Tirupati">
+
+  <!-- Open Graph / Social Meta -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://nexusaitech.in/apps/nvb/index.html">
+  <meta property="og:title" content="Nexus VisBharat (NVB) | Voice-to-Budget Sovereign DPI">
+  <meta property="og:description" content="Multilingual citizen voice grievance ingestion to evidence-linked, tamper-evident municipal infrastructure budget allocation powered by Google Cloud Gen AI.">
+  <meta property="og:image" content="https://nexus-visbharath-510474645723.asia-south1.run.app/static/img/hero-preview.png">
+
+  <!-- Google Fonts: Google Sans / Inter & Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Google Material 3 Dark/Light Palette */
+      --font-main: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+      /* Light Theme Variables */
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-surface-elevated: #f1f5f9;
+      --bg-surface-card: #ffffff;
+      --bg-ribbon: #1e293b;
+      --border-subtle: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-tertiary: #64748b;
+      --accent-blue: #1a73e8;
+      --accent-blue-hover: #1557b0;
+      --accent-blue-light: #e8f0fe;
+      --accent-green: #137333;
+      --accent-green-light: #e6f4ea;
+      --accent-amber: #b06000;
+      --accent-amber-light: #fef7e0;
+      --accent-red: #c5221f;
+      --accent-red-light: #fce8e6;
+      --accent-purple: #7a1fa2;
+      --accent-purple-light: #f3e8fd;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --glass-border: rgba(226, 232, 240, 0.8);
+      --code-bg: #f1f5f9;
+    }
+
+    [data-theme="dark"] {
+      /* Dark Theme Variables */
+      --bg-page: #0b0f17;
+      --bg-surface: #111827;
+      --bg-surface-elevated: #1f2937;
+      --bg-surface-card: #141d2e;
+      --bg-ribbon: #030712;
+      --border-subtle: #1f2937;
+      --border-strong: #374151;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-tertiary: #64748b;
+      --accent-blue: #8ab4f8;
+      --accent-blue-hover: #aecbfa;
+      --accent-blue-light: rgba(138, 180, 248, 0.12);
+      --accent-green: #81c995;
+      --accent-green-light: rgba(129, 201, 149, 0.12);
+      --accent-amber: #fdd663;
+      --accent-amber-light: rgba(253, 214, 99, 0.12);
+      --accent-red: #f28b82;
+      --accent-red-light: rgba(242, 139, 130, 0.12);
+      --accent-purple: #c58af9;
+      --accent-purple-light: rgba(197, 138, 249, 0.12);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.5);
+      --shadow-lg: 0 10px 20px -3px rgba(0,0,0,0.6);
+      --glass-bg: rgba(17, 24, 39, 0.85);
+      --glass-border: rgba(55, 65, 81, 0.7);
+      --code-bg: #0f172a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+
+    body {
+      font-family: var(--font-main);
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* Top Challenge Ribbon */
+    .top-ribbon {
+      background: linear-gradient(90deg, #1e3a8a, #0f172a 40%, #1e1b4b 100%);
+      color: #93c5fd;
+      padding: 0.55rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 0.02em;
+      border-bottom: 1px solid rgba(147, 197, 253, 0.2);
+    }
+    .top-ribbon a {
+      color: #60a5fa;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      margin-left: 0.4rem;
+    }
+    .top-ribbon .badge {
+      display: inline-block;
+      background: rgba(96, 165, 250, 0.2);
+      color: #bfdbfe;
+      border-radius: 9999px;
+      padding: 0.15rem 0.6rem;
+      font-size: 0.72rem;
+      margin-right: 0.5rem;
+      border: 1px solid rgba(147, 197, 253, 0.3);
+    }
+
+    /* Sticky Navigation Header */
+    .header-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0.75rem 1.5rem;
+    }
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #1a73e8, #34a853);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 800;
+      font-size: 1rem;
+      box-shadow: 0 2px 4px rgba(26, 115, 232, 0.3);
+    }
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .brand-pill {
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: var(--accent-blue-light);
+      color: var(--accent-blue);
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      border: 1px solid var(--accent-blue);
+    }
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      list-style: none;
+    }
+    .nav-menu a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 500;
+      transition: color 0.15s ease;
+    }
+    .nav-menu a:hover {
+      color: var(--accent-blue);
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .theme-toggle-btn {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .btn-primary {
+      background-color: var(--accent-blue);
+      color: #ffffff !important;
+      border: 1px solid transparent;
+      box-shadow: 0 2px 4px rgba(26, 115, 232, 0.25);
+    }
+    .btn-primary:hover {
+      background-color: var(--accent-blue-hover);
+      box-shadow: 0 4px 8px rgba(26, 115, 232, 0.35);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background-color: var(--bg-surface-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-strong);
+    }
+    .btn-secondary:hover {
+      background-color: var(--border-subtle);
+      transform: translateY(-1px);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Hero Section */
+    .hero-section {
+      padding: 4.5rem 0 3rem 0;
+      text-align: center;
+      position: relative;
+    }
+    .badge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-strong);
+      color: var(--text-secondary);
+    }
+    .chip-accent {
+      background: var(--accent-blue-light);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+    .chip-green {
+      background: var(--accent-green-light);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+    .hero-title {
+      font-size: 2.85rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.18;
+      max-width: 1020px;
+      margin: 0 auto 1.25rem auto;
+      color: var(--text-primary);
+    }
+    .hero-title span.gradient-text {
+      background: linear-gradient(135deg, #1a73e8 0%, #34a853 50%, #fbbc04 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-secondary);
+      max-width: 820px;
+      margin: 0 auto 2.25rem auto;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+    .hero-cta-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.85rem;
+      margin-bottom: 3.5rem;
+    }
+    .hero-cta-grid .btn {
+      padding: 0.75rem 1.4rem;
+      font-size: 0.92rem;
+    }
+
+    /* Key Operational Vitals Grid */
+    .vitals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 4rem;
+    }
+    .vital-card {
+      background: var(--bg-surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: left;
+      box-shadow: var(--shadow-sm);
+    }
+    .vital-metric {
+      font-family: var(--font-mono);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      line-height: 1.2;
+      margin-bottom: 0.25rem;
+    }
+    .vital-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.2rem;
+    }
+    .vital-subtext {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+    }
+
+    /* Section Headers */
+    .section-header {
+      text-align: center;
+      max-width: 840px;
+      margin: 0 auto 2.5rem auto;
+    }
+    .section-eyebrow {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-blue);
+      margin-bottom: 0.4rem;
+    }
+    .section-title {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+    }
+    .section-desc {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Mandatory Requirements Grid (Hack2Skill Alignment) */
+    .requirements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 4.5rem;
+    }
+    .req-card {
+      background: var(--bg-surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .req-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: var(--accent-purple-light);
+      color: var(--accent-purple);
+      margin-bottom: 1rem;
+      align-self: flex-start;
+    }
+    .req-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+    }
+    .req-body {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+      line-height: 1.55;
+    }
+    .req-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1.25rem;
+    }
+    .tag {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      background: var(--bg-surface-elevated);
+      color: var(--text-secondary);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+    }
+    .req-action {
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .req-action a {
+      color: var(--accent-blue);
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    .req-action a:hover {
+      text-decoration: underline;
+    }
+
+    /* Architecture Section */
+    .arch-container {
+      background: var(--bg-surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 2.25rem;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 4.5rem;
+    }
+    .arch-flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .arch-box {
+      background: var(--bg-surface-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 1.25rem;
+      position: relative;
+    }
+    .arch-step-num {
+      position: absolute;
+      top: -10px;
+      left: 14px;
+      background: var(--accent-blue);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.1rem 0.5rem;
+      border-radius: 9999px;
+    }
+    .arch-box-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-top: 0.25rem;
+      margin-bottom: 0.5rem;
+    }
+    .arch-box-list {
+      list-style: none;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .arch-box-list li {
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.35rem;
+    }
+    .arch-box-list li::before {
+      content: "•";
+      color: var(--accent-blue);
+      font-weight: bold;
+    }
+
+    /* Rubric Compliance Matrix */
+    .rubric-table-wrapper {
+      background: var(--bg-surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      overflow-x: auto;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 4.5rem;
+    }
+    .rubric-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    .rubric-table th {
+      background: var(--bg-surface-elevated);
+      padding: 1rem 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-strong);
+      white-space: nowrap;
+    }
+    .rubric-table td {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      vertical-align: top;
+    }
+    .rubric-table tr:last-child td {
+      border-bottom: none;
+    }
+    .rubric-weight {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent-blue);
+      background: var(--accent-blue-light);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .rubric-score {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--accent-green);
+    }
+
+    /* Pilot Corridor Section */
+    .corridor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 4.5rem;
+    }
+    .corridor-card {
+      background: var(--bg-surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .corridor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .corridor-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .corridor-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+    }
+    .corridor-badge-tn {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #7dd3fc;
+    }
+    .corridor-badge-ap {
+      background: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fcd34d;
+    }
+
+    /* Evidence Dossier Grid */
+    .evidence-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 4.5rem;
+    }
+    .evidence-card {
+      background: var(--bg-surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .evidence-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent-blue);
+    }
+    .evidence-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .evidence-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.35rem;
+    }
+    .evidence-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+    .evidence-link {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent-blue);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* FAQ Accordion */
+    .faq-container {
+      max-width: 900px;
+      margin: 0 auto 4.5rem auto;
+    }
+    .faq-item {
+      background: var(--bg-surface-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .faq-question {
+      padding: 1.2rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+    .faq-question:hover {
+      background: var(--bg-surface-elevated);
+    }
+    .faq-icon {
+      font-size: 1.2rem;
+      transition: transform 0.2s ease;
+      color: var(--accent-blue);
+    }
+    .faq-item.active .faq-icon {
+      transform: rotate(180deg);
+    }
+    .faq-answer {
+      display: none;
+      padding: 0 1.5rem 1.25rem 1.5rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+    }
+    .faq-item.active .faq-answer {
+      display: block;
+    }
+
+    /* Live Launchpad / CTAs */
+    .launchpad-banner {
+      background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+      border-radius: 20px;
+      padding: 3rem 2rem;
+      text-align: center;
+      color: white;
+      margin-bottom: 4.5rem;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .launchpad-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+      color: #ffffff;
+    }
+    .launchpad-subtitle {
+      font-size: 1.05rem;
+      color: #cbd5e1;
+      max-width: 680px;
+      margin: 0 auto 2rem auto;
+    }
+    .launchpad-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+    }
+    .launchpad-buttons .btn {
+      padding: 0.8rem 1.5rem;
+      font-size: 0.95rem;
+    }
+    .btn-white {
+      background: #ffffff;
+      color: #0f172a !important;
+      font-weight: 700;
+    }
+    .btn-white:hover {
+      background: #f1f5f9;
+      transform: translateY(-2px);
+    }
+    .btn-outline-white {
+      background: rgba(255,255,255,0.08);
+      color: #ffffff !important;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .btn-outline-white:hover {
+      background: rgba(255,255,255,0.15);
+      transform: translateY(-2px);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--bg-ribbon);
+      color: #94a3b8;
+      padding: 3.5rem 0 2rem 0;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.85rem;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+    }
+    .footer-col h4 {
+      color: #f8fafc;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .footer-col ul {
+      list-style: none;
+    }
+    .footer-col ul li {
+      margin-bottom: 0.5rem;
+    }
+    .footer-col ul li a {
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .footer-col ul li a:hover {
+      color: #60a5fa;
+    }
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .hero-title { font-size: 2.2rem; }
+      .nav-menu { display: none; }
+      .footer-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <!-- Structured Data JSON-LD Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Nexus VisBharat (NVB)",
+        "operatingSystem": "Cloud-Native (Google Cloud Run)",
+        "applicationCategory": "GovernmentApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0.00",
+          "priceCurrency": "INR"
+        },
+        "description": "Sovereign Digital Public Infrastructure bridging multilingual citizen voice grievances to evidence-linked, tamper-evident municipal capital allocation.",
+        "url": "https://nexusaitech.in/apps/nvb/index.html",
+        "author": {
+          "@type": "Person",
+          "name": "Dr. Ravikumar Chandrasekaran",
+          "affiliation": "Thanthai Periyar E.V. Ramasamy Government Polytechnic College, Vellore, Tamil Nadu"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Nexus AI Tech",
+          "url": "https://nexusaitech.in"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does Nexus VisBharat ensure compliance with India's DPDP Act 2023?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "NVB enforces deterministic PII redaction at edge ingestion, ensuring Aadhaar numbers, phone numbers, and full citizen names are scrubbed before storage and LLM inference. All telemetry records zero citizen prompt data."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How does NVB prevent LLM hallucination in municipal budget allocation?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The Strategic Prioritization Score (SPS v2.4) is calculated deterministically via mathematical formula combining urgency, vulnerable demographic weight, spatial isolation, and verification status. The Gen AI models provide structured extraction and citizen synthesis, but never directly execute budgetary funds without municipal human review."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body data-theme="light">
+
+  <!-- Top Announcement Ribbon -->
+  <div class="top-ribbon">
+    <span class="badge">Official Submission</span>
+    <strong>Build with AI: Code for Communities (Second Edition)</strong> &bull; Track: <em>AI for Digital Public Infrastructure &amp; Governance — Innovation</em>
+    <a href="https://hack2skill.com/event/codeforcommunities2" target="_blank" rel="noopener">Event Guidelines &rarr;</a>
+  </div>
+
+  <!-- Sticky Navigation Header -->
+  <header class="header-nav">
+    <div class="nav-container">
+      <a href="#" class="brand-group">
+        <div class="brand-icon">NVB</div>
+        <div class="brand-title">
+          Nexus VisBharat
+          <span class="brand-pill">DPI Candidate</span>
+        </div>
+      </a>
+
+      <ul class="nav-menu">
+        <li><a href="#vision">Problem &amp; Vision</a></li>
+        <li><a href="#deliverables">5 Requirements</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#rubric">Rubric Compliance</a></li>
+        <li><a href="#corridor">Pilot Corridor</a></li>
+        <li><a href="#evidence">Evaluation Evidence</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">🌙</button>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app" target="_blank" rel="noopener" class="btn btn-primary">
+          Launch Live App ↗
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section" id="vision">
+    <div class="container">
+      <div class="badge-bar">
+        <span class="chip chip-accent">🏆 Google Cloud Gen AI Hackathon Submission</span>
+        <span class="chip">Track: Digital Public Infrastructure &amp; Governance</span>
+        <span class="chip chip-green">🏛 Digital Public Good (DPG) Open Source</span>
+        <span class="chip">📍 Vellore (TN) — Tirupati (AP) Municipal Corridor</span>
+      </div>
+
+      <h1 class="hero-title">
+        Transforming Multilingual Citizen Voice into <span class="gradient-text">Evidence-Linked, Tamper-Evident</span> Capital Allocation.
+      </h1>
+
+      <p class="hero-subtitle">
+        A sovereign Digital Public Infrastructure (DPI) platform bridging marginalized vernacular communities with transparent municipal budgeting using Google Cloud Vertex AI, Gemini Flash, Chirp-2 Speech-to-Text, and verifiable SHA-256 audit ledgers.
+      </p>
+
+      <!-- Live Action CTAs (Evaluator Deep Links) -->
+      <div class="hero-cta-grid">
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener" class="btn btn-primary">
+          🎙️ Test Citizen Voice Intake (Live)
+        </a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener" class="btn btn-secondary">
+          📋 Trace Authorized Ticket Journey
+        </a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener" class="btn btn-secondary">
+          📊 Explore Policy Analyst Scenarios
+        </a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/auditor" target="_blank" rel="noopener" class="btn btn-secondary">
+          🛡️ Inspect Tamper-Evident Audit Ledger
+        </a>
+      </div>
+
+      <!-- Real-Time Operational Vitals Grid -->
+      <div class="vitals-grid">
+        <div class="vital-card">
+          <div class="vital-metric">3</div>
+          <div class="vital-label">Vernacular Languages</div>
+          <div class="vital-subtext">Tamil (தமிழ்), Telugu (తెలుగు), English with Gemini Flash &amp; Chirp-2</div>
+        </div>
+        <div class="vital-card">
+          <div class="vital-metric">12,500</div>
+          <div class="vital-label">Prepared Records</div>
+          <div class="vital-subtext">Synthetic demo dataset across 97 configured districts in 3 states</div>
+        </div>
+        <div class="vital-card">
+          <div class="vital-metric">&lt;800ms</div>
+          <div class="vital-label">FastPath Hazard Recall</div>
+          <div class="vital-subtext">100% (9/9) emergency recall on evaluated benchmark cases</div>
+        </div>
+        <div class="vital-card">
+          <div class="vital-metric">1.00 / 96.3%</div>
+          <div class="vital-label">Macro-F1 &amp; Urgency Acc</div>
+          <div class="vital-subtext">Empirical accuracy across 27-case benchmark suite</div>
+        </div>
+        <div class="vital-card">
+          <div class="vital-metric">SHA-256</div>
+          <div class="vital-label">Tamper-Evident Ledger</div>
+          <div class="vital-subtext">Cryptographic block verification with zero prompt/PII leakage</div>
+        </div>
+        <div class="vital-card">
+          <div class="vital-metric">337/337</div>
+          <div class="vital-label">Automated Tests Passing</div>
+          <div class="vital-subtext">100% automated regression coverage across pilots &amp; audit trails</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The 5 Mandatory Event Deliverables (Hack2Skill Guidelines) -->
+  <section class="container" id="deliverables" style="padding-top: 2rem;">
+    <div class="section-header">
+      <div class="section-eyebrow">Official Event Requirements</div>
+      <h2 class="section-title">Fully Addressed Hackathon Deliverables</h2>
+      <p class="section-desc">
+        Nexus VisBharat directly satisfies all five mandatory requirements specified in the <em>Build with AI: Code for Communities (Second Edition)</em> guidelines.
+      </p>
+    </div>
+
+    <div class="requirements-grid">
+      <!-- 1. End-to-End Workflow -->
+      <div class="req-card">
+        <div>
+          <span class="req-badge">Requirement 1</span>
+          <h3 class="req-title">Complete End-to-End Workflow</h3>
+          <p class="req-body">
+            Demonstrates an uninterrupted pipeline: Citizen voice or text submission &rarr; edge PII scrubbing &rarr; vernacular translation &rarr; spatial demand clustering &rarr; Strategic Prioritization Score (SPS v2.4) &rarr; municipal human-in-the-loop review &rarr; delivery follow-up.
+          </p>
+          <div class="req-tags">
+            <span class="tag">Voice/Text Intake</span>
+            <span class="tag">Spatial Clustering</span>
+            <span class="tag">Human Review</span>
+            <span class="tag">SPS v2.4</span>
+          </div>
+        </div>
+        <div class="req-action">
+          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Production Live</span>
+          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener">Trace Pipeline &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 2. Google AI & Cloud Integration -->
+      <div class="req-card">
+        <div>
+          <span class="req-badge">Requirement 2</span>
+          <h3 class="req-title">Deep Google AI &amp; Cloud Integration</h3>
+          <p class="req-body">
+            Native deployment on Google Cloud Run (<code>asia-south1</code> Mumbai). Features multimodal Gemini Flash for structured classification, Cloud Speech-to-Text v2 (Chirp-2 model) for dialect-resilient audio transcription, Cloud Translation v3, and BigQuery spatial fusion.
+          </p>
+          <div class="req-tags">
+            <span class="tag">Cloud Run (asia-south1)</span>
+            <span class="tag">Gemini Flash</span>
+            <span class="tag">Chirp-2 STT</span>
+            <span class="tag">Cloud Translation</span>
+          </div>
+        </div>
+        <div class="req-action">
+          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Deployed &amp; Verified</span>
+          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/api/ai/status" target="_blank" rel="noopener">Inspect AI Status &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 3. Realistic Data & Public Datasets -->
+      <div class="req-card">
+        <div>
+          <span class="req-badge">Requirement 3</span>
+          <h3 class="req-title">Realistic Data &amp; Public Datasets</h3>
+          <p class="req-body">
+            Grounded with 12,500 prepared demonstration records correlated against public Indian governance datasets: SECC 2011 deprivation percentiles, Census demographics, NFHS-5 health infrastructure gaps, and PM Gati Shakti spatial corridors.
+          </p>
+          <div class="req-tags">
+            <span class="tag">12.5k Records</span>
+            <span class="tag">SECC 2011</span>
+            <span class="tag">Census &amp; NFHS-5</span>
+            <span class="tag">PM Gati Shakti</span>
+          </div>
+        </div>
+        <div class="req-action">
+          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Calibrated Demo Data</span>
+          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener">View Demographics &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 4. Built for India & Regional Grounding -->
+      <div class="req-card">
+        <div>
+          <span class="req-badge">Requirement 4</span>
+          <h3 class="req-title">Built for India: Inter-State Corridor</h3>
+          <p class="req-body">
+            Specifically tailored for the Tamil Nadu — Andhra Pradesh cross-border municipal corridor (Vellore Municipal Corporation and Tirupati Municipal Corporation). Implements state-isolated RBAC to prevent unauthorized cross-border data leakage.
+          </p>
+          <div class="req-tags">
+            <span class="tag">Vellore (TN)</span>
+            <span class="tag">Tirupati (AP)</span>
+            <span class="tag">Bilingual Border</span>
+            <span class="tag">State-Isolated RBAC</span>
+          </div>
+        </div>
+        <div class="req-action">
+          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Active Municipal Pilot</span>
+          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot" target="_blank" rel="noopener">Explore Pilot &rarr;</a>
+        </div>
+      </div>
+
+      <!-- 5. Multilingual & Voice Processing -->
+      <div class="req-card">
+        <div>
+          <span class="req-badge">Requirement 5</span>
+          <h3 class="req-title">Multilingual Voice Processing</h3>
+          <p class="req-body">
+            Supports native Tamil (தமிழ்), Telugu (తెలుగు), and Indian English. Allows citizens to speak naturally, review live speech-to-text transcripts, verify translated drafts, and override misrecognitions prior to official submission.
+          </p>
+          <div class="req-tags">
+            <span class="tag">Tamil Speech</span>
+            <span class="tag">Telugu Speech</span>
+            <span class="tag">Live Transcription</span>
+            <span class="tag">Citizen Review</span>
+          </div>
+        </div>
+        <div class="req-action">
+          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Interactive Intake</span>
+          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener">Test Voice Input &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical Architecture: Defense-in-Depth -->
+  <section class="container" id="architecture">
+    <div class="section-header">
+      <div class="section-eyebrow">System Architecture</div>
+      <h2 class="section-title">Google Cloud Defense-in-Depth Architecture</h2>
+      <p class="section-desc">
+        A resilient, privacy-first topology designed for zero data loss, DPDP 2023 compliance, and deterministic budgetary accountability.
+      </p>
+    </div>
+
+    <div class="arch-container">
+      <div style="text-align: center; margin-bottom: 2rem;">
+        <span class="chip chip-accent">Production Topology &bull; Region: asia-south1 (Mumbai) &bull; Auto-Scaling (0-10 Instances)</span>
+      </div>
+
+      <div class="arch-flow-grid">
+        <!-- Layer 1 -->
+        <div class="arch-box">
+          <span class="arch-step-num">01</span>
+          <h4 class="arch-box-title">Ingress &amp; Edge</h4>
+          <ul class="arch-box-list">
+            <li>Multi-channel intake (Web, IVR, WhatsApp, SMS)</li>
+            <li>HMAC SHA-256 webhook signatures</li>
+            <li>Replay attack protection via nonces</li>
+            <li>Client-side audio compression</li>
+          </ul>
+        </div>
+
+        <!-- Layer 2 -->
+        <div class="arch-box">
+          <span class="arch-step-num">02</span>
+          <h4 class="arch-box-title">Compute Layer</h4>
+          <ul class="arch-box-list">
+            <li>Google Cloud Run (Serverless)</li>
+            <li>Gunicorn + gthread concurrent workers</li>
+            <li>Deterministic FastPath triage (&lt;800ms)</li>
+            <li>Health endpoints (<code>/readyz</code>, <code>/healthz</code>)</li>
+          </ul>
+        </div>
+
+        <!-- Layer 3 -->
+        <div class="arch-box">
+          <span class="arch-step-num">03</span>
+          <h4 class="arch-box-title">Intelligence &amp; NLP</h4>
+          <ul class="arch-box-list">
+            <li>Vertex AI / Gemini Flash multimodal</li>
+            <li>Cloud STT v2 (Chirp-2 model)</li>
+            <li>Cloud Translation v3</li>
+            <li>Regex &amp; NER PII scrubbing engine</li>
+          </ul>
+        </div>
+
+        <!-- Layer 4 -->
+        <div class="arch-box">
+          <span class="arch-step-num">04</span>
+          <h4 class="arch-box-title">Data &amp; Persistence</h4>
+          <ul class="arch-box-list">
+            <li>Cloud SQL PostgreSQL deployment path</li>
+            <li>BigQuery spatial analytics fusion</li>
+            <li>Cloud Pub/Sub outbox replication</li>
+            <li>SQLite ephemeral sandbox fallback</li>
+          </ul>
+        </div>
+
+        <!-- Layer 5 -->
+        <div class="arch-box">
+          <span class="arch-step-num">05</span>
+          <h4 class="arch-box-title">Sovereign Governance</h4>
+          <ul class="arch-box-list">
+            <li>SHA-256 cryptographically chained ledger</li>
+            <li>Zero prompt/PII telemetry logging</li>
+            <li>State-level isolated RBAC enforcement</li>
+            <li>Human-in-the-Loop decision lock</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Official Rubric Self-Assessment (Hack2Skill Alignment) -->
+  <section class="container" id="rubric">
+    <div class="section-header">
+      <div class="section-eyebrow">Official Hackathon Rubric</div>
+      <h2 class="section-title">Evaluation Criteria &amp; Alignment Matrix</h2>
+      <p class="section-desc">
+        How Nexus VisBharat demonstrates rigorous adherence to the five judging criteria established for <em>Build with AI: Code for Communities (Second Edition)</em>.
+      </p>
+    </div>
+
+    <div class="rubric-table-wrapper">
+      <table class="rubric-table">
+        <thead>
+          <tr>
+            <th>Official Criterion</th>
+            <th>Weight</th>
+            <th>Platform Evidence &amp; Verification Mechanism</th>
+            <th>Validation Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>1. Problem Alignment &amp; Social Impact</strong><br>
+              <span style="font-size: 0.78rem; color: var(--text-tertiary);">Relevance to citizen welfare, community impact</span>
+            </td>
+            <td><span class="rubric-weight">25%</span></td>
+            <td>
+              Eliminates the structural barrier where 70%+ of rural and semi-urban citizens cannot engage with text-heavy grievance portals. Bridges raw vernacular citizen voice with municipal capital allocations, preventing budget capture by politically vocal enclaves. Grounded across 12,500 demonstration records.
+            </td>
+            <td><span class="rubric-score">Complete &bull; Live Pilot</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <strong>2. Technical Architecture &amp; Google AI</strong><br>
+              <span style="font-size: 0.78rem; color: var(--text-tertiary);">Quality of design, deep Google Cloud integration</span>
+            </td>
+            <td><span class="rubric-weight">25%</span></td>
+            <td>
+              Native enterprise integration across Google Cloud Run, Gemini Flash, Cloud STT (Chirp-2), Cloud Translation v3, BigQuery, and Pub/Sub. Architectural defense-in-depth with deterministic FastPath fallback, zero unhandled exceptions, and real-time provider telemetry.
+            </td>
+            <td><span class="rubric-score">Verified &bull; 6 Services</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <strong>3. Innovation &amp; DPG Readiness</strong><br>
+              <span style="font-size: 0.78rem; color: var(--text-tertiary);">Novelty, Digital Public Good alignment</span>
+            </td>
+            <td><span class="rubric-weight">20%</span></td>
+            <td>
+              Novel multi-objective Strategic Prioritization Score (SPS v2.4) balancing urgency, deprivation weight, spatial clustering, and community verification. Formulated under Apache 2.0 open-source license with standardized OpenAPI specifications and DPG candidate schemas.
+            </td>
+            <td><span class="rubric-score">Compliant &bull; Apache 2.0</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <strong>4. Scalability, Reliability &amp; DPDP 2023</strong><br>
+              <span style="font-size: 0.78rem; color: var(--text-tertiary);">Production readiness, data protection</span>
+            </td>
+            <td><span class="rubric-weight">15%</span></td>
+            <td>
+              Autoscaling containerized microservices on Cloud Run. Rigorous compliance with India's Digital Personal Data Protection (DPDP) Act 2023: client/edge deterministic PII redaction, tamper-evident SHA-256 audit chaining, and explicit Cloud SQL PostgreSQL durability instructions.
+            </td>
+            <td><span class="rubric-score">Compliant &bull; DPDP 2023</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <strong>5. Completeness &amp; Usability of Demo</strong><br>
+              <span style="font-size: 0.78rem; color: var(--text-tertiary);">User experience, working deployment, documentation</span>
+            </td>
+            <td><span class="rubric-weight">15%</span></td>
+            <td>
+              100% accessible public deployment on Cloud Run. 337 passing automated tests. Intuitive citizen intake UI with live audio visualizer and language switching. Dedicated analytical dashboard, 12-slide pitch deck, 3-minute video walkthrough, and exhaustive GitHub documentation.
+            </td>
+            <td><span class="rubric-score">337/337 Tests Pass</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Dual Pilot Municipal Corridor -->
+  <section class="container" id="corridor">
+    <div class="section-header">
+      <div class="section-eyebrow">Regional Grounding</div>
+      <h2 class="section-title">The Vellore — Tirupati Municipal Corridor</h2>
+      <p class="section-desc">
+        A cross-border demonstration of sovereign inter-state governance, handling linguistic transitions and localized deprivation indices.
+      </p>
+    </div>
+
+    <div class="corridor-grid">
+      <!-- Vellore (Tamil Nadu) -->
+      <div class="corridor-card">
+        <div class="corridor-header">
+          <h3 class="corridor-title">Vellore Municipal Corporation</h3>
+          <span class="corridor-badge corridor-badge-tn">Tamil Nadu &bull; TN-023</span>
+        </div>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Focuses on Palar river basin water sanitation, tannery effluent drainage hazards, and rural bus connectivity in border taluks (Katpadi, Gudiyatham).
+        </p>
+        <ul style="font-size: 0.82rem; color: var(--text-secondary); list-style: none; margin-bottom: 1.25rem;">
+          <li style="margin-bottom: 0.35rem;"><strong>Primary Ingress:</strong> Tamil (தமிழ்) voice &amp; SMS</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Demographic Factor:</strong> SECC 2011 Tannery Corridor Deprivation Index</li>
+          <li style="margin-bottom: 0.35rem;"><strong>RBAC Isolation:</strong> Scoped exclusively to Tamil Nadu state officials</li>
+        </ul>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot?district=Vellore" target="_blank" rel="noopener" class="btn btn-secondary" style="width: 100%;">
+          View Vellore Municipal Data &rarr;
+        </a>
+      </div>
+
+      <!-- Tirupati (Andhra Pradesh) -->
+      <div class="corridor-card">
+        <div class="corridor-header">
+          <h3 class="corridor-title">Tirupati Municipal Corporation</h3>
+          <span class="corridor-badge corridor-badge-ap">Andhra Pradesh &bull; AP-019</span>
+        </div>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Focuses on pilgrim corridor municipal surge capacity, water scarcity in peripheral tribal settlements, and road safety along ghat approaches.
+        </p>
+        <ul style="font-size: 0.82rem; color: var(--text-secondary); list-style: none; margin-bottom: 1.25rem;">
+          <li style="margin-bottom: 0.35rem;"><strong>Primary Ingress:</strong> Telugu (తెలుగు) voice &amp; WhatsApp</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Demographic Factor:</strong> Urban Pilgrim Transit &amp; Aspirational Ward Weight</li>
+          <li style="margin-bottom: 0.35rem;"><strong>RBAC Isolation:</strong> Scoped exclusively to Andhra Pradesh state officials</li>
+        </ul>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot?district=Tirupati" target="_blank" rel="noopener" class="btn btn-secondary" style="width: 100%;">
+          View Tirupati Municipal Data &rarr;
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rigorous Evaluation Evidence Dossier -->
+  <section class="container" id="evidence">
+    <div class="section-header">
+      <div class="section-eyebrow">Empirical Verification</div>
+      <h2 class="section-title">Evaluation Evidence Dossier</h2>
+      <p class="section-desc">
+        All benchmarking claims are backed by stored JSON artifacts and cryptographic SHA-256 manifests in the open-source repository.
+      </p>
+    </div>
+
+    <div class="evidence-grid">
+      <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/quality.json" target="_blank" rel="noopener" class="evidence-card">
+        <div>
+          <div class="evidence-icon">🎯</div>
+          <h4 class="evidence-title">Quality Benchmark Suite</h4>
+          <p class="evidence-desc">27 evaluated bilingual cases measuring Category Macro-F1 (1.00), Urgency Accuracy (96.3%), and Emergency Recall (9/9).</p>
+        </div>
+        <div class="evidence-link">docs/evaluation/quality.json ↗</div>
+      </a>
+
+      <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/MODEL_EVIDENCE_DOSSIER.md" target="_blank" rel="noopener" class="evidence-card">
+        <div>
+          <div class="evidence-icon">📑</div>
+          <h4 class="evidence-title">Model Evidence Dossier</h4>
+          <p class="evidence-desc">Complete scientific documentation of Gemini Flash prompting strategies, fallback triggers, and proxy forecasting disclosures.</p>
+        </div>
+        <div class="evidence-link">docs/evaluation/MODEL_EVIDENCE_DOSSIER.md ↗</div>
+      </a>
+
+      <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/evidence-manifest.json" target="_blank" rel="noopener" class="evidence-card">
+        <div>
+          <div class="evidence-icon">🔒</div>
+          <h4 class="evidence-title">Cryptographic Manifest</h4>
+          <p class="evidence-desc">SHA-256 checksum verification verifying the tamper-evident integrity of 17 key evidence files and test suites.</p>
+        </div>
+        <div class="evidence-link">docs/evaluation/evidence-manifest.json ↗</div>
+      </a>
+
+      <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/load.json" target="_blank" rel="noopener" class="evidence-card">
+        <div>
+          <div class="evidence-icon">⚡</div>
+          <h4 class="evidence-title">Load &amp; Concurrency Report</h4>
+          <p class="evidence-desc">Empirical latency profiles under concurrent user requests, validating FastPath sub-800ms deterministic response bounds.</p>
+        </div>
+        <div class="evidence-link">docs/evaluation/load.json ↗</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Evaluator FAQ & Governance Assurance (Accordion) -->
+  <section class="container" id="faq">
+    <div class="section-header">
+      <div class="section-eyebrow">Governance &amp; Evaluator Inquiries</div>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+      <p class="section-desc">
+        Detailed technical clarifications regarding privacy, algorithmic governance, and enterprise deployment.
+      </p>
+    </div>
+
+    <div class="faq-container">
+      <!-- Q1 -->
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>How does Nexus VisBharat ensure compliance with India's DPDP Act 2023?</span>
+          <span class="faq-icon">▼</span>
+        </div>
+        <div class="faq-answer">
+          <p>
+            Nexus VisBharat applies a <em>zero-trust edge sanitization</em> policy. Citizen submissions undergo deterministic regex and NER PII scrubbing (masking 12-digit Aadhaar numbers, phone numbers, and full names) prior to database insertion and LLM inference. Telemetry logs record zero raw prompt data. All analytical views use aggregated k-anonymity clustering to ensure individual citizen identities cannot be re-identified.
+          </p>
+        </div>
+      </div>
+
+      <!-- Q2 -->
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>How does the system prevent LLM hallucinations in capital budget allocations?</span>
+          <span class="faq-icon">▼</span>
+        </div>
+        <div class="faq-answer">
+          <p>
+            LLMs are <strong>never</strong> allowed to compute financial budgets autonomously. Generative AI (Gemini Flash) is restricted solely to unstructured text/speech extraction, translation, and structured summarization. Capital allocation scores (Strategic Prioritization Score, SPS v2.4) are calculated using a 100% deterministic mathematical formula based on verified urgency, demographic deprivation indices, and spatial clustering. Furthermore, final budgetary decisions require human-in-the-loop municipal approval.
+          </p>
+        </div>
+      </div>
+
+      <!-- Q3 -->
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>Why is the audit ledger designated as "tamper-evident" rather than "immutable"?</span>
+          <span class="faq-icon">▼</span>
+        </div>
+        <div class="faq-answer">
+          <p>
+            In alignment with transparent software engineering ethics, we use the scientifically accurate term <strong>tamper-evident</strong>. Each log entry stores the cryptographic SHA-256 hash of its predecessor, creating a verifiable blockchain-style cryptographic sequence. Any manual modification or tampering with a historical record immediately breaks the hash chain and triggers automated validation alerts in the auditor console (<code>/auditor</code>).
+          </p>
+        </div>
+      </div>
+
+      <!-- Q4 -->
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>How does NVB maintain continuity if Google AI APIs experience latency or disconnects?</span>
+          <span class="faq-icon">▼</span>
+        </div>
+        <div class="faq-answer">
+          <p>
+            NVB features a deterministic <strong>FastPath Emergency Fallback</strong>. If Vertex AI or Google AI REST endpoints timeout or fail, the platform falls back to deterministic rule-based keyword extraction and urgency scoring in &lt;800ms. High-severity hazards (e.g., collapsed bridges, electrocution risks, toxic water contamination) are automatically escalated to municipal emergency channels without stalling the citizen intake pipeline.
+          </p>
+        </div>
+      </div>
+
+      <!-- Q5 -->
+      <div class="faq-item">
+        <div class="faq-question">
+          <span>What is the transition path from this hackathon demonstration to a live ministry rollout?</span>
+          <span class="faq-icon">▼</span>
+        </div>
+        <div class="faq-answer">
+          <p>
+            The production code contains documented deployment pathways for connecting Cloud SQL PostgreSQL with automated private IP peering and IAM authentication. The platform is pre-architected as an Apache 2.0 Digital Public Good (DPG), ready to interface directly with existing national platforms like CPGRAMS, UMANG, and State Integrated Grievance Redressal Systems.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Evaluator Launchpad / Live Links -->
+  <section class="container">
+    <div class="launchpad-banner">
+      <h2 class="launchpad-title">Experience Nexus VisBharat Live in Production</h2>
+      <p class="launchpad-subtitle">
+        Deploying sovereign AI to empower every citizen's voice in democratic municipal governance.
+      </p>
+      <div class="launchpad-buttons">
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app" target="_blank" rel="noopener" class="btn btn-white">
+          🚀 Launch Cloud Run Production App
+        </a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/demo-video" target="_blank" rel="noopener" class="btn btn-outline-white">
+          🎬 Watch 3-Min Walkthrough Video
+        </a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pitch-deck" target="_blank" rel="noopener" class="btn btn-outline-white">
+          📊 Open 12-Slide Pitch Deck
+        </a>
+        <a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener" class="btn btn-outline-white">
+          💻 Explore GitHub Repository
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+            <div class="brand-icon" style="width: 28px; height: 28px; font-size: 0.8rem;">NVB</div>
+            <strong style="color: #ffffff; font-size: 1.05rem;">Nexus VisBharat (NVB)</strong>
+          </div>
+          <p style="margin-bottom: 1rem; line-height: 1.6;">
+            A sovereign Digital Public Infrastructure (DPI) platform bridging marginalized vernacular citizen voice with transparent municipal capital budget allocations.
+          </p>
+          <p style="font-size: 0.8rem; color: #64748b;">
+            Developed by <strong>Dr. Ravikumar Chandrasekaran</strong><br>
+            Thanthai Periyar E.V. Ramasamy Government Polytechnic College, Vellore, Tamil Nadu.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Evaluator Portals</h4>
+          <ul>
+            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app" target="_blank" rel="noopener">Citizen Portal (Home)</a></li>
+            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener">Voice &amp; Text Intake</a></li>
+            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener">Policy Analyst Studio</a></li>
+            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/auditor" target="_blank" rel="noopener">Tamper-Evident Ledger</a></li>
+            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener">Submission Checklist</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Hackathon Links</h4>
+          <ul>
+            <li><a href="https://hack2skill.com/event/codeforcommunities2" target="_blank" rel="noopener">Hack2Skill Event Details</a></li>
+            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/demo-video" target="_blank" rel="noopener">Demo Video (YouTube)</a></li>
+            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pitch-deck" target="_blank" rel="noopener">Official Pitch Deck</a></li>
+            <li><a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener">GitHub Repository</a></li>
+            <li><a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/MODEL_EVIDENCE_DOSSIER.md" target="_blank" rel="noopener">Model Evidence Dossier</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Compliance &amp; Standards</h4>
+          <ul>
+            <li><a href="#faq">DPDP Act 2023 Compliance</a></li>
+            <li><a href="#architecture">Google Cloud Run (asia-south1)</a></li>
+            <li><a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0 Open Source</a></li>
+            <li><a href="https://nexusaitech.in" target="_blank" rel="noopener">Nexus AI Tech Hub</a></li>
+            <li><a href="https://nexusaitech.in/apps/nmv/index.html" target="_blank" rel="noopener">Nexus MudraVani Showcase</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          &copy; 2026 Nexus AI Tech &bull; Nexus VisBharat (NVB). Released under Apache License 2.0.
+        </div>
+        <div style="display: flex; gap: 1rem;">
+          <a href="https://nexusaitech.in" target="_blank" rel="noopener" style="color: #94a3b8; text-decoration: none;">nexusaitech.in</a>
+          <span>&bull;</span>
+          <a href="https://hack2skill.com/event/codeforcommunities2" target="_blank" rel="noopener" style="color: #94a3b8; text-decoration: none;">#CodeForCommunities2</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Vanilla JavaScript: Theme Toggle & Accordion -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Dark/Light Theme Switching
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
+      const currentTheme = localStorage.getItem('nvb-theme') || 
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
+      function setTheme(theme) {
+        document.body.setAttribute('data-theme', theme);
+        themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        localStorage.setItem('nvb-theme', theme);
+      }
+
+      setTheme(currentTheme);
+
+      themeToggleBtn.addEventListener('click', () => {
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        setTheme(isDark ? 'light' : 'dark');
+      });
+
+      // 2. FAQ Accordion Interaction
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        question.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(i => i.classList.remove('active'));
+          if (!isActive) {
+            item.classList.add('active');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>\n

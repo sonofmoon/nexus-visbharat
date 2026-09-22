@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from flask import Blueprint, current_app, jsonify, render_template
 from ..db import get_db
-from ..services.runtime_readiness import persistence
+from ..services.runtime_readiness import persistence, disposable_showcase_allowed
 from ..services.provider_evidence import status
 
 submission_bp = Blueprint('submission', __name__)
@@ -20,7 +20,7 @@ def ready():
         get_db().execute('SELECT 1 FROM citizen_requests LIMIT 1').fetchone()
         get_db().execute('SELECT 1 FROM provider_invocations LIMIT 1').fetchone()
         storage = persistence(current_app.config)
-        allowed = storage['operational_ready'] or (current_app.config.get('DEMO_MODE') and current_app.config.get('ALLOW_EPHEMERAL_SHOWCASE'))
+        allowed = storage['operational_ready'] or disposable_showcase_allowed(current_app.config)
         return jsonify(success=bool(allowed), storage=storage), 200 if allowed else 503
     except Exception:
         return jsonify(success=False, status='database_not_ready'), 503

@@ -432,8 +432,8 @@ class NVBLensController {
  <div>
  <h4 style="margin:0;font-weight:700;color:#202124;font-size:1.2rem;letter-spacing:-0.2px;line-height:1.3;">Admin Control Suite - Security Alerts & Governance Operations</h4>
  <div class="d-flex align-items-center gap-2 mt-1.5 flex-wrap">
- <span class="badge" style="background:#feefc3;color:#b06000;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-shield-lock-fill text-warning"></i> Google Cloud Governance Active</span>
- <span class="badge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-key-fill text-danger"></i> Signed Institutional Steering (v2.4)</span>
+ <span class="badge" style="background:#feefc3;color:#b06000;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-shield-lock-fill text-warning"></i> Illustrative administration overview</span>
+ <span class="badge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-key-fill text-danger"></i> No signed steering version recorded</span>
  </div>
  </div>
  </div>
@@ -443,7 +443,7 @@ class NVBLensController {
  <!-- Governance Weight Tuning Card -->
  <div style="background:#fef7e0;border:1px solid #feefc3;border-left:5px solid #fbbc04;border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
- <strong style="color:#b06000;font-size:0.98rem;"><i class="bi bi-file-earmark-diff"></i> Signed Governance Weight Tuning Rationale</strong>
+ <strong style="color:#b06000;font-size:0.98rem;"><i class="bi bi-file-earmark-diff"></i> Governance Weight Tuning Rationale</strong>
  <span class="badge" style="background:#feefc3;color:#b06000;border-radius:100px;padding:4px 12px;font-weight:700;">${lens.weight_tuning_governance?.active_weight_version ? 'ACTIVE VERSION: ' + lens.weight_tuning_governance.active_weight_version : 'CONFIGURATION: Default Baseline'}</span>
  </div>
  <p style="margin:0 0 10px;font-size:0.88rem;color:#202124;line-height:1.5;">${lens.weight_tuning_governance?.signed_governance_diff || 'No administrative weight overrides recorded (default policy weights active).'}</p>
@@ -457,7 +457,7 @@ class NVBLensController {
  <h6 style="font-weight:700;color:#202124;margin-bottom:10px;font-size:0.92rem;"><i class="bi bi-activity" style="color:#1a73e8"></i> Mission-Control System Vitals</h6>
  <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:0.85rem;">
  <span>Ingestion Latency:</span>
- <strong style="color:#1a73e8;">${lens.system_health_cockpit?.ingestion_latency_ms ? lens.system_health_cockpit.ingestion_latency_ms + ' ms' : 'Live status at /api/ai/status'}</strong>
+ <strong style="color:#1a73e8;">${lens.system_health_cockpit?.ingestion_latency_ms ? lens.system_health_cockpit.ingestion_latency_ms + ' ms' : 'Not measured'}</strong>
  </div>
  <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:0.85rem;">
  <span>Silence Map Coverage:</span>
@@ -472,10 +472,10 @@ class NVBLensController {
  <div class="col-md-6">
  <div style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:16px;padding:1.25rem 1.5rem;height:100%;">
  <h6 style="font-weight:700;color:#202124;margin-bottom:10px;font-size:0.92rem;"><i class="bi bi-toggle2-off" style="color:#ea4335"></i> Crisis Mode Emergency Posture</h6>
- <p style="font-size:0.8rem;color:#5f6368;margin-bottom:10px;">Compresses response SLAs to 24 hours and elevates natural disaster complaint priority automatically.</p>
+ <p style="font-size:0.8rem;color:#5f6368;margin-bottom:10px;">Illustrative emergency control. No response SLA or operational posture has been verified here.</p>
  <div class="d-flex align-items-center justify-content-between">
- <span class="badge" style="background:#e8f0fe;color:#174ea6;border-radius:100px;padding:4px 12px;font-size:0.75rem;font-weight:600;">POSTURE: NORMAL_OPS</span>
- <button class="btn btn-sm" style="background:#ea4335;color:#ffffff;border-radius:20px;padding:6px 16px;font-size:0.8rem;font-weight:500;border:none;" onclick="alert('CRISIS MODE ACTIVATED: Ingestion priority flipped to HAZ_FLOOD/CYCLONE, SLAs compressed to 24h.')">Activate Crisis Mode </button>
+ <span class="badge" style="background:#e8f0fe;color:#174ea6;border-radius:100px;padding:4px 12px;font-size:0.75rem;font-weight:600;">POSTURE: NOT VERIFIED</span>
+ <button class="btn btn-sm" style="background:#ea4335;color:#ffffff;border-radius:20px;padding:6px 16px;font-size:0.8rem;font-weight:500;border:none;" onclick="alert('Illustrative control only. No operational posture has changed.')">Activate Crisis Mode </button>
  </div>
  </div>
  </div>

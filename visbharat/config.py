@@ -7,7 +7,7 @@ load_dotenv(override=False)
 
 def _as_bool(name: str, default: bool) -> bool:
     val = str(os.environ.get(name, str(default).lower())).strip().lower()
-    return val in ('true', '1', 'yes') or val.startswith('true')
+    return val in ('true', '1', 'yes')
 
 
 def _load_json_dict(name: str, default: dict) -> dict:

@@ -2,6 +2,13 @@
 import os
 
 
+def disposable_showcase_allowed(config):
+    def enabled(value):
+        return str(value).strip().lower() in ('true', '1', 'yes')
+    return enabled(config.get('DEMO_MODE', False)) and enabled(
+        config.get('ALLOW_EPHEMERAL_SHOWCASE', False))
+
+
 def persistence(config):
     url = str(config.get('DATABASE_URL') or '').strip()
     postgres = url.startswith(('postgresql://', 'postgres://'))
@@ -24,7 +31,5 @@ def validate(config):
         raise RuntimeError('Unsupported DATABASE_URL scheme; refusing to fall back to SQLite.')
     state = persistence(config)
     if state['cloud_runtime'] and not state['shared_database']:
-        allow = bool(config.get('ALLOW_EPHEMERAL_SHOWCASE')) or 'true' in str(os.environ.get('ALLOW_EPHEMERAL_SHOWCASE', '')).lower()
-        demo = bool(config.get('DEMO_MODE', True))
-        if not (demo and allow):
+        if not disposable_showcase_allowed(config):
             raise RuntimeError('Cloud Run requires a PostgreSQL DATABASE_URL. Only a disposable DEMO_MODE showcase may explicitly set ALLOW_EPHEMERAL_SHOWCASE=true.')

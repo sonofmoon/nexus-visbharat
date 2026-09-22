@@ -68,7 +68,55 @@ class ProviderEvidenceTest(unittest.TestCase):
             self.assertNotEqual(evidence.status()['services']['google_stt']['status'],'verified')
 
 
+class AiStatusSummaryTest(unittest.TestCase):
+    setUp = ProviderEvidenceTest.setUp
+
+    def test_translation_summary_and_latest_inference_use_operation_evidence(self):
+        from visbharat.blueprints.api import api_bp
+        self.app.register_blueprint(api_bp)
+        translation=SimpleNamespace(translate_text=lambda: {
+            'translated_text':'A translated report', 'model':'served-translation',
+            'provider_mode':'google_ai_live'})
+        self.app.extensions['google_translation_client']=translation
+        evidence.instrument(translation,'google_translation')
+        analytics=SimpleNamespace(insert_request=lambda: True)
+        self.app.extensions['google_bigquery_client']=analytics
+        evidence.instrument(analytics,'google_bigquery')
+        self.app.config['USE_REAL_GOOGLE_TRANSLATION']=False
+        with self.app.app_context():
+            translation.translate_text()
+            analytics.insert_request()
+        data=self.app.test_client().get('/api/ai/status').get_json()
+        self.assertTrue(data['translation_configured'])
+        self.assertEqual(data['translation_status'],'verified')
+        self.assertEqual(data['feature_status']['multilingual_translation'],'verified')
+        self.assertEqual(data['latest_inference']['operation'],'translate_text')
+        self.assertEqual(data['latest_inference']['model'],'served-translation')
+        self.assertEqual(data['recent_invocations'][0]['operation'],'insert_request')
+        with self.app.app_context():
+            get_db().execute("UPDATE provider_invocations SET checked_at='2000-01-01T00:00:00+00:00'")
+            get_db().commit()
+        stale=self.app.test_client().get('/api/ai/status').get_json()
+        self.assertEqual(stale['translation_status'],'configured')
+        self.assertEqual(stale['latest_inference']['status'],'configured')
+        self.assertTrue(stale['latest_inference']['stale'])
+
+
 class RuntimeReadinessTest(unittest.TestCase):
+    def test_showcase_flags_require_exact_explicit_opt_in(self):
+        from visbharat.config import _as_bool
+        with patch.dict(os.environ,{'K_SERVICE':'test-service','ALLOW_EPHEMERAL_SHOWCASE':'true'}):
+            for demo,allow in [(True,'false'),(True,'untrue'),(True,'true,false'),
+                               ('false',True),(None,True),(True,False)]:
+                with self.subTest(demo=demo,allow=allow), self.assertRaises(RuntimeError):
+                    validate({'DATABASE_URL':'','DEMO_MODE':demo,'ALLOW_EPHEMERAL_SHOWCASE':allow})
+            with self.assertRaises(RuntimeError):
+                validate({'DATABASE_URL':'','ALLOW_EPHEMERAL_SHOWCASE':True})
+            validate({'DATABASE_URL':'','DEMO_MODE':'true','ALLOW_EPHEMERAL_SHOWCASE':'yes'})
+        for value,expected in [('true',True),('  YES ',True),('1',True),('true,false',False),('untrue',False),('false',False)]:
+            with self.subTest(value=value), patch.dict(os.environ,{'NVB_TEST_BOOL':value}):
+                self.assertEqual(_as_bool('NVB_TEST_BOOL',False),expected)
+
     def test_cloud_sqlite_requires_explicit_disposable_demo(self):
         with patch.dict(os.environ,{'K_SERVICE':'test-service'}):
             with self.assertRaises(RuntimeError):validate({'DATABASE_URL':'','DEMO_MODE':True})
