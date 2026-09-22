@@ -5,7 +5,7 @@ import hmac
 
 from flask import current_app
 
-from ..db import get_db
+from ..db import get_db, ensure_ivr_callback_tables, ensure_ivr_callback_alert_events_table
 from .pipeline_queue import enqueue_ingestion_job
 from .notifications import dispatch_sla_notification
 
@@ -159,44 +159,62 @@ def process_due_callbacks(limit: int = 20, force_fail: bool = False):
 
 
 def get_callback_metrics():
+    try:
+        from ..db import ensure_ivr_callback_tables
+        ensure_ivr_callback_tables()
+    except Exception:
+        pass
     db = get_db()
 
-    totals = db.execute(
-        '''
-        SELECT
-          COUNT(*) AS total,
-          SUM(CASE WHEN status = 'scheduled' THEN 1 ELSE 0 END) AS scheduled,
-          SUM(CASE WHEN status = 'dialing' THEN 1 ELSE 0 END) AS dialing,
-          SUM(CASE WHEN status = 'retry_pending' THEN 1 ELSE 0 END) AS retry_pending,
-          SUM(CASE WHEN status = 'connected' THEN 1 ELSE 0 END) AS connected,
-          SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed,
-          AVG(attempt_count) AS avg_attempts
-        FROM ivr_callback_jobs
-        '''
-    ).fetchone()
+    try:
+        totals = db.execute(
+            '''
+            SELECT
+              COUNT(*) AS total,
+              SUM(CASE WHEN status = 'scheduled' THEN 1 ELSE 0 END) AS scheduled,
+              SUM(CASE WHEN status = 'dialing' THEN 1 ELSE 0 END) AS dialing,
+              SUM(CASE WHEN status = 'retry_pending' THEN 1 ELSE 0 END) AS retry_pending,
+              SUM(CASE WHEN status = 'connected' THEN 1 ELSE 0 END) AS connected,
+              SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed,
+              AVG(attempt_count) AS avg_attempts
+            FROM ivr_callback_jobs
+            '''
+        ).fetchone()
 
-    dead_letters = db.execute('SELECT COUNT(*) AS c FROM ivr_callback_dead_letters').fetchone()
-    reasons = db.execute(
-        '''
-        SELECT reason, COUNT(*) AS c
-        FROM ivr_callback_dead_letters
-        GROUP BY reason
-        ORDER BY c DESC
-        LIMIT 10
-        '''
-    ).fetchall()
+        dead_letters = db.execute('SELECT COUNT(*) AS c FROM ivr_callback_dead_letters').fetchone()
+        reasons = db.execute(
+            '''
+            SELECT reason, COUNT(*) AS c
+            FROM ivr_callback_dead_letters
+            GROUP BY reason
+            ORDER BY c DESC
+            LIMIT 10
+            '''
+        ).fetchall()
 
-    return {
-        'total_callbacks': int(totals['total'] or 0),
-        'scheduled': int(totals['scheduled'] or 0),
-        'dialing': int(totals['dialing'] or 0),
-        'retry_pending': int(totals['retry_pending'] or 0),
-        'connected': int(totals['connected'] or 0),
-        'failed': int(totals['failed'] or 0),
-        'avg_attempts': round(float(totals['avg_attempts'] or 0.0), 3),
-        'dead_letter_count': int(dead_letters['c'] or 0),
-        'dead_letter_reasons': [{'reason': str(r['reason'] or ''), 'count': int(r['c'] or 0)} for r in reasons],
-    }
+        return {
+            'total_callbacks': int((totals['total'] if totals else 0) or 0),
+            'scheduled': int((totals['scheduled'] if totals else 0) or 0),
+            'dialing': int((totals['dialing'] if totals else 0) or 0),
+            'retry_pending': int((totals['retry_pending'] if totals else 0) or 0),
+            'connected': int((totals['connected'] if totals else 0) or 0),
+            'failed': int((totals['failed'] if totals else 0) or 0),
+            'avg_attempts': round(float((totals['avg_attempts'] if totals else 0.0) or 0.0), 3),
+            'dead_letter_count': int((dead_letters['c'] if dead_letters else 0) or 0),
+            'dead_letter_reasons': [{'reason': str(r['reason'] or ''), 'count': int(r['c'] or 0)} for r in (reasons or [])],
+        }
+    except Exception:
+        return {
+            'total_callbacks': 0,
+            'scheduled': 0,
+            'dialing': 0,
+            'retry_pending': 0,
+            'connected': 0,
+            'failed': 0,
+            'avg_attempts': 0.0,
+            'dead_letter_count': 0,
+            'dead_letter_reasons': [],
+        }
 
 
 
@@ -379,6 +397,10 @@ def get_callback_alerts():
 def emit_callback_alerts(actor: str = 'system'):
     result = get_callback_alerts()
     alerts = list(result.get('alerts') or [])
+    try:
+        ensure_ivr_callback_alert_events_table()
+    except Exception:
+        pass
     if not alerts:
         return {'sent': [], 'alerts': [], 'metrics': result.get('metrics', {}), 'skipped': []}
 
@@ -454,6 +476,10 @@ def list_callback_alert_history(
     date_to: str | None = None,
     delivery_status: str | None = None,
 ):
+    try:
+        ensure_ivr_callback_alert_events_table()
+    except Exception:
+        pass
     db = get_db()
     safe_limit = min(max(int(limit or 100), 1), 5000)
 

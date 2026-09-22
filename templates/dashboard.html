@@ -40,12 +40,12 @@
  </aside>
  <header class="console-topbar">
  <button class="icon-button" id="railToggle" type="button" aria-label="Toggle navigation" aria-controls="consoleSidebar" aria-expanded="true"><i class="bi bi-list" aria-hidden="true"></i></button>
- <span class="console-breadcrumb">Workspace <span aria-hidden="true">/</span> {% if pilot_scoped %}<strong>Pilot scope: Vellore–Tirupati Water</strong>{% else %}<strong>Policy dashboard</strong>{% endif %}</span>
+ <span class="console-breadcrumb">Workspace <span aria-hidden="true">/</span> {% if pilot_scoped %}<strong>Pilot scope: Velloreâ€“Tirupati Water</strong>{% else %}<strong>Policy dashboard</strong>{% endif %}</span>
  <form class="console-search" role="search" id="sectionSearchForm">
  <i class="bi bi-search" aria-hidden="true"></i><input id="sectionSearch" type="search" placeholder="Find a dashboard section" aria-label="Find a dashboard section" list="dashboardSections" autocomplete="off"><datalist id="dashboardSections"></datalist>
  </form>
  <button class="icon-button" id="themeSwitch" type="button" aria-label="Switch to dark theme" aria-pressed="false"><i class="bi bi-moon" aria-hidden="true"></i></button>
- <details class="console-popover" id="notificationsPopover"><summary class="icon-button" aria-label="Runtime notifications"><i class="bi bi-bell" aria-hidden="true"></i></summary><div class="popover-content"><strong>Runtime status</strong><p id="runtimeNotification">Checking connected services…</p><a href="#aiRuntimePanel">View service health</a></div></details>
+ <details class="console-popover" id="notificationsPopover"><summary class="icon-button" aria-label="Runtime notifications"><i class="bi bi-bell" aria-hidden="true"></i></summary><div class="popover-content"><strong>Runtime status</strong><p id="runtimeNotification">Checking connected servicesâ€¦</p><a href="#aiRuntimePanel">View service health</a></div></details>
  <div class="role-selector-container">
 <select id="userRoleSelector" class="role-select-dropdown" aria-label="Select User Role">
  <option value="analyst" selected>Analyst</option>
@@ -58,7 +58,7 @@
  </header>
 
  <main class="dashboard-main" id="mainContent" tabindex="-1">
-  {% if pilot_scoped or pilot_only %}<div class="demo-dataset-notice pilot-dataset-notice"><i class="bi bi-droplet-half"></i> Vellore–Tirupati Water Services Pilot · Active Programme Scope (Tamil Nadu &amp; Andhra Pradesh) · <a href="/pilot">Open Ministry Pilot Portal →</a></div>{% elif demo_showcase %}<div class="demo-dataset-notice">Synthetic demonstration data · 12,500 fictional demands across 97 districts. <a href="/demo">Open interactive walkthrough →</a></div>{% endif %}
+  {% if pilot_scoped or pilot_only %}<div class="demo-dataset-notice pilot-dataset-notice"><i class="bi bi-droplet-half"></i> Velloreâ€“Tirupati Water Services Pilot Â· Active Programme Scope (Tamil Nadu &amp; Andhra Pradesh) Â· <a href="/pilot">Open Ministry Pilot Portal â†’</a></div>{% elif demo_showcase %}<div class="demo-dataset-notice">Synthetic demonstration data Â· 12,500 fictional demands across 97 districts. <a href="/demo">Open interactive walkthrough â†’</a></div>{% endif %}
  <div id="commandHero" class="command-hero"><div><span class="eyebrow">AI COMMAND CENTER</span><h1>Policy overview</h1><p>Understand demand. Prioritize investment. Track public outcomes.</p></div><a class="btn btn-primary" href="#policyWorkbench"><i class="bi bi-sliders2" aria-hidden="true"></i> Open policy workspace</a></div>
  <!-- Google AI Runtime Health -->
  <div class="dashboard-panel panel-ai-runtime" id="aiRuntimePanel" aria-label="AI runtime health">
@@ -176,7 +176,7 @@
  <span class="panel-badge">Geospatial view</span>
  </div>
  </div>
- <div class="map-stage"><div id="hotspotMap" class="map-container" aria-label="District demand map"></div><div class="map-overlay" aria-live="polite"><span id="mapLayerLabel">Demand layer</span><span id="mapDataStatus">Loading district signals…</span></div></div>
+ <div class="map-stage"><div id="hotspotMap" class="map-container" aria-label="District demand map"></div><div class="map-overlay" aria-live="polite"><span id="mapLayerLabel">Demand layer</span><span id="mapDataStatus">Loading district signalsâ€¦</span></div></div>
  <div class="map-legend" id="mapLegend">
  <div class="legend-item">
  <span class="legend-dot" style="background:#ef4444"></span>
@@ -294,7 +294,7 @@
  <span style="font-size:0.8rem;font-weight:700;color:#5f6368;"><i class="bi bi-magic text-primary me-1"></i> Quick Demo Tickets:</span>
  {% if demo_showcase %}{% for case in demo_showcase.cases %}
  <button type="button" class="btn btn-sm btn-outline-primary nvb-btn-pill nvb-btn-xs" onclick='window.populateAdminUpdateForm({{ case.request_id|tojson }})'>
- <i class="bi bi-tag-fill me-1"></i> {{ case.district }} · {{ case.category }} · {{ case.status }}
+ <i class="bi bi-tag-fill me-1"></i> {{ case.district }} Â· {{ case.category }} Â· {{ case.status }}
  </button>
  {% endfor %}{% endif %}
  </div>
@@ -503,7 +503,7 @@
  <div>
  <h4 style="margin:0;font-weight:700;color:#202124;font-size:1.2rem;letter-spacing:-0.2px;line-height:1.3;">Public</h4>
  <div class="d-flex align-items-center gap-2 mt-1.5 flex-wrap">
- <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-patch-check-fill text-primary"></i> Google AI & Bhashini ASR Verified</span>
+ <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-patch-check-fill text-primary"></i> Google Cloud AI & Speech-to-Text Verified</span>
  <span class="badge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-geo-alt-fill text-danger"></i> Tamil Nadu | Karur (Tamil)</span>
  </div>
  </div>
@@ -523,7 +523,7 @@
  </div>
  <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Voice Transcribed</strong>
  </div>
- <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Bhashini Tamil ASR v3.2 (Tamil)</small>
+ <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Google Cloud Speech-to-Text (Chirp Tamil)</small>
  </div>
  <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
  <div>
@@ -533,7 +533,7 @@
  </div>
  <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Clustered</strong>
  </div>
- <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Joined Cluster #TN-KAR-0417 (2,104 voices)</small>
+ <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Synthetic cluster rehearsal; source volume is not a citizen count</small>
  </div>
  <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
  <div>
@@ -543,7 +543,7 @@
  </div>
  <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Scored & Ranked</strong>
  </div>
- <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Priority Score 0.942 (#3 Hotspot)</small>
+ <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Priority ranking: inspect authorized evidence</small>
  </div>
  <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
  <div>
@@ -563,21 +563,21 @@
  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
  <div style="max-width:70%;">
  <strong style="color:#174ea6;font-size:0.98rem;display:block;margin-bottom:4px;"><i class="bi bi-people-fill"></i> My Cluster, My Neighbors (Karur, Tamil Nadu)</strong>
- <p style="margin:0;font-size:0.88rem;color:#3c4043;line-height:1.5;">Your voice joined <strong>Cluster #TN-KAR-0417</strong> alongside <strong>2,104 neighbors</strong>.</p>
+ <p style="margin:0;font-size:0.88rem;color:#3c4043;line-height:1.5;">This synthetic cluster illustrates how reports can be grouped.</p>
  </div>
  <button class="btn btn-sm nvb-btn-primary nvb-btn-pill nvb-btn-md nvb-btn-nowrap" id="publicCosignBtn"><i class="bi bi-hand-thumbs-up-fill"></i> Co-Sign Demand (3 co-signed this morning)</button>
  </div>
  </div>
 
- <!-- Democratic Causal Impact Receipt Card -->
+ <!-- Post-Intervention Milestone Card (Demonstration Scenario) -->
  <div style="background:#f6fbf7;border:1px solid #ceead6;border-left:5px solid #34a853;border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
  <div class="d-flex align-items-center gap-3">
  <div style="width:42px;height:42px;background:#ceead6;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#137333;font-size:1.3rem;flex-shrink:0;">
  <i class="bi bi-patch-check-fill"></i>
  </div>
  <div>
- <strong style="color:#137333;font-size:0.96rem;display:block;margin-bottom:4px;">Democratic Causal Impact Receipt (Karur Ward 12)</strong>
- <p style="margin:0;font-size:0.88rem;color:#202124;line-height:1.5;">"Demand in your ward fell <strong>78.4%</strong> after solar pumping pipeline execution. Your voice helped cause this impact."</p>
+ <strong style="color:#137333;font-size:0.96rem;display:block;margin-bottom:4px;">Post-Intervention Milestone (Karur Ward 12 &bull; Demonstration Scenario)</strong>
+ <p style="margin:0;font-size:0.88rem;color:#202124;line-height:1.5;">Post-intervention follow-up recorded in demonstration scenario; municipal work complete. Causal impact attribution requires longitudinal field evaluation.</p>
  </div>
  </div>
  </div>
@@ -648,7 +648,7 @@
  <h4><i class="bi bi-graph-up" aria-hidden="true"></i> Request Volume & Ingestion Velocity</h4>
  <p class="ga4-card-meta">Daily aggregated citizen grievances across all ingestion channels</p>
  </div>
- <div class="ga4-card-metric-badge" id="ga4DailyAvg">Loading…</div>
+ <div class="ga4-card-metric-badge" id="ga4DailyAvg">Loadingâ€¦</div>
  </div>
  <div class="chart-wrapper">
  <canvas id="trendChart"></canvas>
@@ -666,7 +666,7 @@
  <div class="chart-wrapper doughnut-wrapper">
  <canvas id="categoryChart"></canvas>
  <div class="doughnut-center-stat">
- <span class="center-number" id="ga4CatTotal">—</span>
+ <span class="center-number" id="ga4CatTotal">â€”</span>
  <span class="center-label">Total</span>
  </div>
  </div>

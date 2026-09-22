@@ -78,7 +78,6 @@ class TestApiContracts(BaseApiTestCase):
         response = self.client.get('/api/health')
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()
-
         self.assertTrue(payload['success'])
         self.assertEqual(payload['status'], 'healthy')
         self.assertIn('ai_mode', payload)
@@ -89,13 +88,11 @@ class TestApiContracts(BaseApiTestCase):
         response = self.client.get('/api/ai/status')
         self.assertEqual(response.status_code, 200)
         payload = response.get_json()
-
         self.assertTrue(payload['success'])
         self.assertIn('mode', payload)
         self.assertIn('stt_mode', payload)
         self.assertIn('supported_features', payload)
         self.assertIn('google_stt_configured', payload)
-        self.assertNotIn('bhashini_stt_configured', payload)
         self.assertNotIn('ai4bharat_stt_configured', payload)
         self.assertEqual(payload.get('preferred_asr_provider'), 'google')
         self.assertIn('cloud_run_service_configured', payload)
@@ -201,19 +198,19 @@ class TestApiContracts(BaseApiTestCase):
             denied = self.client.post(
                 '/api/v1/language/asr/circuit/reset',
                 headers=self._auth(self.auditor_token),
-                json={'provider': 'bhashini'},
+                json={'provider': 'google'},
             )
             self.assertEqual(denied.status_code, 403)
 
             reset_ok = self.client.post(
                 '/api/v1/language/asr/circuit/reset',
                 headers=self._auth(self.admin_token),
-                json={'provider': 'bhashini'},
+                json={'provider': 'google'},
             )
             self.assertEqual(reset_ok.status_code, 200)
             payload = reset_ok.get_json()
             self.assertTrue(payload['success'])
-            self.assertIn('bhashini', payload.get('reset') or [])
+            self.assertIn('google', payload.get('reset') or [])
         finally:
             restore_mode = str(old_override.get('mode') or 'auto')
             restore_provider = str(old_override.get('forced_provider') or '')

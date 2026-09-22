@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import re
 import secrets
@@ -43,7 +44,11 @@ def _get_ai_mode():
 
 
 def _jury_live_models_required() -> bool:
+    if os.environ.get('NVB_DISABLE_EXTERNAL_SERVICES', '').strip().lower() in {'1', 'true', 'yes'}:
+        return False
     if current_app:
+        if not current_app.config.get('EXTERNAL_SERVICES_ENABLED', True):
+            return False
         val = current_app.config.get('JURY_REQUIRE_LIVE_MODELS')
         if val is not None:
             return bool(val)

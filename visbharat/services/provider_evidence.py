@@ -130,3 +130,112 @@ def status():
         services[provider] = {'configured': configured, 'status': overall, 'operations': details}
     return {'services': services, 'verification_ttl_seconds': ttl,
             'meaning': 'Verified means a recent successful provider operation, not independently validated AI quality.'}
+
+
+def verify_all_live_providers(app=None):
+    """Execute live operations across all configured clients to establish fresh operational evidence."""
+    target_app = app or current_app
+    results = {}
+
+    # 1. Google Maps Platform
+    maps_client = target_app.extensions.get('google_maps_client')
+    if maps_client and hasattr(maps_client, 'geocode_address'):
+        try:
+            results['google_maps'] = maps_client.geocode_address('Vellore, Tamil Nadu')
+        except Exception as e:
+            results['google_maps_error'] = str(e)
+
+    # 2. Google AI (Gemini)
+    ai_client = target_app.extensions.get('google_ai_client')
+    if ai_client and hasattr(ai_client, 'classify_request'):
+        try:
+            cats = target_app.config.get('CATEGORIES', ['Water Supply', 'Road', 'Electricity', 'Sanitation'])
+            results['google_ai'] = ai_client.classify_request(
+                text='Water supply pipeline leakage near Katpadi junction',
+                language='en',
+                categories=cats,
+            )
+        except Exception as e:
+            results['google_ai_error'] = str(e)
+
+    # 3. Google Translation
+    tr_client = target_app.extensions.get('google_translation_client')
+    if tr_client and hasattr(tr_client, 'translate_text'):
+        try:
+            results['google_translation'] = tr_client.translate_text(
+                text='Water supply emergency request',
+                target_language='ta',
+            )
+        except Exception as e:
+            results['google_translation_error'] = str(e)
+
+    # 4. Google Text-to-Speech
+    tts_client = target_app.extensions.get('google_tts_client')
+    synth_audio_bytes = None
+    if tts_client and hasattr(tts_client, 'synthesize'):
+        try:
+            tts_res = tts_client.synthesize('VisBharat operational', language_code='en-IN')
+            results['google_tts'] = tts_res
+            if isinstance(tts_res, dict) and tts_res.get('audio_base64'):
+                import base64
+                synth_audio_bytes = base64.b64decode(tts_res['audio_base64'])
+        except Exception as e:
+            results['google_tts_error'] = str(e)
+
+    # 5. Google Speech-to-Text
+    stt_client = target_app.extensions.get('google_stt_client')
+    if stt_client and hasattr(stt_client, 'transcribe_bytes'):
+        try:
+            if synth_audio_bytes:
+                results['google_stt'] = stt_client.transcribe_bytes(
+                    audio_bytes=synth_audio_bytes,
+                    language_code='en-IN',
+                    mime_type='audio/mpeg',
+                )
+            else:
+                # 44-byte minimal PCM WAV silence header
+                header = (b'RIFF$\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00'
+                          b'\x80>\x00\x00\x00}\x00\x00\x02\x00\x10\x00data\x00\x00\x00\x00')
+                results['google_stt'] = stt_client.transcribe_bytes(
+                    audio_bytes=header,
+                    language_code='en-IN',
+                    mime_type='audio/wav',
+                )
+        except Exception as e:
+            results['google_stt_error'] = str(e)
+
+    # 6. Google Vertex AI Prediction
+    vertex_client = target_app.extensions.get('google_vertex_client')
+    if vertex_client and hasattr(vertex_client, 'predict_stress'):
+        try:
+            instances = [{
+                'predicted_stress_score_next_quarter': 0.45,
+                'complaints': 15.0,
+                'emergency_complaints': 3.0,
+                'demand_per_100k': 18.0,
+                'emergency_ratio': 0.20,
+            }]
+            results['google_vertex'] = vertex_client.predict_stress(instances)
+        except Exception as e:
+            results['google_vertex_error'] = str(e)
+
+    # 7. Google Dialogflow CX
+    df_client = target_app.extensions.get('google_dialogflow_client')
+    if df_client and hasattr(df_client, 'detect_intent'):
+        try:
+            results['google_dialogflow'] = df_client.detect_intent(
+                session_id='nvb-probe-session',
+                text='hello',
+            )
+        except Exception as e:
+            results['google_dialogflow_error'] = str(e)
+
+    # 8. Google BigQuery
+    bq_client = target_app.extensions.get('google_bigquery_client')
+    if bq_client and hasattr(bq_client, 'aggregate_requests'):
+        try:
+            results['google_bigquery'] = bq_client.aggregate_requests(limit=5)
+        except Exception as e:
+            results['google_bigquery_error'] = str(e)
+
+    return results

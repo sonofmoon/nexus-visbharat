@@ -123,6 +123,14 @@ CREATE TABLE IF NOT EXISTS policy_decisions (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS channel_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    channel TEXT NOT NULL,
+    session_key TEXT NOT NULL UNIQUE,
+    data_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
 '''
 
 
@@ -224,7 +232,7 @@ CREATE TABLE IF NOT EXISTS processing_jobs (
 );
 
 CREATE TABLE IF NOT EXISTS policy_decisions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id SERIAL PRIMARY KEY,
     decision_id TEXT UNIQUE NOT NULL,
     district TEXT NOT NULL,
     priority_score REAL NOT NULL,
@@ -239,6 +247,14 @@ CREATE TABLE IF NOT EXISTS policy_decisions (
     rejected_by TEXT,
     rejected_at TEXT,
     created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS channel_sessions (
+    id SERIAL PRIMARY KEY,
+    channel TEXT NOT NULL,
+    session_key TEXT NOT NULL UNIQUE,
+    data_json TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
 '''
@@ -478,10 +494,79 @@ def init_db():
     migrate()
     from .services.pilot_schema import migrate as migrate_pilot
     migrate_pilot(db)
+    from .services.pilot import create_default
+    create_default()
     from .services.citizen_assistant import migrate as migrate_assistant
     migrate_assistant(db)
     from .services.provider_evidence import migrate as migrate_provider_evidence
     migrate_provider_evidence(db)
+    ensure_channel_sessions_table()
+
+
+def ensure_channel_sessions_table():
+    db = get_db()
+    if db.backend == 'postgres':
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS channel_sessions (
+                id SERIAL PRIMARY KEY,
+                channel TEXT NOT NULL,
+                session_key TEXT NOT NULL UNIQUE,
+                data_json TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        ''')
+    else:
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS channel_sessions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                channel TEXT NOT NULL,
+                session_key TEXT NOT NULL UNIQUE,
+                data_json TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+        ''')
+    db.commit()
+
+
+def get_channel_session(channel: str, session_key: str) -> dict | None:
+    db = get_db()
+    try:
+        row = db.execute(
+            "SELECT data_json FROM channel_sessions WHERE channel = ? AND session_key = ?",
+            (channel, session_key)
+        ).fetchone()
+        if row and row['data_json']:
+            return json.loads(row['data_json'])
+    except Exception:
+        pass
+    return None
+
+
+def save_channel_session(channel: str, session_key: str, data: dict):
+    db = get_db()
+    data_str = json.dumps(data)
+    now = datetime.now(timezone.utc).isoformat()
+    db.execute("""
+        INSERT INTO channel_sessions (channel, session_key, data_json, updated_at)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(session_key) DO UPDATE SET
+            data_json = excluded.data_json,
+            updated_at = excluded.updated_at
+    """, (channel, session_key, data_str, now))
+    db.commit()
+
+
+def delete_channel_session(channel: str, session_key: str):
+    db = get_db()
+    try:
+        db.execute(
+            "DELETE FROM channel_sessions WHERE channel = ? AND session_key = ?",
+            (channel, session_key)
+        )
+        db.commit()
+    except Exception:
+        pass
+
 
 
 def ensure_transparency_log_columns():
@@ -814,24 +899,48 @@ def seed_default_users():
     for name, token, role in defaults:
         if not token:
             continue
-        if db.backend == 'postgres':
-            db.execute(
-                '''
-                INSERT INTO users (name, api_token, api_token_hash, token_last4, role, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT (api_token) DO NOTHING
-                ''',
-                (name, token, hash_api_token(token), token_last4(token), role, now)
-            )
-        else:
-            db.execute(
-                '''
-                INSERT OR IGNORE INTO users (name, api_token, api_token_hash, token_last4, role, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-                ''',
-                (name, token, hash_api_token(token), token_last4(token), role, now)
-            )
-    db.commit()
+        token = str(token).strip()
+        try:
+            has_token = db.execute('SELECT id FROM users WHERE api_token = ?', (token,)).fetchone()
+            if has_token:
+                db.execute(
+                    'UPDATE users SET name = ?, role = ?, api_token_hash = ?, token_last4 = ? WHERE id = ?',
+                    (name, role, hash_api_token(token), token_last4(token), has_token['id'])
+                )
+                db.execute('DELETE FROM users WHERE name = ? AND id != ?', (name, has_token['id']))
+            else:
+                has_name = db.execute('SELECT id FROM users WHERE name = ?', (name,)).fetchone()
+                if has_name:
+                    db.execute('DELETE FROM users WHERE api_token = ?', (token,))
+                    db.execute(
+                        'UPDATE users SET api_token = ?, api_token_hash = ?, token_last4 = ?, token_rotated_at = ?, role = ? WHERE id = ?',
+                        (token, hash_api_token(token), token_last4(token), now, role, has_name['id'])
+                    )
+                else:
+                    if db.backend == 'postgres':
+                        db.execute(
+                            '''
+                            INSERT INTO users (name, api_token, api_token_hash, token_last4, role, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                            ON CONFLICT (api_token) DO UPDATE SET
+                                name = EXCLUDED.name,
+                                role = EXCLUDED.role,
+                                api_token_hash = EXCLUDED.api_token_hash,
+                                token_last4 = EXCLUDED.token_last4
+                            ''',
+                            (name, token, hash_api_token(token), token_last4(token), role, now)
+                        )
+                    else:
+                        db.execute(
+                            '''
+                            INSERT OR IGNORE INTO users (name, api_token, api_token_hash, token_last4, role, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?)
+                            ''',
+                            (name, token, hash_api_token(token), token_last4(token), role, now)
+                        )
+            db.commit()
+        except Exception:
+            db.rollback()
     if current_app.config.get('SEED_DEMO_DATA', True):
         seed_citizen_requests_from_csv()
 
@@ -1903,6 +2012,14 @@ def migrate_application(app):
         ensure_demand_cluster_tables()
         ensure_policy_scoring_weights_table()
         ensure_federation_external_events_table()
+        ensure_channel_sessions_table()
+        ensure_closure_feedback_table()
+        ensure_request_cosign_tables()
+        ensure_consent_ledger_table()
+        ensure_transparency_log_columns()
+        ensure_outbox_replication_columns()
+        ensure_ivr_callback_tables()
+        ensure_ivr_callback_alert_events_table()
         ensure_database_indexes()
 
 

@@ -20,6 +20,7 @@
     finally { $('refresh').disabled=false; }
   }
   $('refresh').addEventListener('click',refresh);
+  $('use-demo-token')?.addEventListener('click', () => { $('access-token').value = 'visbharat-analyst-token'; });
   $('ticket').value=new URLSearchParams(location.search).get('ticket') || '';
   $('trace-form').addEventListener('submit',async event => {
     event.preventDefault(); $('journey').replaceChildren(); $('trace-status').textContent='Loading the authorized record?';

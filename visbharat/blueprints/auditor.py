@@ -34,9 +34,10 @@ def scope(): return work.scope_from(request.args)
 @auditor_bp.route('/api/v2/auditor/snapshot')
 @require_roles('admin','auditor')
 def snapshot():
+    sc = scope()
     db=get_db();db.commit()
     db.execute('BEGIN' if db.backend=='sqlite' else 'BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY')
-    result=work.summary(scope());db.commit()
+    result=work.summary(sc);db.commit()
     return jsonify(success=True,**result)
 
 

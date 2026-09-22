@@ -826,7 +826,7 @@ def _get_asr_override_state():
     if mode not in {'auto', 'force'}:
         mode = 'auto'
     forced_provider = str(override.get('forced_provider') or '').strip().lower()
-    if forced_provider not in {'google', 'bhashini', 'simulation', ''}:
+    if forced_provider not in {'google', 'simulation', ''}:
         forced_provider = ''
     bypass_circuit = bool(override.get('bypass_circuit', False))
     updated_at = str(override.get('updated_at') or '')
@@ -846,7 +846,7 @@ def _set_asr_override_state(mode: str, forced_provider: str, bypass_circuit: boo
         normalized_mode = 'auto'
 
     normalized_provider = str(forced_provider or '').strip().lower()
-    if normalized_provider not in {'google', 'bhashini', 'simulation', ''}:
+    if normalized_provider not in {'google', 'simulation', ''}:
         normalized_provider = ''
 
     store = _asr_circuit_store()
@@ -866,12 +866,12 @@ def _reset_asr_circuit_state(provider: str = ''):
     target = str(provider or '').strip().lower()
     reset = []
     if target:
-        if target in {'google', 'bhashini'}:
+        if target in {'google'}:
             _write_asr_circuit(target, failure_count=0, open_until_epoch=0, last_error='')
             reset.append(target)
         return reset
 
-    for name in ['google', 'bhashini']:
+    for name in ['google']:
         _write_asr_circuit(name, failure_count=0, open_until_epoch=0, last_error='')
         reset.append(name)
     return reset
@@ -911,7 +911,6 @@ def _record_asr_circuit_failure(provider: str, error_text: str):
 def _run_speech_to_text(payload, language, audio_bytes=None, mime_type=None):
     stt_client = current_app.extensions.get('google_stt_client')
     google_ai_client = current_app.extensions.get('google_ai_client')
-    bhashini_client = current_app.extensions.get('bhashini_stt_client')
     if audio_bytes is None:
         audio_bytes, mime_type = _extract_audio_payload(payload)
 
@@ -926,7 +925,7 @@ def _run_speech_to_text(payload, language, audio_bytes=None, mime_type=None):
     require_live = _jury_live_models_required()
 
     if not audio_bytes:
-        if preferred in {'google', 'bhashini'}:
+        if preferred in {'google'}:
             raise ValueError('Voice input requires audio file (`audio`) or `audio_base64` for live ASR providers')
         if require_live:
             raise ValueError('live ASR required for jury path; simulation disabled')
@@ -939,14 +938,11 @@ def _run_speech_to_text(payload, language, audio_bytes=None, mime_type=None):
         _record_asr_metric(provider='simulation', status='success', latency_ms=0.0)
         return simulate_speech_to_text(language)
 
-    if preferred == 'bhashini':
-        ordered = [('bhashini', bhashini_client), ('google', effective_google_client)]
-    else:
-        ordered = [('google', effective_google_client), ('bhashini', bhashini_client)]
+    ordered = [('google', effective_google_client)]
 
     available = [(name, client) for name, client in ordered if client]
 
-    if override.get('mode') == 'force' and preferred in {'google', 'bhashini'}:
+    if override.get('mode') == 'force' and preferred in {'google'}:
         available = [(name, client) for name, client in available if name == preferred]
 
     if bool(current_app.config.get('LANGUAGE_ASR_CIRCUIT_BREAKER_ENABLED', True)) and available and not bool(override.get('bypass_circuit', False)):
@@ -1070,7 +1066,7 @@ def _get_asr_metrics_summary(limit: int = 500):
             item['p95_latency_ms'] = round(float(latencies_sorted[p95_index]), 3)
 
     circuit_states = []
-    for provider in ['google', 'bhashini']:
+    for provider in ['google']:
         c = _read_asr_circuit(provider)
         c['is_open'] = int(c.get('open_until_epoch') or 0) > int(time.time())
         circuit_states.append(c)
@@ -1376,7 +1372,13 @@ def deployment_profile():
 
 @api_bp.route('/api/ai/status', methods=['GET'])
 def ai_status():
-    from ..services.provider_evidence import status
+    from ..services.provider_evidence import status, verify_all_live_providers
+    should_probe = request.args.get('probe', '').lower() in ('1', 'true', 'yes') or request.args.get('verify', '').lower() in ('1', 'true', 'yes')
+    if should_probe:
+        try:
+            verify_all_live_providers(current_app)
+        except Exception as err:
+            current_app.logger.warning('Live probe failed: %s', err)
     result = status()
     services = result['services']
     def operation(provider, name):
@@ -1449,6 +1451,19 @@ def ai_status():
     for short in ('bigquery','vertex','dialogflow','tts','maps'):
         result[short + '_mode'] = services['google_' + short]['status']
     return jsonify(result)
+ 
+ 
+@api_bp.route('/api/ai/verify', methods=['GET', 'POST'])
+def ai_verify():
+    from ..services.provider_evidence import status, verify_all_live_providers
+    try:
+        verify_all_live_providers(current_app)
+    except Exception as err:
+        current_app.logger.warning('verify_all_live_providers failed: %s', err)
+    res = status()
+    res['success'] = True
+    return jsonify(res)
+
 
 
 @api_bp.route('/api/v1/language/asr/metrics', methods=['GET'])
@@ -1479,7 +1494,7 @@ def language_asr_control_status_secure():
             'enabled': bool(current_app.config.get('LANGUAGE_ASR_CIRCUIT_BREAKER_ENABLED', True)),
             'fail_threshold': int(current_app.config.get('LANGUAGE_ASR_CIRCUIT_FAIL_THRESHOLD', 3) or 3),
             'open_seconds': int(current_app.config.get('LANGUAGE_ASR_CIRCUIT_OPEN_SECONDS', 60) or 60),
-            'states': [_read_asr_circuit('google'), _read_asr_circuit('bhashini')],
+            'states': [_read_asr_circuit('google')],
         },
     }
     write_audit_log(
@@ -1501,8 +1516,8 @@ def language_asr_provider_override_secure():
 
     if mode not in {'auto', 'force'}:
         return jsonify({'success': False, 'error': 'mode must be auto or force'}), 400
-    if mode == 'force' and forced_provider not in {'google', 'bhashini', 'simulation'}:
-        return jsonify({'success': False, 'error': 'forced_provider must be one of google, bhashini, simulation when mode=force'}), 400
+    if mode == 'force' and forced_provider not in {'google', 'simulation'}:
+        return jsonify({'success': False, 'error': 'forced_provider must be one of google, simulation when mode=force'}), 400
 
     state = _set_asr_override_state(mode=mode, forced_provider=forced_provider, bypass_circuit=bypass_circuit, updated_by=g.current_user['name'])
     write_audit_log(
@@ -1519,8 +1534,8 @@ def language_asr_provider_override_secure():
 def language_asr_circuit_reset_secure():
     data = request.get_json(silent=True) or {}
     provider = str(data.get('provider') or '').strip().lower()
-    if provider and provider not in {'google', 'bhashini'}:
-        return jsonify({'success': False, 'error': 'provider must be google, bhashini, or empty for all'}), 400
+    if provider and provider not in {'google'}:
+        return jsonify({'success': False, 'error': 'provider must be google, or empty for all'}), 400
 
     reset = _reset_asr_circuit_state(provider=provider)
     write_audit_log(
@@ -3403,6 +3418,29 @@ def telegram_webhook():
             pass
 
     return jsonify(payload)
+
+
+@api_bp.route('/api/channels/<channel>/session/<session_key>', methods=['GET'])
+def get_channel_session_endpoint(channel, session_key):
+    from ..db import get_channel_session
+    session = get_channel_session(channel, session_key)
+    return jsonify({'success': True, 'session': session or {}})
+
+
+@api_bp.route('/api/channels/<channel>/session/<session_key>', methods=['POST', 'PUT'])
+def save_channel_session_endpoint(channel, session_key):
+    from ..db import save_channel_session
+    data = request.get_json(silent=True) or {}
+    save_channel_session(channel, session_key, data)
+    return jsonify({'success': True})
+
+
+@api_bp.route('/api/channels/<channel>/session/<session_key>', methods=['DELETE'])
+def delete_channel_session_endpoint(channel, session_key):
+    from ..db import delete_channel_session
+    delete_channel_session(channel, session_key)
+    return jsonify({'success': True})
+
 
 
 

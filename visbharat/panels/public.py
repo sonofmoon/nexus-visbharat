@@ -9,11 +9,11 @@ PILOT_METADATA_MAP = {
         'district': 'Karur',
         'language': 'Tamil (தமிழ்)',
         'lang_code': 'ta',
-        'asr_engine': 'Bhashini Tamil ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp Tamil)',
         'ward': 'Karur Ward 12',
-        'causal_message': 'Water supply complaints in Karur Ward 12 fell 78.4% after solar pumping pipeline execution. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: Solar pumping pipeline completed in Karur Ward 12. Causal attribution requires longitudinal evaluation.',
         'size': 2104,
-        'priority_score': '0.942 (#3 National Hotspot)',
+        'priority_score': None,
         'hash': '308f87e5a7b1c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
     },
     'TN-CHN-0102': {
@@ -21,11 +21,11 @@ PILOT_METADATA_MAP = {
         'district': 'Chennai',
         'language': 'Tamil (தமிழ்)',
         'lang_code': 'ta',
-        'asr_engine': 'Bhashini Tamil ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp Tamil)',
         'ward': 'Chennai Ward 45 (Velachery)',
-        'causal_message': 'Stormwater drain overflow complaints fell 84.1% after canal desilting. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: Canal desilting completed in Chennai Ward 45. Causal attribution requires longitudinal evaluation.',
         'size': 3450,
-        'priority_score': '0.968 (#1 National Hotspot)',
+        'priority_score': None,
         'hash': '419f98f6b8c2d55309fd2d250bgcg5000bggh6111chch7222didi8333ejej9444'
     },
     'TN-VEL-0881': {
@@ -33,11 +33,11 @@ PILOT_METADATA_MAP = {
         'district': 'Vellore',
         'language': 'Tamil (தமிழ்)',
         'lang_code': 'ta',
-        'asr_engine': 'Bhashini Tamil ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp Tamil)',
         'ward': 'Vellore Ward 08 (Katpadi)',
-        'causal_message': 'Pothole & road damage complaints fell 91.2% after Katpadi arterial road resurfacing. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: Katpadi arterial road resurfacing completed in Vellore Ward 08. Causal attribution requires longitudinal evaluation.',
         'size': 1820,
-        'priority_score': '0.895 (#8 National Hotspot)',
+        'priority_score': None,
         'hash': '520ga0g7c9d3e66410ge3e361chdh6111didi7222ejej8333fkfk9444glgl0555'
     },
     'AP-TPT-0205': {
@@ -45,11 +45,11 @@ PILOT_METADATA_MAP = {
         'district': 'Tirupati',
         'language': 'Telugu (తెలుగు)',
         'lang_code': 'te',
-        'asr_engine': 'Bhashini Telugu ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp Telugu)',
         'ward': 'Tirupati Ward 07 (Pilgrim Corridor)',
-        'causal_message': 'Streetlight outages near Tirupati pilgrim corridor fell 89.5% after smart LED grid deployment. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: Smart LED grid deployment completed near Tirupati pilgrim corridor. Causal attribution requires longitudinal evaluation.',
         'size': 1892,
-        'priority_score': '0.928 (#5 National Hotspot)',
+        'priority_score': None,
         'hash': '719f98f6b8c2d55309fd2d250b89e35478ae41e4649b934ca495991b7852b855'
     },
     'AP-VSKP-0511': {
@@ -57,11 +57,11 @@ PILOT_METADATA_MAP = {
         'district': 'Visakhapatnam',
         'language': 'Telugu (తెలుగు)',
         'lang_code': 'te',
-        'asr_engine': 'Bhashini Telugu ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp Telugu)',
         'ward': 'Visakhapatnam Ward 22 (Gajuwaka)',
-        'causal_message': 'Drinking water contamination complaints in Ward 22 fell 76.3% after filtration plant commissioning. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: Filtration plant commissioning completed in Visakhapatnam Ward 22. Causal attribution requires longitudinal evaluation.',
         'size': 2410,
-        'priority_score': '0.915 (#6 National Hotspot)',
+        'priority_score': None,
         'hash': '820ga0g7c9d3e66410ge3e361chdh6111didi7222ejej8333fkfk9444glgl0666'
     },
     'TS-HYD-0101': {
@@ -69,11 +69,11 @@ PILOT_METADATA_MAP = {
         'district': 'Hyderabad',
         'language': 'Telugu (తెలుగు)',
         'lang_code': 'te',
-        'asr_engine': 'Bhashini Telugu ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp Telugu)',
         'ward': 'Hyderabad Ward 18 (Charminar Zone)',
-        'causal_message': 'Sewerage blockage reports in Old City Ward 18 fell 82.0% after trunk line replacement. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: Trunk line replacement completed in Old City Ward 18. Causal attribution requires longitudinal evaluation.',
         'size': 3120,
-        'priority_score': '0.955 (#2 National Hotspot)',
+        'priority_score': None,
         'hash': '931hb1h8d0e4f77521hf4f472diei7222ejej8333fkfk9444glgl0555hmhm1666'
     },
     'KA-BLR-0560': {
@@ -81,11 +81,11 @@ PILOT_METADATA_MAP = {
         'district': 'Bangalore Urban',
         'language': 'English (Indian English)',
         'lang_code': 'en',
-        'asr_engine': 'Bhashini English ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp English)',
         'ward': 'Bangalore Ward 150 (Bellandur)',
-        'causal_message': 'Traffic bottleneck & arterial bottleneck reports fell 65.4% after smart signal installation. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: Smart signal installation completed in Bangalore Ward 150. Causal attribution requires longitudinal evaluation.',
         'size': 2890,
-        'priority_score': '0.935 (#4 National Hotspot)',
+        'priority_score': None,
         'hash': '042ic2i9e1f5g88632ig5g583ejfj8333fkfk9444glgl0555hmhm1666inin2777'
     },
     'UP-VNS-0221': {
@@ -93,11 +93,11 @@ PILOT_METADATA_MAP = {
         'district': 'Varanasi',
         'language': 'English (Indian English)',
         'lang_code': 'en',
-        'asr_engine': 'Bhashini English ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp English)',
         'ward': 'Varanasi Ward 03 (Dashashwamedh)',
-        'causal_message': 'Sanitation & garbage accumulation complaints near Ghats fell 88.7% after automated sensor bins. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: Automated sensor bins installed in Varanasi Ward 03. Causal attribution requires longitudinal evaluation.',
         'size': 2640,
-        'priority_score': '0.920 (#7 National Hotspot)',
+        'priority_score': None,
         'hash': '153jd3j0f2g6h99743jh6h694fkfk9444glgl0555hmhm1666inin2777jojo3888'
     },
     'BR-PAT-0800': {
@@ -105,11 +105,11 @@ PILOT_METADATA_MAP = {
         'district': 'Patna',
         'language': 'English (Indian English)',
         'lang_code': 'en',
-        'asr_engine': 'Bhashini English ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp English)',
         'ward': 'Patna Ward 14 (Kankarbagh)',
-        'causal_message': 'Monsoon waterlogging reports in Kankarbagh Ward 14 fell 79.8% after high-capacity pump station upgrade. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: High-capacity pump station upgrade completed in Patna Ward 14. Causal attribution requires longitudinal evaluation.',
         'size': 1950,
-        'priority_score': '0.880 (#10 National Hotspot)',
+        'priority_score': None,
         'hash': '264ke4k1g3h7i00854ki7i705glgl0555hmhm1666inin2777jojo3888kpkp4999'
     },
     'MH-MUM-0400': {
@@ -117,11 +117,11 @@ PILOT_METADATA_MAP = {
         'district': 'Mumbai Suburban',
         'language': 'English (Indian English)',
         'lang_code': 'en',
-        'asr_engine': 'Bhashini English ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp English)',
         'ward': 'Mumbai Ward K-East (Andheri)',
-        'causal_message': 'Suburban culvert overflow reports in Andheri East fell 85.2% after micro-tunneling drain clearance. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: Micro-tunneling drain clearance completed in Andheri East. Causal attribution requires longitudinal evaluation.',
         'size': 3800,
-        'priority_score': '0.970 (#1 Priority Cluster)',
+        'priority_score': None,
         'hash': '375lf5l2h4i8j11965lj8j816hmhm1666inin2777jojo3888kpkp4999lqlq5000'
     },
     'OD-BBS-0751': {
@@ -129,11 +129,11 @@ PILOT_METADATA_MAP = {
         'district': 'Bhubaneswar',
         'language': 'English (Indian English)',
         'lang_code': 'en',
-        'asr_engine': 'Bhashini English ASR v3.2',
+        'asr_engine': 'Google Cloud Speech-to-Text (Chirp English)',
         'ward': 'Bhubaneswar Ward 11 (Chandrasekharpur)',
-        'causal_message': 'Rural feeder power outage reports in Ward 11 fell 92.4% after sub-station automation. Your voice helped cause this impact.',
+        'causal_message': 'Demonstration follow-up: Sub-station automation completed in Bhubaneswar Ward 11. Causal attribution requires longitudinal evaluation.',
         'size': 1680,
-        'priority_score': '0.875 (#11 National Hotspot)',
+        'priority_score': None,
         'hash': '486mg6m3i5j9k22076mk9k927inin2777jojo3888kpkp4999lqlq5000mrmr6111'
     }
 }
@@ -173,7 +173,7 @@ def build_public_lens(cluster_data: dict) -> dict:
     
     state_name = meta['state']
     district = cluster_data.get('district') or meta['district']
-    size = cluster_data.get('size') or meta['size']
+    size = cluster_data.get('size')
     language = meta['language']
     asr_engine = meta['asr_engine']
     ward = meta['ward']
@@ -187,7 +187,7 @@ def build_public_lens(cluster_data: dict) -> dict:
     ]
 
     return {
-        'view_name': 'Public Citizen View — The Receipt',
+        'view_name': 'Public Citizen View â€” The Receipt',
         'cluster_id': cluster_id,
         'state': state_name,
         'district': district,
@@ -197,7 +197,7 @@ def build_public_lens(cluster_data: dict) -> dict:
         'voice_trace_timeline': [
             {'step': 1, 'label': 'Voice Transcribed', 'detail': f'{asr_engine} ({language})', 'status': 'completed', 'timestamp': 'T-2d'},
             {'step': 2, 'label': 'Clustered', 'detail': f'Joined Cluster #{cluster_id} in {district}, {state_name} ({size:,} citizen voices)', 'status': 'completed', 'timestamp': 'T-1d'},
-            {'step': 3, 'label': 'Scored & Ranked', 'detail': f'Priority Score {priority_score}', 'status': 'completed', 'timestamp': 'T-12h'},
+            {'step': 3, 'label': 'Scored & Ranked', 'detail': 'Priority evidence is available in the authorized analyst workspace.', 'status': 'completed', 'timestamp': 'T-12h'},
             {'step': 4, 'label': 'Policy Brief & Capex', 'detail': f'Drafted PM Gati Shakti Capex Allocation ({district})', 'status': 'in_progress', 'timestamp': 'Now'},
         ],
         'neighbors_cosign_widget': {
@@ -205,12 +205,12 @@ def build_public_lens(cluster_data: dict) -> dict:
             'state': state_name,
             'district': district,
             'total_voices_in_cluster': size,
-            'cosigned_this_morning': 3,
+            'cosigned_this_morning': None,
             'user_cosigned': False,
         },
         'honesty_widget': {
             'geofence_ward': ward,
-            'demand_reduction_pct': '-78.4%',
+            'demand_reduction_pct': 'Demonstration Follow-up',
             'causal_message': causal_message
         },
         'cryptographic_receipt': {

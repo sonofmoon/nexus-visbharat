@@ -61,7 +61,7 @@ PILOT_RCT_EXPERIMENTS = [
         "target_blocks": 10,
         "sample_households": 19200,
         "primary_outcome": "Water Contamination Outbreak Reduction (%)",
-        "secondary_outcome": "Bhashini Water Supply Voice Complaint Velocity",
+        "secondary_outcome": "Multilingual Voice Intake Complaint Velocity",
         "randomization_design": "Stepped-Wedge Cluster Randomized Trial (SW-CRT)",
         "waves": [
             {

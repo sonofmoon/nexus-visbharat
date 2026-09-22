@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
  });
  document.getElementById('refreshBtn').addEventListener('click', refreshAll);
  const refreshAiStatusBtn = document.getElementById('refreshAiStatusBtn');
- if (refreshAiStatusBtn) refreshAiStatusBtn.addEventListener('click', loadAiRuntimeStatus);
+ if (refreshAiStatusBtn) refreshAiStatusBtn.addEventListener('click', () => loadAiRuntimeStatus(true));
  document.getElementById('generateBriefBtn').addEventListener('click', generatePolicyBrief);
  const mapLayerEl = document.getElementById('mapLayer');
  if (mapLayerEl) {
@@ -668,8 +668,14 @@ async function loadCharts() {
  gradient.addColorStop(0, 'rgba(26, 115, 232, 0.28)');
  gradient.addColorStop(1, 'rgba(26, 115, 232, 0.00)');
 
- if (trendChart) trendChart.destroy();
- trendChart = new Chart(trendCtx, {
+  if (window.Chart) {
+    Chart.getChart(trendCtx)?.destroy();
+  }
+  if (trendChart) {
+    try { trendChart.destroy(); } catch (e) {}
+    trendChart = null;
+  }
+  trendChart = new Chart(trendCtx, {
  type: 'line',
  data: {
  labels: trendLabels.map(d => d.length > 5 ? d.slice(5) : d),
@@ -733,8 +739,14 @@ async function loadCharts() {
  googleColors.purple, googleColors.cyan, googleColors.orange, googleColors.teal
  ];
 
- if (categoryChart) categoryChart.destroy();
- categoryChart = new Chart(catCtx, {
+  if (window.Chart) {
+    Chart.getChart(catCtx)?.destroy();
+  }
+  if (categoryChart) {
+    try { categoryChart.destroy(); } catch (e) {}
+    categoryChart = null;
+  }
+  categoryChart = new Chart(catCtx, {
  type: 'doughnut',
  data: {
  labels: catLabels,
@@ -781,8 +793,14 @@ async function loadCharts() {
  else routine++;
  });
 
- if (urgencyChart) urgencyChart.destroy();
- urgencyChart = new Chart(urgencyCtx, {
+  if (window.Chart) {
+    Chart.getChart(urgencyCtx)?.destroy();
+  }
+  if (urgencyChart) {
+    try { urgencyChart.destroy(); } catch (e) {}
+    urgencyChart = null;
+  }
+  urgencyChart = new Chart(urgencyCtx, {
  type: 'bar',
  data: {
  labels: ['Emergency', 'Urgent', 'Routine'],
@@ -821,8 +839,14 @@ async function loadCharts() {
  else channelCounts['Web Form']++;
  });
 
- if (channelChart) channelChart.destroy();
- channelChart = new Chart(channelCtx, {
+  if (window.Chart) {
+    Chart.getChart(channelCtx)?.destroy();
+  }
+  if (channelChart) {
+    try { channelChart.destroy(); } catch (e) {}
+    channelChart = null;
+  }
+  channelChart = new Chart(channelCtx, {
  type: 'bar',
  data: {
  labels: Object.keys(channelCounts),
@@ -1396,7 +1420,6 @@ async function loadDeliveryHealthPanel() {
  <select id="asrForcedProvider" class="filter-select" style="min-width:140px">
  <option value="" ${!forcedProvider ? 'selected' : ''}>provider (auto)</option>
  <option value="google" ${forcedProvider === 'google' ? 'selected' : ''}>google (primary)</option>
- <option value="bhashini" ${forcedProvider === 'bhashini' ? 'selected' : ''}>bhashini (fallback)</option>
  <option value="simulation" ${forcedProvider === 'simulation' ? 'selected' : ''}>simulation</option>
  </select>
  <label style="font-size:0.82rem;color:#475569"><input id="asrBypassCircuit" type="checkbox" ${bypassCircuit ? 'checked' : ''}/> bypass circuit</label>
@@ -3359,47 +3382,62 @@ function renderAiRuntimeCard(label, isLive) {
  + '</div>'
  + '</div>';
 }
-async function loadAiRuntimeStatus() {
- const gridEl = document.getElementById('aiRuntimeGrid');
- const modesEl = document.getElementById('aiRuntimeModes');
- const overallEl = document.getElementById('aiRuntimeOverallBadge');
- const checkedEl = document.getElementById('aiRuntimeCheckedAt');
- if (!gridEl || !overallEl || !checkedEl || !modesEl) return;
 
- try {
- const res = await fetch('/api/ai/status', { cache: 'no-store' });
- const data = await res.json();
- if (!res.ok || !data.success) throw new Error(data.error || ('HTTP ' + res.status));
+async function loadAiRuntimeStatus(forceProbe = false) {
+  const gridEl = document.getElementById('aiRuntimeGrid');
+  const modesEl = document.getElementById('aiRuntimeModes');
+  const overallEl = document.getElementById('aiRuntimeOverallBadge');
+  const checkedEl = document.getElementById('aiRuntimeCheckedAt');
+  const refreshAiStatusBtn = document.getElementById('refreshAiStatusBtn');
+  if (!gridEl || !overallEl || !checkedEl || !modesEl) return;
 
- const services = [
- ['Gemini AI', 'google_ai'], ['Speech-to-Text', 'google_stt'],
- ['Text-to-Speech', 'google_tts'], ['Vertex Prediction', 'google_vertex'],
- ['Dialogflow CX', 'google_dialogflow'], ['BigQuery', 'google_bigquery'], ['Google Maps', 'google_maps']
- ];
- const labels = {verified: 'Verified recently', configured: 'Configured; unverified', degraded: 'Degraded', unavailable: 'Unavailable'};
- gridEl.replaceChildren(...services.map(([label, key]) => {
-   const card = document.createElement('div'); card.className = 'brief-placeholder';
-   const service = (data.services || {})[key] || {};
-   card.textContent = label + ': ' + (labels[service.status] || 'Unverified');
-   return card;
- }));
- overallEl.textContent = 'Operation evidence';
- overallEl.style.background = '#fef7e0'; overallEl.style.color = '#b06000';
- modesEl.textContent = data.meaning || 'Successful invocation is separate from model quality.';
- checkedEl.textContent = 'Last checked: ' + new Date().toLocaleTimeString();
- } catch (err) {
- gridEl.innerHTML = '<div class="brief-placeholder" style="grid-column:1/-1;">Unable to load AI runtime status.</div>';
- modesEl.textContent = 'Configuration status only. Model quality and successful invocation require separate evidence.';
- overallEl.textContent = 'Overall: UNAVAILABLE';
- overallEl.style.background = '#fdecec';
- overallEl.style.color = '#b3261e';
- checkedEl.textContent = 'Last checked: ' + new Date().toLocaleTimeString();
- }
+  if (forceProbe && refreshAiStatusBtn) {
+    refreshAiStatusBtn.disabled = true;
+    refreshAiStatusBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Verifying...';
+  }
+
+  try {
+    const url = '/api/ai/status?probe=true';
+    const res = await fetch(url, { cache: 'no-store' });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || ('HTTP ' + res.status));
+
+    const services = [
+      ['Gemini AI', 'google_ai'], ['Speech-to-Text', 'google_stt'],
+      ['Text-to-Speech', 'google_tts'], ['Vertex Prediction', 'google_vertex'],
+      ['Dialogflow CX', 'google_dialogflow'], ['BigQuery', 'google_bigquery'], ['Google Maps', 'google_maps']
+    ];
+    const labels = {verified: 'Verified recently', configured: 'Configured; unverified', degraded: 'Degraded', unavailable: 'Unavailable'};
+    gridEl.replaceChildren(...services.map(([label, key]) => {
+      const card = document.createElement('div'); card.className = 'brief-placeholder';
+      const service = (data.services || {})[key] || {};
+      const statusKey = service.status || 'unverified';
+      card.textContent = label + ': ' + (labels[statusKey] || 'Unverified');
+      if (statusKey === 'verified') {
+        card.style.borderColor = '#137333';
+        card.style.color = '#137333';
+        card.style.fontWeight = '500';
+      }
+      return card;
+    }));
+    overallEl.textContent = 'Operation evidence';
+    overallEl.style.background = '#e6f4ea'; overallEl.style.color = '#137333';
+    modesEl.textContent = data.meaning || 'Successful invocation is separate from model quality.';
+    checkedEl.textContent = 'Last checked: ' + new Date().toLocaleTimeString();
+  } catch (err) {
+    gridEl.innerHTML = '<div class="brief-placeholder" style="grid-column:1/-1;">Unable to load AI runtime status.</div>';
+    modesEl.textContent = 'Configuration status only. Model quality and successful invocation require separate evidence.';
+    overallEl.textContent = 'Overall: UNAVAILABLE';
+    overallEl.style.background = '#fdecec';
+    overallEl.style.color = '#b3261e';
+    checkedEl.textContent = 'Last checked: ' + new Date().toLocaleTimeString();
+  } finally {
+    if (refreshAiStatusBtn) {
+      refreshAiStatusBtn.disabled = false;
+      refreshAiStatusBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh AI Status';
+    }
+  }
 }
-
-
-
-
 
 
 

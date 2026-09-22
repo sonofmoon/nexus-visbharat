@@ -24,9 +24,16 @@ def text(value,name,minimum=1,maximum=2000):
 
 
 def programme(pid):
-    found=rows('SELECT * FROM pilot_programmes WHERE pilot_id=?',(pid,))
-    if not found: raise LookupError('Pilot programme not found')
-    p=found[0];p['config']=json.loads(p.pop('config_json'));return p
+    target_pid = pid or PILOT_ID
+    found = rows('SELECT * FROM pilot_programmes WHERE pilot_id=?', (target_pid,))
+    if not found and (target_pid == PILOT_ID or current_app.config.get('DEMO_MODE')):
+        create_default()
+        found = rows('SELECT * FROM pilot_programmes WHERE pilot_id=?', (target_pid,))
+    if not found:
+        raise LookupError('Pilot programme not found')
+    p = found[0]
+    p['config'] = json.loads(p.pop('config_json'))
+    return p
 
 
 def user_memberships():
@@ -36,9 +43,12 @@ def user_memberships():
     if not m and current_app.config.get('DEMO_MODE'):
         state = 'Tamil Nadu' if 'Vellore' in user.get('name','') else 'Andhra Pradesh' if 'Tirupati' in user.get('name','') else ''
         district = 'Vellore' if 'Vellore' in user.get('name','') else 'Tirupati' if 'Tirupati' in user.get('name','') else ''
-        get_db().execute('INSERT INTO pilot_memberships(pilot_id,user_id,state,district,active) VALUES(?,?,?,?,1) ON CONFLICT(pilot_id,user_id) DO NOTHING',(PILOT_ID,user['id'],state,district))
-        get_db().commit()
-        m = rows('SELECT * FROM pilot_memberships WHERE user_id=? AND active=1',(user['id'],))
+        try:
+            get_db().execute('INSERT INTO pilot_memberships(pilot_id,user_id,state,district,active) VALUES(?,?,?,?,1) ON CONFLICT(pilot_id,user_id) DO NOTHING',(PILOT_ID,user['id'],state,district))
+            get_db().commit()
+            m = rows('SELECT * FROM pilot_memberships WHERE user_id=? AND active=1',(user['id'],))
+        except Exception:
+            pass
     return m
 
 

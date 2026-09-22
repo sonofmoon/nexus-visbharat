@@ -118,7 +118,7 @@ class Config:
     USE_REAL_VERTEX_PREDICTION = _as_bool('USE_REAL_VERTEX_PREDICTION', True)
     VERTEX_PROJECT_ID = os.environ.get('VERTEX_PROJECT_ID', 'nexus-visbharat')
     VERTEX_LOCATION = os.environ.get('VERTEX_LOCATION', 'asia-south1')
-    VERTEX_ENDPOINT_ID = os.environ.get('VERTEX_ENDPOINT_ID', 'nvb-sps-model-v24')
+    VERTEX_ENDPOINT_ID = os.environ.get('VERTEX_ENDPOINT_ID', '6604161616655155200')
     VERTEX_API_ENDPOINT = os.environ.get('VERTEX_API_ENDPOINT', '')
     USE_REAL_DIALOGFLOW_CX = _as_bool('USE_REAL_DIALOGFLOW_CX', True)
     DIALOGFLOW_PROJECT_ID = os.environ.get('DIALOGFLOW_PROJECT_ID', 'nexus-visbharat')
@@ -127,9 +127,10 @@ class Config:
     DIALOGFLOW_LANGUAGE_CODE = os.environ.get('DIALOGFLOW_LANGUAGE_CODE', 'en')
     DIALOGFLOW_API_ENDPOINT = os.environ.get('DIALOGFLOW_API_ENDPOINT', '')
 
-    USE_REAL_GOOGLE_TRANSLATION = _as_bool('USE_REAL_GOOGLE_TRANSLATION', False)
-    GOOGLE_TRANSLATION_PROJECT_ID = os.environ.get('GOOGLE_TRANSLATION_PROJECT_ID', '')
+    USE_REAL_GOOGLE_TRANSLATION = _as_bool('USE_REAL_GOOGLE_TRANSLATION', True)
+    GOOGLE_TRANSLATION_PROJECT_ID = os.environ.get('GOOGLE_TRANSLATION_PROJECT_ID', 'nexus-visbharat')
     GOOGLE_TRANSLATION_LOCATION = os.environ.get('GOOGLE_TRANSLATION_LOCATION', 'global')
+    GOOGLE_TRANSLATE_API_KEY = os.environ.get('GOOGLE_TRANSLATE_API_KEY', '')
 
     GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')
     USE_GCP_SECRET_MANAGER = _as_bool('USE_GCP_SECRET_MANAGER', False)
@@ -142,7 +143,7 @@ class Config:
     GCP_SECRET_MANAGER_RETRY_JITTER_SECONDS = float(os.environ.get('GCP_SECRET_MANAGER_RETRY_JITTER_SECONDS', '0.1'))
 
     GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY', '')
-    USE_REAL_GOOGLE_MAPS = _as_bool('USE_REAL_GOOGLE_MAPS', False)
+    USE_REAL_GOOGLE_MAPS = _as_bool('USE_REAL_GOOGLE_MAPS', True)
     GEO_STRICT_DISTRICT_MATCH = _as_bool('GEO_STRICT_DISTRICT_MATCH', True)
     GEO_ENFORCE_MIN_CONFIDENCE = _as_bool('GEO_ENFORCE_MIN_CONFIDENCE', False)
     GEO_MIN_CONFIDENCE = float(os.environ.get('GEO_MIN_CONFIDENCE', '0.45'))
@@ -165,9 +166,9 @@ class Config:
 
     ROLE_CHOICES = ['admin', 'analyst', 'auditor']
 
-    ADMIN_API_TOKEN = os.environ.get('ADMIN_API_TOKEN', 'visbharat-admin-token' if DEMO_MODE else '')
-    ANALYST_API_TOKEN = os.environ.get('ANALYST_API_TOKEN', 'visbharat-analyst-token' if DEMO_MODE else '')
-    AUDITOR_API_TOKEN = os.environ.get('AUDITOR_API_TOKEN', 'visbharat-auditor-token' if DEMO_MODE else '')
+    ADMIN_API_TOKEN = os.environ.get('ADMIN_API_TOKEN', 'visbharat-admin-token' if DEMO_MODE else '').strip()
+    ANALYST_API_TOKEN = os.environ.get('ANALYST_API_TOKEN', 'visbharat-analyst-token' if DEMO_MODE else '').strip()
+    AUDITOR_API_TOKEN = os.environ.get('AUDITOR_API_TOKEN', 'visbharat-auditor-token' if DEMO_MODE else '').strip()
     WEBHOOK_SHARED_TOKEN = os.environ.get('WEBHOOK_SHARED_TOKEN', 'visbharat-webhook-token' if DEMO_MODE else '')
     WHATSAPP_VERIFY_TOKEN = os.environ.get('WHATSAPP_VERIFY_TOKEN', 'visbharat-whatsapp-verify' if DEMO_MODE else '')
     META_APP_SECRET = os.environ.get('META_APP_SECRET', '')

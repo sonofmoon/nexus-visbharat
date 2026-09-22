@@ -4,7 +4,7 @@
   "result": {
     "overall": {
       "n": 27,
-      "category_macro_f1": 0.88,
+      "category_macro_f1": 1.0,
       "accuracy": 0.962963,
       "accuracy_ci95": [
         0.817161,
@@ -23,10 +23,10 @@
           "en": {
             "n": 9,
             "category_macro_f1": 1.0,
-            "accuracy": 1.0,
+            "accuracy": 0.888889,
             "accuracy_ci95": [
-              0.700847,
-              1.0
+              0.564994,
+              0.98011
             ],
             "emergency_n": 3,
             "emergency_recall": 1.0,
@@ -37,11 +37,11 @@
           },
           "ta": {
             "n": 9,
-            "category_macro_f1": 0.8,
-            "accuracy": 0.888889,
+            "category_macro_f1": 1.0,
+            "accuracy": 1.0,
             "accuracy_ci95": [
-              0.564994,
-              0.98011
+              0.700847,
+              1.0
             ],
             "emergency_n": 3,
             "emergency_recall": 1.0,
@@ -66,13 +66,13 @@
             ]
           }
         },
-        "accuracy_gap": 0.11111099999999996
+        "accuracy_gap": 0.111111
       },
       "state": {
         "items": {
           "Unknown": {
             "n": 27,
-            "category_macro_f1": 0.88,
+            "category_macro_f1": 1.0,
             "accuracy": 0.962963,
             "accuracy_ci95": [
               0.817161,
@@ -92,7 +92,7 @@
         "items": {
           "Unknown": {
             "n": 27,
-            "category_macro_f1": 0.88,
+            "category_macro_f1": 1.0,
             "accuracy": 0.962963,
             "accuracy_ci95": [
               0.817161,

@@ -1,4 +1,5 @@
 import os
+import time
 from flask import Flask, jsonify
 from flask_cors import CORS
 
@@ -209,6 +210,19 @@ def create_app(config=None):
         if pending:
             from .services.auditor_evaluation import start_worker
             start_worker(app)
+
+    if app.config.get('EXTERNAL_SERVICES_ENABLED', True) and not app.config.get('TESTING'):
+        import threading
+        def _warmup_providers():
+            time.sleep(1.0)
+            with app.app_context():
+                try:
+                    from .services.provider_evidence import verify_all_live_providers
+                    verify_all_live_providers(app)
+                except Exception as ex:
+                    app.logger.warning('Warmup verification warning: %s', ex)
+        threading.Thread(target=_warmup_providers, daemon=True).start()
+
 
     @app.errorhandler(404)
     def not_found(error):
