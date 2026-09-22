@@ -356,7 +356,7 @@ class NVBLensController {
  <i class="bi bi-shield-x"></i>
  </div>
  <div>
- <h4 style="margin:0;font-weight:700;color:#202124;font-size:1.2rem;letter-spacing:-0.2px;line-height:1.3;">Auditor Executive Suite - Immutable Audit Trail & Consent Ledger</h4>
+ <h4 style="margin:0;font-weight:700;color:#202124;font-size:1.2rem;letter-spacing:-0.2px;line-height:1.3;">Auditor Executive Suite - Tamper-Evident Audit Trail & Consent Ledger</h4>
  <div class="d-flex align-items-center gap-2 mt-1.5 flex-wrap">
  <span class="badge" style="background:#e6f4ea;color:#137333;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-shield-check text-success"></i> Google Security & Privacy Verified</span>
  <span class="badge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-calculator-fill text-primary"></i> Econometric DiD & Cryptographic Epistemics</span>
@@ -444,9 +444,9 @@ class NVBLensController {
  <div style="background:#fef7e0;border:1px solid #feefc3;border-left:5px solid #fbbc04;border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
  <strong style="color:#b06000;font-size:0.98rem;"><i class="bi bi-file-earmark-diff"></i> Signed Governance Weight Tuning Rationale</strong>
- <span class="badge" style="background:#feefc3;color:#b06000;border-radius:100px;padding:4px 12px;font-weight:700;">ACTIVE VERSION: ${lens.weight_tuning_governance?.active_weight_version || 'v2.4-signed'}</span>
+ <span class="badge" style="background:#feefc3;color:#b06000;border-radius:100px;padding:4px 12px;font-weight:700;">${lens.weight_tuning_governance?.active_weight_version ? 'ACTIVE VERSION: ' + lens.weight_tuning_governance.active_weight_version : 'CONFIGURATION: Default Baseline'}</span>
  </div>
- <p style="margin:0 0 10px;font-size:0.88rem;color:#202124;line-height:1.5;">${lens.weight_tuning_governance?.signed_governance_diff || 'Signed diff: Increased w3 SECC Deprivation weight +0.05 for Aspirational Districts mandate.'}</p>
+ <p style="margin:0 0 10px;font-size:0.88rem;color:#202124;line-height:1.5;">${lens.weight_tuning_governance?.signed_governance_diff || 'No administrative weight overrides recorded (default policy weights active).'}</p>
  <button class="btn btn-sm" style="background:#ffffff;color:#c5221f;border:1px solid #f87171;border-radius:20px;padding:6px 16px;font-size:0.8rem;font-weight:500;" onclick="alert('Mandatory rationale prompt triggered: All algorithm weight modifications require cryptographic rationale signatures.')"><i class="bi bi-pencil-square"></i> Modify Weights (Requires Rationale Signature)</button>
  </div>
 
@@ -457,15 +457,15 @@ class NVBLensController {
  <h6 style="font-weight:700;color:#202124;margin-bottom:10px;font-size:0.92rem;"><i class="bi bi-activity" style="color:#1a73e8"></i> Mission-Control System Vitals</h6>
  <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:0.85rem;">
  <span>Ingestion Latency:</span>
- <strong style="color:#1a73e8;">${lens.system_health_cockpit?.ingestion_latency_ms || 142} ms</strong>
+ <strong style="color:#1a73e8;">${lens.system_health_cockpit?.ingestion_latency_ms ? lens.system_health_cockpit.ingestion_latency_ms + ' ms' : 'Live status at /api/ai/status'}</strong>
  </div>
  <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:0.85rem;">
  <span>Silence Map Coverage:</span>
- <strong style="color:#137333;">${lens.system_health_cockpit?.silence_map_coverage || '98.6%'}</strong>
+ <strong style="color:#137333;">${lens.system_health_cockpit?.silence_map_coverage || 'Not evaluated (Illustrative)'}</strong>
  </div>
  <div class="d-flex justify-content-between align-items-center" style="font-size:0.85rem;">
  <span>Event Bus Throughput:</span>
- <strong style="color:#202124;">2,400 req/sec</strong>
+ <strong style="color:#202124;">${lens.system_health_cockpit?.event_bus_throughput || 'Not measured (Illustrative)'}</strong>
  </div>
  </div>
  </div>

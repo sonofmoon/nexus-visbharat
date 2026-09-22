@@ -29,7 +29,10 @@ def create_app(config=None):
     if config:
         app.config.update(config)
 
-    Config.validate_production_security()
+    from types import SimpleNamespace
+    Config.validate_production_security(SimpleNamespace(**app.config))
+    from .services.runtime_readiness import validate
+    validate(app.config)
 
     cors_origins = [
         origin.strip()
@@ -184,7 +187,11 @@ def create_app(config=None):
             app.extensions['google_maps_client'] = None
 
     init_db(app)
+    from .services.provider_evidence import install as install_provider_evidence
+    install_provider_evidence(app)
 
+    from .blueprints.submission import submission_bp
+    app.register_blueprint(submission_bp)
     app.register_blueprint(web_bp)
     app.register_blueprint(api_bp)
     from .blueprints.analyst import analyst_bp

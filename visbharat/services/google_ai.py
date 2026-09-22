@@ -115,9 +115,20 @@ class GoogleAIClient:
 
     def get_health(self) -> dict:
         now = time.time()
+        cb_open = any(float(v.get('open_until') or 0) > now for v in self._circuit.values())
+        if cb_open:
+            status = 'unavailable'
+        elif self.last_provider_mode == 'live':
+            status = 'verified'
+        elif self.last_provider_mode == 'degraded':
+            status = 'degraded'
+        else:
+            status = 'configured'
+
         return {
-            'last_transport': self.last_transport,
-            'last_provider_mode': self.last_provider_mode,
+            'status': status,
+            'last_transport': self.last_transport if self.last_transport != 'none' else None,
+            'last_provider_mode': self.last_provider_mode if self.last_provider_mode != 'none' else None,
             'circuit_breakers': {
                 k: {'failures': v.get('failures', 0), 'open': float(v.get('open_until') or 0) > now}
                 for k, v in self._circuit.items()
@@ -201,8 +212,8 @@ class GoogleAIClient:
                             if parts:
                                 self._circuit_success(key)
                                 self.last_transport = 'api_key_rest'
-                                self.last_provider_mode = 'degraded'
-                                return parts[0].get('text', '').strip(), m_clean
+                                self.last_provider_mode = 'live'
+                                return parts[0].get('text', '').strip(), str(data.get('modelVersion') or m_clean)
                         last_err = f"Model '{m_clean}' empty candidates"
                     else:
                         last_err = f"Model '{m_clean}' HTTP {response.status_code}: {response.text[:150]}"
@@ -259,7 +270,11 @@ Citizen text: {text}
             result['model'] = used_model
             result['provider_mode'] = 'google_ai_live'
             result['fallback_used'] = False
-            result.setdefault('confidence', 0.95)
+            if result.get('category') not in categories or result.get('urgency') not in ('Routine', 'Urgent', 'Emergency'):
+                raise ValueError('Classifier returned an invalid category or urgency')
+            result.setdefault('sentiment', 'Neutral')
+            result.setdefault('confidence', None)
+            result['confidence_basis'] = 'provider_estimate_not_calibrated' if result['confidence'] is not None else 'not_reported'
             return result
         except Exception:
             from visbharat.services.ai_simulation import simulate_gemini_intent_classification

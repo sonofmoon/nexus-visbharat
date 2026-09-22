@@ -89,6 +89,8 @@ class Config:
         DEPLOYMENT_PROFILE = 'pilot'
 
     DEMO_MODE = _as_bool('DEMO_MODE', True)
+    ALLOW_EPHEMERAL_SHOWCASE = _as_bool('ALLOW_EPHEMERAL_SHOWCASE', False)
+    PROVIDER_VERIFICATION_TTL_SECONDS = int(os.environ.get('PROVIDER_VERIFICATION_TTL_SECONDS', '900'))
 
     GOOGLE_AI_API_KEY = os.environ.get('GOOGLE_AI_API_KEY', '')
     USE_REAL_GOOGLE_AI = _as_bool('USE_REAL_GOOGLE_AI', True)

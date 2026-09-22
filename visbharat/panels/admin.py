@@ -1,35 +1,32 @@
-from flask import Blueprint, jsonify
+"""Legacy lens: no invented approvals, service measurements or certifications."""
+from flask import Blueprint
 
 admin_panel_bp = Blueprint('admin_panel', __name__)
 
-def build_admin_lens(cluster_data: dict) -> dict:
-    cluster_id = cluster_data.get('cluster_id') or 'TN-KAR-0417'
-    district = cluster_data.get('district') or 'Karur'
 
+def build_admin_lens(cluster_data):
     return {
-        'view_name': 'Admin View — The Control Room with a Conscience',
-        'cluster_id': cluster_id,
-        'district': district,
+        'view_name': 'Administration overview',
+        'cluster_id': cluster_data.get('cluster_id'),
+        'district': cluster_data.get('district'),
+        'status': 'authenticated_workspace_required',
+        'data_mode': 'illustrative_not_measured',
         'weight_tuning_governance': {
-            'active_weight_version': 'v2.4-governance-approved',
-            'mandatory_rationale_required': True,
-            'signed_governance_diff': 'Demotes 0 Aspirational Districts. Signed by Planning Secretary.'
+            'active_weight_version': None,
+            'signed_governance_diff': None,
+            'status': 'default_baseline'
         },
         'system_health_cockpit': {
-            'ingestion_latency_ms': 142,
-            'asr_telemetry': 'NOMINAL (22 Languages)',
-            'cluster_queue_depth': 0,
-            'silence_map_coverage': '98.6%'
+            'ingestion_latency_ms': None,
+            'asr_telemetry': 'not_measured',
+            'cluster_queue_depth': None,
+            'silence_map_coverage': None,
+            'event_bus_throughput': None,
+            'status': 'illustrative_not_evaluated'
         },
         'dpg_ops_console': {
-            'dpg_conformance_score': '98/100',
-            'state_onboarding_wizard': 'Andhra Pradesh (Live Feed Validated)',
-            'open_api_schema_valid': True
+            'dpg_conformance_score': None,
+            'status': 'candidate_not_certified'
         },
-        'crisis_mode': {
-            'active': False,
-            'posture': 'NORMAL',
-            'haz_priority_override': False,
-            'emergency_sla_hours': 24
-        }
+        'message': 'Use the authenticated dashboard for recorded decisions. Live provider execution evidence is available at /api/ai/status.'
     }

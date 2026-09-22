@@ -70,6 +70,8 @@
 
   function showSavedRequest(data, payload) {
     element('complaintId').textContent = data.request_id;
+    const proof = document.getElementById('submissionEvidenceLink');
+    if (proof) proof.href = '/submission?ticket=' + encodeURIComponent(data.request_id);
     element('successWard').textContent = data.routing?.ward || payload.ward || 'Pending assignment';
     element('successDept').textContent = data.routing?.department || payload.department || 'Pending routing';
     element('trackRequestIdInput').value = data.request_id;
@@ -130,6 +132,8 @@
         state: element('state').value,
         source: isVoice ? 'Voice IVR' : 'Web Form',
         is_voice: isVoice,
+        reviewed_transcript: isVoice ? text : undefined,
+        reviewed_translation: element('translated-text-box').value.trim(),
         lat: location?.lat ?? null,
         lng: location?.lng ?? null,
         location,

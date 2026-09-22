@@ -39,7 +39,7 @@ def _district_geo(repo, district):
 
 def _get_ai_mode():
     google_client = current_app.extensions.get('google_ai_client')
-    return 'google_ai_live' if google_client else 'simulation'
+    return 'google_ai_configured' if google_client else 'simulation'
 
 
 def _jury_live_models_required() -> bool:
@@ -232,6 +232,8 @@ def process_ingestion_payload(payload: dict):
     now = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
 
     ai_metadata = {
+        'is_synthetic': bool(current_app.config.get('DEMO_MODE')),
+        'data_mode': 'showcase_submission' if current_app.config.get('DEMO_MODE') else 'unverified_submission',
         'mode': _get_ai_mode(),
         'stt_mode': 'simulation',
         'ingestion_channel': channel,

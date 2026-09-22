@@ -278,7 +278,7 @@ def _record_ingest_consent(request_id: str, data, channel: str, language: str, a
 
 def _get_ai_mode():
     google_client = current_app.extensions.get('google_ai_client')
-    return 'google_ai_live' if google_client else 'simulation'
+    return 'google_ai_configured' if google_client else 'simulation'
 
 
 def _bigquery_top_stats():
@@ -1376,66 +1376,67 @@ def deployment_profile():
 
 @api_bp.route('/api/ai/status', methods=['GET'])
 def ai_status():
-    google_client = current_app.extensions.get('google_ai_client')
-    stt_client = current_app.extensions.get('google_stt_client')
-    bigquery_client = current_app.extensions.get('google_bigquery_client')
-    vertex_client = current_app.extensions.get('google_vertex_client')
-    dialogflow_client = current_app.extensions.get('google_dialogflow_client')
-    tts_client = current_app.extensions.get('google_tts_client')
-    maps_client = current_app.extensions.get('google_maps_client')
-    translation_client = current_app.extensions.get('google_translation_client')
-    cloud_run_url = current_app.config.get('CLOUD_RUN_SERVICE_URL', '')
-    use_cloud_run = current_app.config.get('USE_CLOUD_RUN_SERVICE', True)
-    return jsonify(
-        {
-            'success': True,
-            'mode': _get_ai_mode(),
-            'stt_mode': _get_stt_mode(),
-            'google_ai_configured': bool(google_client),
-            'google_stt_configured': bool(stt_client),
-            'preferred_asr_provider': 'google',
-            'cloud_run_service_configured': bool(cloud_run_url and use_cloud_run),
-            'cloud_run_service_url': cloud_run_url if use_cloud_run else '',
-            'google_bigquery_configured': bool(bigquery_client),
-            'bigquery_mode': 'bigquery_live' if bigquery_client else 'local_sql_analytics',
-            'google_vertex_configured': bool(vertex_client),
-            'vertex_mode': 'vertex_live' if vertex_client else 'vertex_proxy_model',
-            'google_dialogflow_configured': bool(dialogflow_client),
-            'dialogflow_mode': 'dialogflow_cx_live' if dialogflow_client else 'local_dialogflow_cx_simulation',
-            'google_tts_configured': bool(tts_client),
-            'tts_mode': 'google_tts_live' if tts_client else 'local_tts_simulation',
-            'google_maps_configured': bool(maps_client),
-            'maps_mode': 'google_maps_live' if maps_client else 'map_render_fallback',
-            'google_translation_configured': bool(translation_client),
-            'translation_live_enabled': bool(current_app.config.get('USE_REAL_GOOGLE_TRANSLATION', False)),
-            'supported_features': [
-                'multilingual_translation',
-                'request_classification',
-                'policy_brief_generation',
-                'voice_input_live_stt',
-                'dialogflow_cx_guided_conversation',
-                'bigquery_live_analytics',
-                'vertex_live_prediction',
-                'dialogflow_cx_live_session',
-                'cloud_run_production_deployment',
-            ],
-            'feature_status': {
-                'multilingual_translation': 'live' if google_client else 'simulation',
-                'request_classification': 'live' if google_client else 'simulation',
-                'policy_brief_generation': 'live' if google_client else 'simulation',
-                'voice_input_stt': 'live' if stt_client else 'simulation',
-                'dialogflow_cx_guided_conversation': 'live' if dialogflow_client else 'simulation',
-                'bigquery_analytics': 'live' if bigquery_client else 'local_sql_analytics',
-                'vertex_prediction': 'live' if vertex_client else 'proxy_model',
-                'cloud_run_deployment': 'configured' if (cloud_run_url and use_cloud_run) else 'not_configured',
-            },
-            'gemini_health': (google_client.get_health() if google_client and hasattr(google_client, 'get_health') else None),
-            'status_integrity': 'reported from initialized provider clients only, not configuration flags',
-        }
-    )
+    from ..services.provider_evidence import status
+    result = status()
+    services = result['services']
+    def operation(provider, name):
+        return services[provider]['operations'][name]['status']
 
+    # Retrieve recent verifiable invocation telemetry
+    db = get_db()
+    recent_invocations = []
+    try:
+        inv_rows = db.execute('''
+            SELECT trace_id, provider, operation, status, model, checked_at, latency_ms, fallback_used, transport
+            FROM provider_invocations
+            ORDER BY checked_at DESC LIMIT 5
+        ''').fetchall()
+        for r in inv_rows:
+            recent_invocations.append({
+                'trace_id': r['trace_id'],
+                'provider': r['provider'],
+                'operation': r['operation'],
+                'status': r['status'],
+                'model': r['model'],
+                'checked_at': r['checked_at'],
+                'latency_ms': r['latency_ms'],
+                'fallback_used': bool(r['fallback_used']),
+                'transport': r['transport'],
+            })
+    except Exception:
+        pass
 
+    latest_evidence = recent_invocations[0] if recent_invocations else None
+    ai_client = current_app.extensions.get('google_ai_client')
+    gemini_health = ai_client.get_health() if (ai_client and hasattr(ai_client, 'get_health')) else None
 
+    result.update(success=True,
+        mode='google_ai_' + services['google_ai']['status'],
+        stt_mode='google_stt_' + services['google_stt']['status'],
+        preferred_asr_provider='google',
+        cloud_run_service_configured=bool(current_app.config.get('CLOUD_RUN_SERVICE_URL')),
+        cloud_run_service_url=current_app.config.get('CLOUD_RUN_SERVICE_URL', ''),
+        translation_configured=bool(current_app.config.get('USE_REAL_GOOGLE_TRANSLATION')),
+        translation_status=operation('google_ai', 'translate_text'),
+        recent_invocations=recent_invocations,
+        latest_inference=latest_evidence,
+        gemini_health=gemini_health,
+        supported_features=['multilingual_translation','request_classification','policy_brief_generation',
+            'voice_input_stt','dialogflow_cx_guided_conversation','bigquery_analytics','vertex_prediction'],
+        feature_status={
+            'multilingual_translation': operation('google_ai','translate_text'),
+            'request_classification': operation('google_ai','classify_request'),
+            'policy_brief_generation': operation('google_ai','generate_policy_brief'),
+            'voice_input_stt': operation('google_stt','transcribe_bytes'),
+            'dialogflow_cx_guided_conversation': operation('google_dialogflow','detect_intent'),
+            'bigquery_analytics': operation('google_bigquery','aggregate_requests'),
+            'vertex_prediction': operation('google_vertex','predict_stress')},
+        status_integrity='Configured clients are not proof of inference. Verification uses persisted operation results with an expiry.')
+    for provider, details in services.items():
+        result[provider + '_configured'] = details['configured']
+    for short in ('bigquery','vertex','dialogflow','tts','maps'):
+        result[short + '_mode'] = services['google_' + short]['status']
+    return jsonify(result)
 
 
 @api_bp.route('/api/v1/language/asr/metrics', methods=['GET'])
@@ -1770,18 +1771,11 @@ def dialogflow_session_turn():
 
 @api_bp.route('/api/db/status', methods=['GET'])
 def db_status():
+    from ..services.runtime_readiness import persistence
     db = get_db()
-    database_url = (current_app.config.get('DATABASE_URL') or '').strip()
-    database_path = current_app.config.get('DATABASE_PATH')
+    # Never expose a database URL: it may contain a username and password.
+    return jsonify(success=True, **{**persistence(current_app.config), 'backend': db.backend})
 
-    return jsonify(
-        {
-            'success': True,
-            'backend': db.backend,
-            'database_url_configured': bool(database_url),
-            'target': database_url or database_path,
-        }
-    )
 
 @api_bp.route('/api/v1/geo/ward-suggest', methods=['POST'])
 def suggest_ward_from_geo():
@@ -1813,6 +1807,9 @@ def submit_complaint():
 
 
 def _submit_complaint(data, idempotency_key='', assistant_session_id=None):
+    from ..services import citizen_review
+    try: citizen_review.validate(data)
+    except ValueError as error: return jsonify(success=False,error=str(error)),400
     data, scrub_meta = _scrub_ingress_payload(data, text_keys=['text', 'address', 'sender', 'phone'])
     if idempotency_key:
         existing = _get_existing_idempotent_request('/api/submit', idempotency_key)
@@ -1830,7 +1827,7 @@ def _submit_complaint(data, idempotency_key='', assistant_session_id=None):
     if is_voice:
         try:
             stt = _run_speech_to_text(data, language)
-            text = scrub_text(stt['transcript']).get('scrubbed')
+            text = scrub_text(citizen_review.transcript(data, stt)).get('scrubbed')
         except Exception as err:
             return jsonify({'success': False, 'error': f'voice processing failed: {err}'}), 400
     else:
@@ -1868,6 +1865,7 @@ def _submit_complaint(data, idempotency_key='', assistant_session_id=None):
         except ValueError:
             current_app.logger.warning('Submission AI processing unavailable')
             return jsonify({'success': False, 'error': 'AI processing is currently unavailable. Your request was not saved. Please try again shortly.'}), 503
+    citizen_review.outputs(data, translation, classification)
     if data.get('category'):
         classification['category'] = str(data['category']).strip()
     if data.get('urgency'):
@@ -1952,6 +1950,8 @@ def _submit_complaint(data, idempotency_key='', assistant_session_id=None):
     request_id = _generate_request_id()
 
     ai_metadata = {
+        'is_synthetic': bool(current_app.config.get('DEMO_MODE')),
+        'data_mode': 'showcase_submission' if current_app.config.get('DEMO_MODE') else 'unverified_submission',
         'mode': _get_ai_mode(),
         'stt_mode': _get_stt_mode(),
         'stt': stt,
@@ -2638,7 +2638,7 @@ def transcribe_voice_endpoint():
         if data.get('assistant') and not _is_live_model_result(stt):
             return jsonify(success=False, error='Live transcription unavailable; type your message', fallback='text'),503
         transcript = (stt.get('transcript') or '').strip()
-        confidence = float(stt.get('confidence', 0.85) or 0.85)
+        confidence = stt.get('confidence')
         provider = stt.get('provider', 'stt')
         model = stt.get('model', 'SpeechToText')
     except Exception as err:
@@ -2654,7 +2654,8 @@ def transcribe_voice_endpoint():
         'provider': provider,
         'model': model,
         'language': language,
-        'stt_mode': _get_stt_mode()
+        'stt_mode': stt.get('provider_mode', 'unverified'),
+        'provider_evidence': stt.get('provider_evidence')
     })
 
 
@@ -2662,6 +2663,9 @@ def transcribe_voice_endpoint():
 def submit_voice_complaint():
 
     data = request.get_json(silent=True) or request.form.to_dict()
+    from ..services import citizen_review
+    try: citizen_review.validate(data)
+    except ValueError as error: return jsonify(success=False,error=str(error)),400
     data, scrub_meta = _scrub_ingress_payload(data, text_keys=['address', 'sender', 'phone'])
     idempotency_key = (request.headers.get('X-Idempotency-Key') or '').strip()
     if idempotency_key:
@@ -2682,7 +2686,7 @@ def submit_voice_complaint():
 
     try:
         stt = _run_speech_to_text(data, language, audio_bytes=audio_bytes, mime_type=mime_type)
-        text = (stt.get('transcript') or '').strip()
+        text = scrub_text(citizen_review.transcript(data, stt)).get('scrubbed')
     except Exception as err:
         return jsonify({'success': False, 'error': f'voice processing failed: {err}'}), 400
 
@@ -2698,6 +2702,7 @@ def submit_voice_complaint():
     except ValueError:
         current_app.logger.warning('Voice submission AI processing unavailable')
         return jsonify({'success': False, 'error': 'AI processing is currently unavailable. Your request was not saved. Please try again shortly.'}), 503
+    citizen_review.outputs(data, translation, classification)
     if data.get('category'):
         classification['category'] = str(data['category']).strip()
     if data.get('urgency'):
@@ -2784,6 +2789,8 @@ def submit_voice_complaint():
     now = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
 
     ai_metadata = {
+        'is_synthetic': bool(current_app.config.get('DEMO_MODE')),
+        'data_mode': 'showcase_submission' if current_app.config.get('DEMO_MODE') else 'unverified_submission',
         'mode': _get_ai_mode(),
         'stt_mode': _get_stt_mode(),
         'stt': stt,

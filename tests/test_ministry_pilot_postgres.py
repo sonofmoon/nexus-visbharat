@@ -27,3 +27,14 @@ class PostgresMinistryPilotTest(contract.MinistryPilotTest):
         connection_patch=patch('visbharat.db._connect_postgres',connect);connection_patch.start();self.addCleanup(connection_patch.stop)
         def factory(config):return real_create_app({**config,'DATABASE_URL':url})
         with patch.object(contract,'create_app',factory):super().setUp()
+
+    def test_new_app_instance_reads_committed_ticket_review_and_queue(self):
+        rid=self.submit().get_json()['request_id']
+        self.assertEqual(self.review(rid).status_code,200)
+        restarted=real_create_app({**dict(self.app.config),'AUTO_MIGRATE':False,'LOCAL_EVALUATION_WORKER':False})
+        result=restarted.test_client().get('/api/v2/analyst/requests/'+rid+'/journey',headers=self.analyst)
+        self.assertEqual(result.status_code,200,result.get_json())
+        self.assertEqual(result.get_json()['request']['request_id'],rid)
+        with restarted.app_context():
+            from visbharat.db import get_db
+            self.assertEqual(get_db().execute("SELECT COUNT(*) n FROM pilot_outbox WHERE request_id=? AND kind='process_intake'",(rid,)).fetchone()['n'],1)

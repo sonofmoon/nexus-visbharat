@@ -96,7 +96,7 @@ def index():
         'districts_covered': total_districts,
         'languages_supported': languages_count,
         'states_covered': total_states,
-        'resolution_rate': resolution_rate or 78,
+        'resolution_rate': resolution_rate,
     }
 
     bq_stats = _bigquery_top_stats()

@@ -328,7 +328,7 @@ def install_pilot(app):
             from flask import redirect
             return redirect('/pilot/submit' if request.path=='/submit' else '/pilot')
         if not request.path.startswith('/api/'):return
-        public={'/api/health','/api/v2/pilot/public-config','/api/v2/pilot/intake','/api/v2/pilot/track'}
+        public={'/api/submission/readiness','/api/health','/api/v2/pilot/public-config','/api/v2/pilot/intake','/api/v2/pilot/track'}
         public.update('/api/v2/pilot/portal/'+p for p in ('states','districts','ward-suggest','translate','classify','transcribe-voice','evidence'))
         if request.path in public:return
         if request.path.startswith('/api/v2/pilot/channels/') and request.path.endswith('/webhook'):return

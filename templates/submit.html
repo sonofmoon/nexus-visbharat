@@ -96,7 +96,7 @@
       </form>
       <section class="m3-success-card hidden" id="successMessage" aria-labelledby="success-title" tabindex="-1">
         <div class="m3-success-icon" aria-hidden="true"><i class="bi bi-check-lg"></i></div><span class="public-eyebrow">YOUR VOICE IS ON ITS WAY</span><h2 id="success-title">Request submitted.</h2><p>Save your request ID to follow its progress.</p><strong id="complaintId" class="public-request-id"></strong>{% if pilot_page %}<p>Private tracking code — save this with your ticket:</p><p id="pilotReceiptSecret" class="pilot-private-code"></p><p>Request received. AI processing and officer review may still be pending.</p>{% endif %}
-        <div id="assignedWardInfo" class="public-inset"><p>Concerned ward: <strong id="successWard">Ward 01</strong></p><p>Routed department: <strong id="successDept">Municipal Administration & Public Works</strong></p></div><p>{{ 'The district review team has received your request.' if pilot_page else 'Your request has been classified and routed to the concerned department.' }}</p><div class="public-actions"><a href="{{ '/pilot/submit' if pilot_page else '/submit' }}" class="m3-btn m3-btn-outline">Submit another</a>{% if pilot_page %}<a href="/pilot#track" class="m3-btn m3-btn-primary">Track my request</a>{% else %}<a href="/dashboard" class="m3-btn m3-btn-primary">View dashboard</a>{% endif %}</div>
+        <div id="assignedWardInfo" class="public-inset"><p>Concerned ward: <strong id="successWard">Ward 01</strong></p><p>Routed department: <strong id="successDept">Municipal Administration & Public Works</strong></p></div><p>{{ 'The district review team has received your request.' if pilot_page else 'Your request has been classified and routed to the concerned department.' }}</p><div class="public-actions"><a href="{{ '/pilot/submit' if pilot_page else '/submit' }}" class="m3-btn m3-btn-outline">Submit another</a>{% if pilot_page %}<a href="/pilot#track" class="m3-btn m3-btn-primary">Track my request</a>{% else %}<a href="/dashboard" class="m3-btn m3-btn-primary">View dashboard</a><a id="submissionEvidenceLink" href="/submission" class="m3-btn m3-btn-outline">Inspect submission evidence</a>{% endif %}</div>
         <p id="submissionAttachmentNotice" class="public-evidence-notice hidden" role="status"></p><button type="button" class="m3-btn m3-btn-outline hidden" id="retryAttachmentsBtn">Retry evidence registration</button>
       </section>
     </div>
@@ -461,7 +461,7 @@
  document.getElementById('ai-sentiment').textContent = result.sentiment || '-';
  const confidence = Number(result.confidence || 0);
  const confPct = (confidence * 100).toFixed(1);
- document.getElementById('ai-confidence').textContent = confPct + '%';
+ document.getElementById('ai-confidence').textContent = result.confidence == null ? 'Not reported' : confPct + '%';
 
  const confBar = document.getElementById('aiConfidenceBar');
  if (confBar) confBar.style.width = confPct + '%';
@@ -469,7 +469,7 @@
  const rationaleEl = document.getElementById('ai-rationale');
  if (rationaleEl) {
  const slaTarget = urgency === 'Emergency' ? '2-Hour' : (urgency === 'Urgent' ? '24-Hour' : '48-Hour');
- rationaleEl.textContent = `Suggested category: ${result.category || 'General'}. Urgency: ${urgency}. Model confidence: ${confPct}%. Officer review confirms routing and priority.`;
+ rationaleEl.textContent = `Suggested category: ${result.category || 'General'}. Urgency: ${urgency}. Model confidence: ${result.confidence == null ? 'not reported' : confPct + '% (uncalibrated)'}. Officer review confirms routing and priority.`;
  }
 
  document.getElementById('aiPreview').classList.remove('hidden');

@@ -343,6 +343,7 @@ def _open_connection():
             return _connect_postgres(database_url)
         if lower.startswith('sqlite:///'):
             return _connect_sqlite(_sqlite_path_from_url(database_url))
+        raise RuntimeError('Unsupported DATABASE_URL scheme; refusing SQLite fallback')
 
     database_path = current_app.config['DATABASE_PATH']
     return _connect_sqlite(database_path)
@@ -473,6 +474,8 @@ def init_db():
     migrate_pilot(db)
     from .services.citizen_assistant import migrate as migrate_assistant
     migrate_assistant(db)
+    from .services.provider_evidence import migrate as migrate_provider_evidence
+    migrate_provider_evidence(db)
 
 
 def ensure_transparency_log_columns():
@@ -1871,6 +1874,8 @@ def init_app(app):
 def migrate_application(app):
     with app.app_context():
         init_db()
+        from .services.provider_evidence import migrate as migrate_provider_evidence
+        migrate_provider_evidence(get_db())
         ensure_user_token_columns()
         if app.config.get('DEMO_MODE', True):
             seed_default_users()

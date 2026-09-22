@@ -25,6 +25,7 @@ class TestChannelIngestion(unittest.TestCase):
             TESTING=True,
             DATABASE_PATH=cls.db_path,
             DATABASE_URL='',
+            JURY_REQUIRE_LIVE_MODELS=False,
             WEBHOOK_SHARED_TOKEN='test-webhook-token',
             WHATSAPP_VERIFY_TOKEN='test-whatsapp-verify',
             META_APP_SECRET='test-meta-secret',

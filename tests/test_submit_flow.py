@@ -248,6 +248,31 @@ class TestSubmitFlow(unittest.TestCase):
         self.assertIsNone(arguments['retry'])
         self.assertEqual(arguments['timeout'], 10)
 
+    def test_corrected_voice_text_and_evidence_page_preserve_same_ticket(self):
+        self.fill_form()
+        corrected='Corrected citizen description: repair the lights in Ward 12.'
+        self.page.locator('#complaint-text').fill(corrected)
+        self.page.evaluate("() => { lastVoiceAudioBase64=btoa('audio fixture');lastVoiceMimeType='audio/webm'; }")
+        with patch('visbharat.blueprints.api._run_speech_to_text',return_value={'transcript':'Original imperfect transcript.', 'model':'fixture-speech','provider_mode':'google_stt_live'}):
+            self.page.locator('#submitBtn').click()
+            rid=self.saved_id()
+        row=self.row(rid)
+        self.assertEqual(row['original_text'],corrected)
+        import json
+        meta=json.loads(row['ai_metadata_json'])
+        self.assertEqual(meta['stt']['citizen_review']['provider_transcript'],'Original imperfect transcript.')
+        self.page.locator('#submissionEvidenceLink').click()
+        expect(self.page.locator('#ticket')).to_have_value(rid)
+        self.page.locator('#access-token').fill(self.app.config['ANALYST_API_TOKEN'])
+        self.page.locator('#trace-form button').click()
+        expect(self.page.locator('#journey')).to_contain_text(corrected)
+        expect(self.page.locator('#journey')).to_contain_text('Candidate: NVB-P-')
+        self.page.set_viewport_size({'width':390,'height':844})
+        self.assertFalse(self.page.evaluate('document.documentElement.scrollWidth > window.innerWidth'))
+        screenshot=Path(__file__).resolve().parents[1]/'scratch/submission-review/submission-mobile.png'
+        screenshot.parent.mkdir(parents=True,exist_ok=True)
+        self.page.screenshot(path=str(screenshot),full_page=True)
+
 
 if __name__ == '__main__':
     unittest.main()

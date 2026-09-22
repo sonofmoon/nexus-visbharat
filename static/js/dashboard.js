@@ -3372,28 +3372,20 @@ async function loadAiRuntimeStatus() {
  if (!res.ok || !data.success) throw new Error(data.error || ('HTTP ' + res.status));
 
  const services = [
- ['Gemini AI', !!data.google_ai_configured],
- ['Speech-to-Text', !!data.google_stt_configured],
- ['Text-to-Speech', !!data.google_tts_configured],
- ['Vertex Prediction', !!data.google_vertex_configured],
- ['Dialogflow CX', !!data.google_dialogflow_configured],
- ['BigQuery', !!data.google_bigquery_configured],
- ['Google Maps', !!data.google_maps_configured],
+ ['Gemini AI', 'google_ai'], ['Speech-to-Text', 'google_stt'],
+ ['Text-to-Speech', 'google_tts'], ['Vertex Prediction', 'google_vertex'],
+ ['Dialogflow CX', 'google_dialogflow'], ['BigQuery', 'google_bigquery'], ['Google Maps', 'google_maps']
  ];
-
- gridEl.innerHTML = services.map(([label, ok]) => renderAiRuntimeCard(label, ok).replace(/>Live</g, '>Configured<')).join('');
-
- const criticalLive = services.every(([, ok]) => ok);
- if (criticalLive) {
- overallEl.textContent = 'Services configured';
- overallEl.style.background = '#e6f4ea';
- overallEl.style.color = '#137333';
- } else {
- overallEl.textContent = 'Services partly configured';
- overallEl.style.background = '#fef7e0';
- overallEl.style.color = '#b06000';
- }
- modesEl.textContent = 'Configuration status only. Model quality and successful invocation require separate evidence.';
+ const labels = {verified: 'Verified recently', configured: 'Configured; unverified', degraded: 'Degraded', unavailable: 'Unavailable'};
+ gridEl.replaceChildren(...services.map(([label, key]) => {
+   const card = document.createElement('div'); card.className = 'brief-placeholder';
+   const service = (data.services || {})[key] || {};
+   card.textContent = label + ': ' + (labels[service.status] || 'Unverified');
+   return card;
+ }));
+ overallEl.textContent = 'Operation evidence';
+ overallEl.style.background = '#fef7e0'; overallEl.style.color = '#b06000';
+ modesEl.textContent = data.meaning || 'Successful invocation is separate from model quality.';
  checkedEl.textContent = 'Last checked: ' + new Date().toLocaleTimeString();
  } catch (err) {
  gridEl.innerHTML = '<div class="brief-placeholder" style="grid-column:1/-1;">Unable to load AI runtime status.</div>';

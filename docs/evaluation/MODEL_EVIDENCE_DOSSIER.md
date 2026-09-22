@@ -7,9 +7,14 @@
 
 ---
 
+> [!WARNING]
+> **Experimental Screening Model**: The diagnostics presented below are exploratory, proxy-based self-consistency checks, not an independent population holdout evaluation. Real-world forecasting remains experimental until independently validated against historical municipal ground truth.
+
+---
+
 ## 1. Cryptographic Training Snapshot Lineage (SHA-256)
 
-Every data asset used in baseline calibration and proxy forecasting has an immutable SHA-256 digest:
+Every data asset used in baseline calibration and proxy forecasting has a verified SHA-256 digest:
 
 | Asset Name | Relative Path | SHA-256 Digest | Size (Bytes) |
 | :--- | :--- | :--- | :--- |

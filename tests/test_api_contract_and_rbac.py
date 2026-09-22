@@ -31,6 +31,7 @@ class BaseApiTestCase(unittest.TestCase):
             TESTING=True,
             DATABASE_PATH=cls.db_path,
             DATABASE_URL='',
+            JURY_REQUIRE_LIVE_MODELS=False,
         )
 
         with cls.app.app_context():

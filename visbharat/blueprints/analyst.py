@@ -222,3 +222,35 @@ def readiness():
         reports[name]=json.loads(p.read_text(encoding='utf-8')) if p.exists() else {'status':'not_evaluated'}
     return jsonify(success=True,reports=reports,license='Apache-2.0',certification='Not asserted',
                    research={'prediction_markets':'Research fixture retired from decision support','rct':'Evaluation design only; no trial results claimed'})
+
+
+@analyst_bp.get('/api/v2/analyst/requests/<request_id>/journey')
+@require_roles('admin','analyst','auditor')
+def request_journey(request_id):
+    scope = work.scope_from(request.args)
+    clause, params = work.where(scope)
+    found = work.query(f"SELECT c.* FROM citizen_requests c WHERE c.request_id=? AND {clause}", [request_id, *params])
+    if not found:
+        raise LookupError('Request not found in this assignment')
+    row = found[0]
+    metadata = json.loads(row['ai_metadata_json'] or '{}')
+    project_id = work.candidate_id(row['state'], row['district'], row.get('ward') or '', row['category'])
+    detail = work.project_detail(project_id, scope)
+    clusters = work.query('SELECT cluster_id,similarity_score FROM cluster_members WHERE request_id=?', [request_id])
+    steps = {}
+    for key in ('classification','translation','stt'):
+        result = metadata.get(key) or {}
+        if isinstance(result, dict):
+            steps[key] = {k:result.get(k) for k in ('model','provider_mode','fallback_used','provider_evidence','confidence_basis','citizen_review','provider_output')}
+    decisions = [d for d in detail['decisions'] if request_id in d.get('source',{}).get('request_ids', [])]
+    return jsonify(success=True, request={k:row.get(k) for k in
+        ('request_id','state','district','ward','category','urgency','input_language','source_channel','original_text','translated_text','status','routed_department')},
+        data_mode='synthetic' if metadata.get('is_synthetic') else metadata.get('data_mode', 'unverified_submission'),
+        processing=steps, clusters=clusters, project_id=project_id,
+        planning_eligible=request_id in detail['capital_request_ids'],
+        project_request_count=detail['total_requests'],
+        decisions=[{k:d.get(k) for k in ('decision_id','status','approved_at','review')} for d in decisions],
+        evidence=detail['evidence'], events=[e for e in detail['events'] if e['request_id']==request_id],
+        limitations=['A planning candidate is not an approved investment.',
+                     'Only decisions whose saved evidence includes this ticket are linked here.',
+                     'Provider execution and synthetic demonstrations do not establish field impact.'])

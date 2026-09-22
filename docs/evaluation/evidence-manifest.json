@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-09-21T19:09:45.237190+00:00",
+  "recorded_at": "2026-09-22T05:20:15.781403+00:00",
   "algorithm": "sha256",
   "files": [
     {
@@ -59,8 +59,8 @@
     },
     {
       "path": "visbharat/blueprints/analyst.py",
-      "bytes": 13292,
-      "sha256": "289c9e7abcef380abc458b7ff1fc3ca8cb269fb3212a43e5efe237069b7526bf"
+      "bytes": 15795,
+      "sha256": "d642f3afdfb19815725dd48180a1c177816cb656d8c5b37c5c2e66b23f21c72a"
     },
     {
       "path": "templates/analyst_workbench.html",
