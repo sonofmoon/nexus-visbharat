@@ -11,7 +11,10 @@ def migrate():
         columns = {r['name'] for r in db.execute('PRAGMA table_info(audit_logs)').fetchall()}
     for name, kind in [('chain_seq', 'INTEGER'), ('event_version', 'TEXT')]:
         if name not in columns:
-            db.execute(f'ALTER TABLE audit_logs ADD COLUMN {name} {kind}')
+            try:
+                db.execute(f'ALTER TABLE audit_logs ADD COLUMN {name} {kind}')
+            except Exception:
+                pass
     statements = [
         '''CREATE TABLE IF NOT EXISTS auditor_chain_state (
             id INTEGER PRIMARY KEY, legacy_end_id INTEGER NOT NULL, head_seq INTEGER NOT NULL,

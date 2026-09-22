@@ -73,6 +73,8 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     ip_address TEXT,
     prev_hash TEXT,
     current_hash TEXT,
+    chain_seq INTEGER,
+    event_version TEXT,
     created_at TEXT NOT NULL
 );
 
@@ -187,6 +189,10 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     resource_id TEXT,
     details_json TEXT,
     ip_address TEXT,
+    prev_hash TEXT,
+    current_hash TEXT,
+    chain_seq BIGINT,
+    event_version TEXT,
     created_at TEXT NOT NULL
 );
 
