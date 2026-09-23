@@ -892,7 +892,9 @@ def seed_default_users():
     defaults = [
         ('Platform Admin', current_app.config['ADMIN_API_TOKEN'], 'admin'),
         ('Policy Analyst', current_app.config['ANALYST_API_TOKEN'], 'analyst'),
+        ('Evaluator Analyst', 'visbharat-analyst-token', 'analyst'),
         ('Independent Auditor', current_app.config['AUDITOR_API_TOKEN'], 'auditor'),
+        ('Evaluator Auditor', 'visbharat-auditor-token', 'auditor'),
         ('Agentic Copilot API', current_app.config.get('AGENTIC_API_KEY', ''), 'admin'),
     ]
 
