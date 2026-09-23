@@ -1,86 +1,166 @@
 # Nexus VisBharat (NVB)
 
-Multilingual citizen reports connected to evidence-linked infrastructure planning, human review, and delivery follow-up.
+## Multilingual civic intelligence for better public services
 
-**Hackathon:** Build with AI: Code for Communities, second edition  
-**Track:** AI for Digital Public Infrastructure & Governance ? Innovation  
-**Status:** Functioning prototype and ministry-pilot rehearsal; Digital Public Good candidate, not certified or adopted by a ministry.  
-**License:** Apache 2.0
+Nexus VisBharat connects citizen voice with the public-service teams responsible for understanding, prioritising and following through on local needs. A person can submit a report in text or speech; NVB protects the input, structures the context, routes the case and preserves the human decision trail.
 
-## Try the submission
+This repository is the Code for Communities submission for [Build with AI: Code for Communities, second edition](https://hack2skill.com/event/codeforcommunities2?utm_source=hack2skill&utm_medium=homepage&sectionid=6a7aeec965fbd7acf70c1764).
 
-- [Direct Cloud Run showcase](https://nexus-visbharath-510474645723.asia-south1.run.app)
-- [Submission evidence](https://nexus-visbharath-510474645723.asia-south1.run.app/submission)
-- [Demo video](https://nexus-visbharath-510474645723.asia-south1.run.app/demo-video)
-- [Pitch deck](https://nexus-visbharath-510474645723.asia-south1.run.app/pitch-deck)
-- [Source](https://github.com/sonofmoon/nexus-visbharat)
+## Live service and interactive showcase
 
-The custom domain is awaiting owner configuration. Repository changes are not automatically deployed; runtime endpoints show the deployed revision's actual state.
+- **Primary Live Cloud Run Deployment:** [nexus-visbharath-510474645723.asia-south1.run.app](https://nexus-visbharath-510474645723.asia-south1.run.app/)
+- **Interactive Visual Showcase App:** [nexusaitech.in/apps/nvb/index.html](https://nexusaitech.in/apps/nvb/index.html)
+- **Source code:** [github.com/sonofmoon/nexus-visbharat](https://github.com/sonofmoon/nexus-visbharat)
 
-## The problem and solution
+The live deployment is a working demonstration environment. The showcase corpus is synthetic, and the evidence notes below describe what has been measured, what is provisional and what still requires a real municipal pilot.
 
-Citizen feedback is fragmented across channels while public officials need to compare local demand, infrastructure gaps and competing investment proposals. NVB connects the following workflow:
+## The idea in one minute
 
-**Voice/text/message ? persisted report ? translation and classification ? demand cluster ? evidence-linked proposal ? budget scenario ? engineering and administrative review ? delivery follow-up.**
+Public-service information often arrives as short messages, voice notes and local-language descriptions. The signal is valuable, but it is difficult to compare across channels, languages, locations and departments.
 
-Gemini supports classification, translation and policy synthesis. Speech-to-Text supports voice intake. Deterministic screening and budget constraints remain explainable; formal project decisions require human review. Immediate hazards use a separate response path.
+NVB creates a shared operating picture:
 
-## Five submission requirements
+```mermaid
+flowchart LR
+    A[Citizen voice or text] --> B[Consent and PII scrubbing]
+    B --> C[Speech, translation and classification]
+    C --> D[Urgency, location and service routing]
+    D --> E[Related demand and evidence]
+    E --> F[Analyst review and prioritisation]
+    F --> G[Human decision and delivery follow-up]
+    G --> H[Auditable outcome history]
+```
 
-| Requirement | Implementation and evidence |
+The system keeps model-assisted interpretation separate from policy decisions. Immediate hazards use a deterministic FastPath, while capital and programme decisions remain subject to human review.
+
+## See the product in action
+
+The screenshots below are part of the repository and show the main product journey. They use the prepared showcase environment; they do not represent authenticated citizen records or proof of government adoption.
+
+### 1. Start with a citizen signal
+
+A multilingual intake experience gives people a practical way to describe a local problem through text or voice.
+
+![NVB citizen portal](docs/screenshots/01_hero_portal.png)
+
+*The public-facing entry point introduces the workflow and makes the live service easy to reach.*
+
+### 2. Capture voice with language context
+
+The intake flow supports speech and text, keeps the original language visible and gives the person an opportunity to review the interpreted content before submission.
+
+![NVB citizen voice intake](docs/screenshots/02_citizen_intake_voice.png)
+
+*Voice intake is designed around transcript review and human confirmation.*
+
+### 3. Move from individual reports to patterns
+
+The policy dashboard helps teams compare demand, service categories, geography and inclusion signals before considering a response.
+
+![NVB policy dashboard](docs/screenshots/03_national_dashboard.png)
+
+*The dashboard is a decision-support view; it does not make an automatic budget award.*
+
+### 4. Rehearse a scoped pilot
+
+The pilot workspace shows how a programme can rehearse local routing and state or district boundaries before a wider rollout.
+
+![NVB pilot workspace](docs/screenshots/05_ministry_pilot_dashboard.png)
+
+*Pilot scenarios remain labelled as rehearsal data until an authority supplies approved operational data.*
+
+### 5. Preserve the evidence trail
+
+The auditor workspace links cases, evidence and recorded actions so that an authorised team can inspect what happened and why.
+
+![NVB audit dossier](docs/screenshots/06_audit_dossier.png)
+
+*The audit chain is tamper-evident and explicitly verifiable; it is not presented as an immutable ledger.*
+
+## Product capabilities
+
+| Capability | What NVB provides |
 |---|---|
-| End-to-end flow | Citizen receipts, demand clustering, analyst scenarios, reviewed decisions, independent audit and lifecycle tracking. `/submission` traces an authorized ticket to its actual cluster, candidate and saved decisions. |
-| Google AI | Gemini and speech integrations. Persisted operation evidence records model, timestamp, duration and fallback state. A configured client is not shown as verified inference. |
-| Realistic data | 12,500 prepared synthetic reports across 97 configured districts. Public-data adapters and bundled indicators carry source limitations. Sample volumes and outcomes are not actual citizens served. |
-| Built for India | Demonstration coverage: Tamil Nadu, Andhra Pradesh and Telangana. The Vellore?Tirupati rehearsal exercises two states and district-scoped access. Additional states require boundary, programme, routing and language validation. |
-| Multilingual/voice | Tamil, Telugu and English interfaces and processing paths; editable speech transcripts and translations. Real voice and messaging demonstrations must be verified separately from fixtures. |
+| Citizen intake | Text, browser voice and assisted channel workflows with consent and source context. |
+| Language intelligence | Speech transcription, translation and structured extraction for English, Tamil and Telugu paths. |
+| Emergency FastPath | Deterministic hazard screening and escalation when provider calls are unavailable or a high-severity signal needs immediate handling. |
+| Analyst workspace | Demand, inclusion, gap, project and budget scenario views for human-led planning. |
+| Delivery follow-up | Tasks, decisions, evidence and completed-window outcome reporting in one timeline. |
+| Audit and governance | Role-scoped access, minimized provider telemetry, PII scrubbing, idempotent intake and hash-linked audit events. |
 
-See [submission acceptance](docs/SUBMISSION_ACCEPTANCE.md) for the exact judge walkthrough and outstanding live checks.
+## Google Cloud implementation
 
-## Evidence and limitations
+NVB uses Google Cloud services where they provide useful operational capability:
 
-- [Multilingual Held-Out AI Evaluation](docs/evaluation/quality.json): Developer-curated challenge benchmark (expanded from 27 to 108 cases; pending external third-party municipal adjudication) across 3 core Indian languages (36 English, 36 Tamil, 36 Telugu) covering 10 civic categories, 3 urgency tiers, and realistic dialectal boundary cases. Includes 33 high-stakes emergency cases with strict linguistic parity (11 English, 11 Tamil, 11 Telugu), achieving 100% emergency recall (11/11 EN, 11/11 TA, 11/11 TE; zero missed life-safety hazards). Evaluated directly against Google Gemini 2.5/3.6 Flash and Cloud Translation (Category Macro-F1 0.9746, Urgency Accuracy 86.11%).
-- [Baseline comparison](docs/evaluation/baseline-quality.json): local keyword-heuristic fallback on the same 108 challenge cases (Macro-F1 0.3764); demonstrates the massive quality delta over naive non-AI baselines.
-- [DPDP Act 2023 Architecture](docs/DPDP_COMPLIANCE_ARCHITECTURE.md): Technical implementation mapping to India's Digital Personal Data Protection Act 2023, including Section 6 Consent Management, Section 8 Data Fiduciary duties, automated PII scrubbing at ingress, and Laplace Differential Privacy (ε=1.0) on public aggregate analytics.
-- [Security Threat Model (STRIDE)](docs/SECURITY_THREAT_MODEL.md): Formal threat model covering trust boundaries, SHA-256 token hashing, Google Secret Manager rotation, RBAC enforcement, and zero-trust citizen PII defenses.
-- [External Audit Anchoring](docs/EXTERNAL_ANCHORING_SPEC.md): Verification architecture for the tamper-evident SHA-256 audit ledger, including external timestamping (RFC 3161) and public transparency log integration roadmap.
-- [Reproducible ML Training Pipeline](scripts/train_stress_model.py): Complete data preparation and training pipeline for the Layer 4 XGBoost demand stress model (`model.bst`) using official Census 2011, NITI Aayog MPI, and PM Gati Shakti datasets.
-- [Review procedure](docs/evaluation/REVIEW_GUIDE.md): speech error rates, translation fidelity, location extraction and duplicate clustering methodology.
-- [Engineering lifecycle](docs/DEVELOPMENT_LIFECYCLE.md): multi-contributor domain ownership, trunk-based feature branching, automated PR quality gates, and modular architecture.
-- [Local load measurements](docs/evaluation/load.json): 12,500/100,000 synthetic rows, concurrency 1/4, Flask test client and SQLite; excludes network and model latency.
-- [Forecasting evidence](docs/evaluation/MODEL_EVIDENCE_DOSSIER.md): proxy diagnostics, not independently validated future-demand prediction.
-- [Demo corpus](docs/JURY_DEMO.md): synthetic channel labels and lifecycle events are illustrative, not proof of delivered messages or government impact.
+- **Cloud Run** hosts the web application and service endpoints.
+- **Gemini / Vertex AI** supports structured classification, translation and synthesis where configured.
+- **Cloud Speech-to-Text** supports voice intake.
+- **Cloud Translation** supports multilingual workflows.
+- **Cloud SQL PostgreSQL** is the durable deployment path for operational records.
+- **Pub/Sub and an outbox pattern** support controlled agency delivery and replay-safe processing.
+- **BigQuery and reference-data adapters** support analytics and contextual indicators where configured.
 
-A source-file hash establishes file integrity, not publisher authenticity. Audit chains are tamper-evident, not immutable guarantees. Consent and access controls are engineering implementations of DPDP Act 2023 principles, not formal legal certification.
+The application includes a deterministic local path for emergency screening and offline development. A configured provider is not treated as proof of a successful live inference; provider evidence is recorded separately when available.
 
-## Local setup
+## Trust model and operating boundaries
 
-Use Python 3.11. Dependencies are managed via semver constraints in `requirements.txt` alongside a fully resolved, hermetic production lockfile in `requirements.lock` matching the Cloud Run container runtime.
+NVB is designed to make the important boundaries visible:
+
+- Personal identifiers are scrubbed at ingress before storage or model processing where the configured scrubber applies.
+- Model output is kept separate from policy scoring and human authorisation.
+- Role-scoped access limits analyst, auditor and administrator operations.
+- Audit events are hash-linked and can be explicitly verified.
+- Synthetic, descriptive and externally verified evidence are labelled separately.
+- A source checksum establishes file integrity; it does not establish publisher authenticity.
+- Consent and access controls are engineering implementations of DPDP Act 2023 principles, not formal legal certification.
+
+## Evidence and current limits
+
+- [Multilingual evaluation](docs/evaluation/quality.json) contains 108 developer-curated challenge cases across English, Tamil and Telugu. It reports category macro-F1 of 0.9746, urgency accuracy of 86.11% and emergency recall of 33/33 (11 EN, 11 TA, 11 TE). Independent external adjudication remains pending.
+- [Baseline comparison](docs/evaluation/baseline-quality.json) records the local keyword fallback on the same challenge set.
+- [DPDP architecture](docs/DPDP_COMPLIANCE_ARCHITECTURE.md) documents consent, data-minimisation, Laplace Differential Privacy (ε = 1.0) and ingress-scrubbing design choices.
+- [Security threat model](docs/SECURITY_THREAT_MODEL.md) describes trust boundaries, token handling, Secret Manager rotation and RBAC controls under the STRIDE framework.
+- [External audit anchoring](docs/EXTERNAL_ANCHORING_SPEC.md) specifies Merkle root batching, RFC 3161 trusted timestamps and Sigstore Rekor public transparency log integration.
+- [Model evidence dossier](docs/evaluation/MODEL_EVIDENCE_DOSSIER.md) records proxy diagnostics, calibration telemetry and forecasting limitations.
+- [Reproducible ML pipeline](scripts/train_stress_model.py) implements reproducible training and verification for the Layer 4 spatial demand stress booster (`model.bst`).
+- [Load measurements](docs/evaluation/load.json) cover synthetic rows and local Flask test-client conditions; they exclude network and provider latency.
+- [Pilot deployment runbook](docs/MINISTRY_PILOT_DEPLOYMENT_RUNBOOK.md) describes the Cloud SQL, recovery and identity configuration required for an operational pilot.
+
+These artifacts establish implementation evidence and documented limits. They do not establish population-level accuracy, ministry adoption, causal public-service impact or formal certification.
+
+## Explore the live workflows
+
+- [Citizen voice intake](https://nexus-visbharath-510474645723.asia-south1.run.app/submit)
+- [Ticket journey and submission trace](https://nexus-visbharath-510474645723.asia-south1.run.app/submission)
+- [Policy Dashboard](https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard)
+- [Pilot Portal](https://nexus-visbharath-510474645723.asia-south1.run.app/pilot)
+- [Auditor workspace](https://nexus-visbharath-510474645723.asia-south1.run.app/auditor)
+- [AI operation status](https://nexus-visbharath-510474645723.asia-south1.run.app/api/ai/status)
+- [Readiness endpoint](https://nexus-visbharath-510474645723.asia-south1.run.app/readyz)
+
+## Run locally
+
+Use Python 3.11. Dependencies are defined in `requirements.txt` and resolved in `requirements.lock`.
 
 ```sh
 python -m venv .venv
 # Activate .venv for your shell
 pip install -r requirements.txt
-# Copy .env.example to .env and configure local settings
 python -m flask --app app run --host 127.0.0.1 --port 5000 --no-reload
 ```
 
-For isolated offline work set `NVB_DISABLE_EXTERNAL_SERVICES=1`, `JURY_REQUIRE_LIVE_MODELS=false`, and `DEMO_MODE=true`. Fallback outputs remain labelled as fallback. Real Google AI requires configured credentials; do not commit `.env` or service-account keys.
+For an isolated offline demonstration:
 
-- `/submit`: citizen intake
-- `/dashboard`: analyst and auditor workflows
-- `/submission`: rubric evidence and authorized ticket journey
-- `/pilot`: separate ministry rehearsal
+```sh
+NVB_DISABLE_EXTERNAL_SERVICES=1
+DEMO_MODE=true
+```
 
-The public journey page requires an authorized analyst/auditor/admin token or authenticated session to retrieve citizen details. Existing demo role credentials are for synthetic rehearsal only.
+Set the variables in your shell or local environment before starting the application. Do not commit `.env` files, credentials or service-account keys.
 
 ## Persistence and deployment
 
-SQLite is for local development. Cloud Run serving instances require external PostgreSQL unless explicitly configured as disposable demonstrations. `/api/db/status` reports storage posture without exposing credentials; `/readyz` checks database/schema access.
-
-The existing [pilot Terraform](deploy/pilot/) describes Cloud Run, Cloud SQL, regional recovery, managed tasks, private media and identity configuration. Its existence does not prove those resources are deployed. See the [deployment runbook](docs/MINISTRY_PILOT_DEPLOYMENT_RUNBOOK.md).
-
-`scripts/deploy_submission.ps1` prepares a no-traffic revision using an existing Cloud SQL instance and Secret Manager URL. Review its plan, back up/migrate existing state, and complete restart and two-instance acceptance before promoting traffic. New billed infrastructure requires an approved budget. Do not use container-local SQLite for real citizen records.
+SQLite is intended for local development and disposable demonstrations. Cloud Run serving instances require external PostgreSQL for durable operational records. The pilot Terraform and [deployment runbook](docs/MINISTRY_PILOT_DEPLOYMENT_RUNBOOK.md) describe the Cloud SQL, Secret Manager, recovery and identity path. Review the plan, back up existing state and complete restart and two-instance acceptance before promoting traffic.
 
 ## Verification
 
@@ -88,12 +168,12 @@ The existing [pilot Terraform](deploy/pilot/) describes Cloud Run, Cloud SQL, re
 python -m unittest tests.test_submission_readiness tests.test_ministry_pilot tests.test_analyst_workbench tests.test_auditor_workbench
 ```
 
-Run PostgreSQL/container contracts with `docker compose -f compose.pilot-postgres.yaml up --build --abort-on-container-exit --exit-code-from verify` on a machine with Docker. Tests use isolated data and disable external providers. Report actual test results separately from live Google AI demonstrations.
+These tests use isolated data and disable external providers. Report local contract results separately from live provider demonstrations.
 
-## Pilot and impact
+## License and attribution
 
-The proposed water-services rehearsal covers Vellore and Tirupati in Tamil, Telugu and English. A real pilot requires participating authorities, approved data, assigned officers and operational acceptance. Existing cost figures in the [pilot roadmap](docs/MINISTRY_PILOT_ROADMAP_AND_COST_MODEL.md) are planning assumptions, not current quotes.
+Released under the [Apache License 2.0](LICENSE).
 
-Measure officer preparation time, classification corrections, independently assessed proposal quality and service outcomes against a stated baseline. Synthetic before/after counts are not causal impact evidence.
+Developed by **Dr. Ravikumar Chandrasekaran**, Thanthai Periyar E.V. Ramasamy Government Polytechnic College, Vellore, Tamil Nadu.
 
-**Author:** Dr. Ravikumar Chandrasekaran, Thanthai Periyar E.V. Ramasamy Government Polytechnic College, Vellore, Tamil Nadu.
+

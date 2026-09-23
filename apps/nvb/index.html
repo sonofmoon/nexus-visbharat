@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -815,7 +815,23 @@
       .nav-menu { display: none; }
       .footer-grid { grid-template-columns: 1fr; }
     }
-  </style>
+      /* Enterprise polish overrides */
+    .hero-cta-grid .btn { min-height: 46px; text-align: center; }
+    .vitals-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
+    .vital-card { min-height: 142px; display: flex; flex-direction: column; }
+    .vital-metric { min-height: 2.2rem; display: flex; align-items: center; font-size: 1.45rem; }
+    .vital-label { min-height: 2.4rem; display: flex; align-items: center; }
+    .vital-subtext { margin-top: auto; }
+    .requirements-grid { align-items: stretch; }
+    .req-card { min-height: 315px; }
+    .req-badge { display: none; }
+    .evidence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+    .evidence-card { min-width: 0; min-height: 220px; }
+    .evidence-title, .evidence-desc, .evidence-link { overflow-wrap: anywhere; word-break: break-word; }
+    .evidence-link { white-space: normal; line-height: 1.45; }
+    .evidence-icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--accent-blue-light); color: var(--accent-blue); }
+    @media (max-width: 900px) { .vitals-grid, .evidence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 560px) { .vitals-grid, .evidence-grid { grid-template-columns: 1fr; } .hero-cta-grid .btn { width: 100%; } }</style>
 
   <!-- Structured Data JSON-LD Schema -->
   <script type="application/ld+json">
@@ -876,7 +892,7 @@
   <div class="top-ribbon">
     <span class="badge">PRODUCT PLATFORM</span>
     <strong>Civic intelligence infrastructure</strong> &bull; Track: <em>AI for Digital Public Infrastructure &amp; Governance — Innovation</em>
-    <a href="https://hack2skill.com/event/codeforcommunities2" target="_blank" rel="noopener">Open source repository →</a>
+    <a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener">Open source repository ↗</a>
   </div>
 
   <!-- Sticky Navigation Header -->
@@ -892,8 +908,7 @@
 
       <ul class="nav-menu">
         <li><a href="#vision">Overview</a></li>
-        <li><a href="#deliverables">Platform</a></li>
-        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#trackSection">Platform</a></li>
         <li><a href="#architecture">Architecture</a></li>
         <li><a href="#corridor">Capabilities</a></li>
         <li><a href="#evidence">Trust</a></li>
@@ -901,7 +916,7 @@
       </ul>
 
       <div class="nav-actions">
-        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">🌙</button>
+        <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle Dark/Light Mode" aria-label="Toggle Theme">☾</button>
         <a href="https://nexus-visbharath-510474645723.asia-south1.run.app" target="_blank" rel="noopener" class="btn btn-primary">
           Launch Live App ↗
         </a>
@@ -913,10 +928,10 @@
   <section class="hero-section" id="vision">
     <div class="container">
       <div class="badge-bar">
-        <span class="chip chip-accent">🏆 Multilingual civic intelligence</span>
+        <span class="chip chip-accent">Multilingual civic intelligence</span>
         <span class="chip">Human-reviewed workflows</span>
-        <span class="chip chip-green">•s</span>
-        <span class="chip">•</span>
+        <span class="chip chip-green">Open interfaces</span>
+
       </div>
 
       <h1 class="hero-title">
@@ -929,17 +944,10 @@
 
       <!-- Live Action CTAs (Evaluator Deep Links) -->
       <div class="hero-cta-grid">
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener" class="btn btn-primary">
-          •st Citizen Voice Intake (Live)
-        </a>
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener" class="btn btn-secondary">
-          •</a>
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener" class="btn btn-secondary">
-          •st Scenarios
-        </a>
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/auditor" target="_blank" rel="noopener" class="btn btn-secondary">
-          •spect Tamper-Evident Audit Ledger
-        </a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener" class="btn btn-primary">🎙️ Citizen voice intake</a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/#trackSection" target="_blank" rel="noopener" class="btn btn-secondary">↗ Trace a ticket journey</a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener" class="btn btn-secondary">▦ Policy Dashboard</a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run/pilot" target="_blank" rel="noopener" class="btn btn-secondary">◌ Pilot Portal</a>
       </div>
 
       <!-- Real-Time Operational Vitals Grid -->
@@ -947,7 +955,7 @@
         <div class="vital-card">
           <div class="vital-metric">3</div>
           <div class="vital-label">Vernacular Languages</div>
-          <div class="vital-subtext">Tamil (தமிழ்), Telugu (తెలుగు), English with Gemini Flash &amp; Chirp-2</div>
+          <div class="vital-subtext">Tamil (Tamil), Telugu (Telugu), English with Gemini Flash &amp; Chirp-2</div>
         </div>
         <div class="vital-card">
           <div class="vital-metric">12,500</div>
@@ -971,7 +979,7 @@
         </div>
         <div class="vital-card">
           <div class="vital-metric">12.5k</div>
-          <div class="vital-label">Prepared showcase recordsing</div>
+          <div class="vital-label">Prepared showcase records</div>
           <div class="vital-subtext">100% automated regression coverage across pilots &amp; audit trails</div>
         </div>
       </div>
@@ -979,7 +987,7 @@
   </section>
 
   <!-- Platform capabilities -->
-  <section class="container" id="deliverables" style="padding-top: 2rem;">
+  <section class="container" id="trackSection" style="padding-top: 2rem;">
     <div class="section-header">
       <div class="section-eyebrow">Platform capabilities</div>
       <h2 class="section-title">One operating picture for public-service teams</h2>
@@ -992,7 +1000,7 @@
       <!-- 1. End-to-End Workflow -->
       <div class="req-card">
         <div>
-          <span class="req-badge">Requirement 1</span>
+
           <h3 class="req-title">Complete End-to-End Workflow</h3>
           <p class="req-body">
             Demonstrates an uninterrupted pipeline: Citizen voice or text submission &rarr; edge PII scrubbing &rarr; vernacular translation &rarr; spatial demand clustering &rarr; Strategic Prioritization Score (SPS v2.4) &rarr; municipal human-in-the-loop review &rarr; delivery follow-up.
@@ -1006,14 +1014,14 @@
         </div>
         <div class="req-action">
           <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Production Live</span>
-          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener">Trace Pipeline &rarr;</a>
+          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener">↗ Trace a ticket journey</a>
         </div>
       </div>
 
       <!-- 2. Google AI & Cloud Integration -->
       <div class="req-card">
         <div>
-          <span class="req-badge">Requirement 2</span>
+
           <h3 class="req-title">Deep Google AI &amp; Cloud Integration</h3>
           <p class="req-body">
             Native deployment on Google Cloud Run (<code>asia-south1</code> Mumbai). Features multimodal Gemini Flash for structured classification, Cloud Speech-to-Text v2 (Chirp-2 model) for dialect-resilient audio transcription, Cloud Translation v3, and BigQuery spatial fusion.
@@ -1034,7 +1042,7 @@
       <!-- 3. Realistic Data & Public Datasets -->
       <div class="req-card">
         <div>
-          <span class="req-badge">Requirement 3</span>
+
           <h3 class="req-title">Realistic Data &amp; Public Datasets</h3>
           <p class="req-body">
             Grounded with 12,500 prepared demonstration records correlated against public Indian governance datasets: SECC 2011 deprivation percentiles, Census demographics, NFHS-5 health infrastructure gaps, and PM Gati Shakti spatial corridors.
@@ -1048,14 +1056,14 @@
         </div>
         <div class="req-action">
           <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Calibrated Demo Data</span>
-          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener">View Demographics &rarr;</a>
+          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener">▦ Explore analyst scenarios</a>
         </div>
       </div>
 
       <!-- 4. Built for India & Regional Grounding -->
       <div class="req-card">
         <div>
-          <span class="req-badge">Requirement 4</span>
+
           <h3 class="req-title">Built for India: Inter-State Corridor</h3>
           <p class="req-body">
             Specifically tailored for the Tamil Nadu — Andhra Pradesh cross-border municipal corridor (Vellore Municipal Corporation and Tirupati Municipal Corporation). Implements state-isolated RBAC to prevent unauthorized cross-border data leakage.
@@ -1076,10 +1084,10 @@
       <!-- 5. Multilingual & Voice Processing -->
       <div class="req-card">
         <div>
-          <span class="req-badge">Requirement 5</span>
+
           <h3 class="req-title">Multilingual Voice Processing</h3>
           <p class="req-body">
-            Supports native Tamil (தமிழ்), Telugu (తెలుగు), and Indian English. Allows citizens to speak naturally, review live speech-to-text transcripts, verify translated drafts, and override misrecognitions prior to official submission.
+            Supports native Tamil (Tamil), Telugu (Telugu), and Indian English. Allows citizens to speak naturally, review live speech-to-text transcripts, verify translated drafts, and override misrecognitions prior to official submission.
           </p>
           <div class="req-tags">
             <span class="tag">Tamil Speech</span>
@@ -1090,7 +1098,7 @@
         </div>
         <div class="req-action">
           <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Interactive Intake</span>
-          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener">Test Voice Input &rarr;</a>
+          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener">🎙️ Citizen voice intake</a>
         </div>
       </div>
     </div>
@@ -1108,7 +1116,7 @@
 
     <div class="arch-container">
       <div style="text-align: center; margin-bottom: 2rem;">
-        <span class="chip chip-accent">Production Topology &bull; Region: asia-south1 (Mumbai) &bull; Auto-Scaling (0-10 Instances)</span>
+        <span class="chip chip-accent">Multilingual civic intelligence</span>
       </div>
 
       <div class="arch-flow-grid">
@@ -1198,7 +1206,7 @@
           Focuses on Palar river basin water sanitation, tannery effluent drainage hazards, and rural bus connectivity in border taluks (Katpadi, Gudiyatham).
         </p>
         <ul style="font-size: 0.82rem; color: var(--text-secondary); list-style: none; margin-bottom: 1.25rem;">
-          <li style="margin-bottom: 0.35rem;"><strong>Primary Ingress:</strong> Tamil (தமிழ்) voice &amp; SMS</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Primary Ingress:</strong> Tamil (Tamil) voice &amp; SMS</li>
           <li style="margin-bottom: 0.35rem;"><strong>Demographic Factor:</strong> SECC 2011 Tannery Corridor Deprivation Index</li>
           <li style="margin-bottom: 0.35rem;"><strong>RBAC Isolation:</strong> Scoped exclusively to Tamil Nadu state officials</li>
         </ul>
@@ -1217,7 +1225,7 @@
           Focuses on pilgrim corridor municipal surge capacity, water scarcity in peripheral tribal settlements, and road safety along ghat approaches.
         </p>
         <ul style="font-size: 0.82rem; color: var(--text-secondary); list-style: none; margin-bottom: 1.25rem;">
-          <li style="margin-bottom: 0.35rem;"><strong>Primary Ingress:</strong> Telugu (తెలుగు) voice &amp; WhatsApp</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Primary Ingress:</strong> Telugu (Telugu) voice &amp; WhatsApp</li>
           <li style="margin-bottom: 0.35rem;"><strong>Demographic Factor:</strong> Urban Pilgrim Transit &amp; Aspirational Ward Weight</li>
           <li style="margin-bottom: 0.35rem;"><strong>RBAC Isolation:</strong> Scoped exclusively to Andhra Pradesh state officials</li>
         </ul>
@@ -1241,7 +1249,7 @@
     <div class="evidence-grid">
       <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/quality.json" target="_blank" rel="noopener" class="evidence-card">
         <div>
-          <div class="evidence-icon">🎯</div>
+          <div class="evidence-icon">◈</div>
           <h4 class="evidence-title">Quality Benchmark Suite</h4>
           <p class="evidence-desc">108 evaluated multilingual cases across English, Tamil, and Telugu measuring Category Macro-F1 (0.975), Urgency Accuracy (86.1%), and Emergency Recall (33/33).</p>
         </div>
@@ -1250,7 +1258,7 @@
 
       <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/MODEL_EVIDENCE_DOSSIER.md" target="_blank" rel="noopener" class="evidence-card">
         <div>
-          <div class="evidence-icon">•</div>
+          <div class="evidence-icon">◈</div>
           <h4 class="evidence-title">Model Evidence Dossier</h4>
           <p class="evidence-desc">Complete scientific documentation of Gemini Flash prompting strategies, fallback triggers, and proxy forecasting disclosures.</p>
         </div>
@@ -1259,7 +1267,7 @@
 
       <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/evidence-manifest.json" target="_blank" rel="noopener" class="evidence-card">
         <div>
-          <div class="evidence-icon">•</div>
+          <div class="evidence-icon">◈</div>
           <h4 class="evidence-title">Cryptographic Manifest</h4>
           <p class="evidence-desc">SHA-256 checksum verification verifying the tamper-evident integrity of 17 key evidence files and test suites.</p>
         </div>
@@ -1268,7 +1276,7 @@
 
       <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/load.json" target="_blank" rel="noopener" class="evidence-card">
         <div>
-          <div class="evidence-icon">⚡</div>
+          <div class="evidence-icon">◈</div>
           <h4 class="evidence-title">Load &amp; Concurrency Report</h4>
           <p class="evidence-desc">Empirical latency profiles under concurrent user requests, validating FastPath sub-800ms deterministic response bounds.</p>
         </div>
@@ -1292,7 +1300,7 @@
       <div class="faq-item">
         <div class="faq-question">
           <span>How does Nexus VisBharat ensure compliance with India's DPDP Act 2023?</span>
-          <span class="faq-icon">▼</span>
+          <span class="faq-icon">▾</span>
         </div>
         <div class="faq-answer">
           <p>
@@ -1305,7 +1313,7 @@
       <div class="faq-item">
         <div class="faq-question">
           <span>How does the system prevent LLM hallucinations in capital budget allocations?</span>
-          <span class="faq-icon">▼</span>
+          <span class="faq-icon">▾</span>
         </div>
         <div class="faq-answer">
           <p>
@@ -1318,7 +1326,7 @@
       <div class="faq-item">
         <div class="faq-question">
           <span>Why is the audit ledger designated as "tamper-evident" rather than "immutable"?</span>
-          <span class="faq-icon">▼</span>
+          <span class="faq-icon">▾</span>
         </div>
         <div class="faq-answer">
           <p>
@@ -1331,7 +1339,7 @@
       <div class="faq-item">
         <div class="faq-question">
           <span>How does NVB maintain continuity if Google AI APIs experience latency or disconnects?</span>
-          <span class="faq-icon">▼</span>
+          <span class="faq-icon">▾</span>
         </div>
         <div class="faq-answer">
           <p>
@@ -1344,7 +1352,7 @@
       <div class="faq-item">
         <div class="faq-question">
           <span>What is the transition path from this pilot deployment to a live ministry rollout?</span>
-          <span class="faq-icon">▼</span>
+          <span class="faq-icon">▾</span>
         </div>
         <div class="faq-answer">
           <p>
@@ -1363,81 +1371,26 @@
         Deploying sovereign AI to empower every citizen's voice in democratic municipal governance.
       </p>
       <div class="launchpad-buttons">
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app" target="_blank" rel="noopener" class="btn btn-white">
-          •</a>
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/demo-video" target="_blank" rel="noopener" class="btn btn-outline-white">
-          🎬 Watch 3-Min Walkthrough Video
-        </a>
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pitch-deck" target="_blank" rel="noopener" class="btn btn-outline-white">
-          •</a>
-        <a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener" class="btn btn-outline-white">
-          💻 Explore GitHub Repository
-        </a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app" target="_blank" rel="noopener" class="btn btn-white"> Open live platform ↗</a>
+        <a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener" class="btn btn-outline-white">GitHub ↗</a>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer>
+    <footer>
     <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col">
-          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-            <div class="brand-icon" style="width: 28px; height: 28px; font-size: 0.8rem;">NVB</div>
-            <strong style="color: #ffffff; font-size: 1.05rem;">Nexus VisBharat (NVB)</strong>
-          </div>
-          <p style="margin-bottom: 1rem; line-height: 1.6;">
-            A sovereign Digital Public Infrastructure (DPI) platform bridging marginalized vernacular citizen voice with transparent municipal capital budget allocations.
-          </p>
-          <p style="font-size: 0.8rem; color: #64748b;">
-            Developed by <strong>Dr. Ravikumar Chandrasekaran</strong><br>
-            Thanthai Periyar E.V. Ramasamy Government Polytechnic College, Vellore, Tamil Nadu.
-          </p>
+      <div class="footer-brand-block">
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+          <div class="brand-icon" style="width:32px;height:32px;font-size:0.85rem;">NVB</div>
+          <strong style="color:#ffffff;font-size:1.1rem;">Nexus VisBharat (NVB)</strong>
         </div>
-
-        <div class="footer-col">
-          <h4>Evaluator Portals</h4>
-          <ul>
-            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app" target="_blank" rel="noopener">Citizen Portal (Home)</a></li>
-            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener">Voice &amp; Text Intake</a></li>
-            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener">Policy Analyst Studio</a></li>
-            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/auditor" target="_blank" rel="noopener">Tamper-Evident Ledger</a></li>
-            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener">Platform overview</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h4>Product links</h4>
-          <ul>
-            <li><a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener">GitHub repository ↗</a></li>
-            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/demo-video" target="_blank" rel="noopener">Demo Video (YouTube)</a></li>
-            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pitch-deck" target="_blank" rel="noopener">Product documentation</a></li>
-            <li><a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener">GitHub Repository</a></li>
-            <li><a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/MODEL_EVIDENCE_DOSSIER.md" target="_blank" rel="noopener">Model Evidence Dossier</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-col">
-          <h4>Compliance &amp; Standards</h4>
-          <ul>
-            <li><a href="#faq">DPDP Act 2023 Compliance</a></li>
-            <li><a href="#architecture">Google Cloud Run (asia-south1)</a></li>
-            <li><a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0 Open Source</a></li>
-            <li><a href="https://nexusaitech.in" target="_blank" rel="noopener">Nexus AI Tech Hub</a></li>
-            <li><a href="https://nexusaitech.in/apps/nmv/index.html" target="_blank" rel="noopener">Nexus MudraVani Showcase</a></li>
-          </ul>
-        </div>
+        <p style="max-width:720px;margin:0 0 1.1rem;line-height:1.7;">A sovereign Digital Public Infrastructure (DPI) platform bridging marginalized vernacular citizen voice with transparent municipal capital budget allocations.</p>
+        <p style="font-size:0.82rem;color:#94a3b8;margin:0;line-height:1.7;">Developed by <strong style="color:#cbd5e1;">Dr. Ravikumar Chandrasekaran</strong><br>Thanthai Periyar E.V. Ramasamy Government Polytechnic College, Vellore, Tamil Nadu.</p>
       </div>
-
-      <div class="footer-bottom">
-        <div>
-          &copy; 2026 Nexus AI Tech &bull; Nexus VisBharat (NVB). Released under Apache License 2.0.
-        </div>
-        <div style="display: flex; gap: 1rem;">
-          <a href="https://nexusaitech.in" target="_blank" rel="noopener" style="color: #94a3b8; text-decoration: none;">nexusaitech.in</a>
-          <span>&bull;</span>
-          <a href="https://hack2skill.com/event/codeforcommunities2" target="_blank" rel="noopener" style="color: #94a3b8; text-decoration: none;">#CodeForCommunities2</a>
-        </div>
+      <div class="footer-bottom" style="margin-top:2rem;">
+        <div>&copy; 2026 Nexus VisBharat (NVB)</div>
+        <div>Apache License 2.0</div>
       </div>
     </div>
   </footer>
@@ -1447,12 +1400,12 @@
     document.addEventListener('DOMContentLoaded', () => {
       // 1. Dark/Light Theme Switching
       const themeToggleBtn = document.getElementById('themeToggleBtn');
-      const currentTheme = localStorage.getItem('nvb-theme') || 
+      const currentTheme = localStorage.getItem('nvb-theme') ||
         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
       function setTheme(theme) {
         document.body.setAttribute('data-theme', theme);
-        themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        themeToggleBtn.textContent = theme === 'dark' ? '☀' : '☾';
         localStorage.setItem('nvb-theme', theme);
       }
 
@@ -1478,6 +1431,4 @@
     });
   </script>
 </body>
-</html>\n
-
-
+</html>
