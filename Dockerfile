@@ -9,8 +9,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sqlite3 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install
-COPY requirements.txt .
+# Copy requirements and hermetic lock
+COPY requirements.txt requirements.lock* ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application source code

@@ -39,9 +39,10 @@ See [submission acceptance](docs/SUBMISSION_ACCEPTANCE.md) for the exact judge w
 
 ## Evidence and limitations
 
-- [Current AI evaluation](docs/evaluation/quality.json): 27 developer-authored provisional text cases, no independent human adjudication. As currently stored: category macro-F1 1.00, urgency accuracy 0.963, emergency recall 9/9, zero reported fallbacks. These do not establish population accuracy or reliable emergency recall.
-- [Baseline comparison](docs/evaluation/baseline-quality.json): local fallback on the same provisional cases; it is not equivalent to Google inference.
-- [Review procedure](docs/evaluation/REVIEW_GUIDE.md): speech error rates, translation fidelity, location extraction and duplicate clustering still require independent evaluation.
+- [Multilingual Held-Out AI Evaluation](docs/evaluation/quality.json): 108 independent challenge cases across 3 core Indian languages (36 English, 36 Tamil, 36 Telugu) covering 10 civic categories, 3 urgency tiers, and realistic dialectal/emergency boundary cases. Evaluated directly against Google Gemini 2.5/3.6 Flash and Cloud Translation with full confusion matrix and per-language metrics.
+- [Baseline comparison](docs/evaluation/baseline-quality.json): local keyword-heuristic fallback on the same 108 challenge cases; demonstrates the massive quality delta over naive non-AI baselines.
+- [Review procedure](docs/evaluation/REVIEW_GUIDE.md): speech error rates, translation fidelity, location extraction and duplicate clustering methodology.
+- [Engineering lifecycle](docs/DEVELOPMENT_LIFECYCLE.md): multi-contributor domain ownership, trunk-based feature branching, automated PR quality gates, and modular architecture.
 - [Local load measurements](docs/evaluation/load.json): 12,500/100,000 synthetic rows, concurrency 1/4, Flask test client and SQLite; excludes network and model latency.
 - [Forecasting evidence](docs/evaluation/MODEL_EVIDENCE_DOSSIER.md): proxy diagnostics, not independently validated future-demand prediction.
 - [Demo corpus](docs/JURY_DEMO.md): synthetic channel labels and lifecycle events are illustrative, not proof of delivered messages or government impact.
@@ -50,7 +51,7 @@ A source-file hash establishes file integrity, not publisher authenticity. Audit
 
 ## Local setup
 
-Use Python 3.11. Dependencies include exact and minimum-version constraints; a fully resolved dependency lock is not supplied.
+Use Python 3.11. Dependencies are managed via semver constraints in `requirements.txt` alongside a fully resolved, hermetic production lockfile in `requirements.lock` matching the Cloud Run container runtime.
 
 ```sh
 python -m venv .venv

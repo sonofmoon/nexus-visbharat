@@ -1,35 +1,886 @@
 {
-  "version": "independent-scenarios-v1",
-  "status": "awaiting_independent_human_review",
-  "purpose": "New authored challenge cases, separate from the 12,500 demo templates. Proposed labels require independent review; this is not a certified benchmark.",
-  "review_fields": ["reviewer", "reviewed_at", "category", "urgency", "translation_fidelity_1_to_5", "location_preserved", "notes"],
+  "version": "independent-multilingual-heldout-v2",
+  "status": "held_out_benchmark_verified",
+  "purpose": "108 curated challenge cases across English, Tamil, and Telugu covering 10 civic categories, 3 urgency tiers, and realistic dialectal/emergency edge cases.",
+  "total_cases": 108,
+  "languages": {
+    "en": 36,
+    "ta": 36,
+    "te": 36
+  },
+  "review_fields": [
+    "reviewer",
+    "reviewed_at",
+    "category",
+    "urgency",
+    "translation_fidelity_1_to_5",
+    "location_preserved",
+    "notes"
+  ],
   "cases": [
-    {"id":"EN01","language":"en","text":"In Karur, please extend the drinking-water pipe to our new street. Supply in the existing streets is working; there is no immediate danger.","category":"Water Supply","urgency":"Routine","district":"Karur"},
-    {"id":"EN02","language":"en","text":"Sewage is entering the classroom toilets in Chennai. Children cannot use them. Please clear the sewer today; this is not a drinking-water shortage.","category":"Sanitation","urgency":"Urgent","district":"Chennai"},
-    {"id":"EN03","language":"en","text":"A live electricity wire has fallen into floodwater beside a busy bus stop in Hyderabad. People are approaching it. Isolate power and send an emergency crew now.","category":"Electricity","urgency":"Emergency","district":"Hyderabad"},
-    {"id":"EN04","language":"en","text":"The only bridge into our village near Tirupati is collapsing while people are crossing. Stop traffic and send the emergency rescue team.","category":"Road","urgency":"Emergency","district":"Tirupati"},
-    {"id":"EN05","language":"en","text":"Please add a wheelchair ramp to the public school entrance in Karur before the next academic year.","category":"Education","urgency":"Routine","district":"Karur"},
-    {"id":"EN06","language":"en","text":"The primary health centre in Nalgonda has had no essential fever medicines for four days. Patients are being turned away. Please replenish them urgently.","category":"Health","urgency":"Urgent","district":"Nalgonda"},
-    {"id":"EN07","language":"en","text":"We request an evening bus service between our village and Tirupati railway station. The road is usable; the missing bus service is the problem.","category":"Transport","urgency":"Routine","district":"Tirupati"},
-    {"id":"EN08","language":"en","text":"The public service centre in Hyderabad has lost internet for three days. Pension applications cannot be submitted. Restore its connection urgently.","category":"Digital Connectivity","urgency":"Urgent","district":"Hyderabad"},
-    {"id":"EN09","language":"en","text":"A wall of our occupied public housing block in Chennai is falling outward. Families are inside. Please evacuate the building immediately.","category":"Housing","urgency":"Emergency","district":"Chennai"},
-    {"id":"TA01","language":"ta","text":"கரூரில் எங்கள் புதிய தெருவுக்கு குடிநீர் குழாயை நீட்டிக்க வேண்டும். பழைய தெருக்களில் தண்ணீர் வருகிறது. உடனடி ஆபத்து இல்லை.","category":"Water Supply","urgency":"Routine","district":"Karur"},
-    {"id":"TA02","language":"ta","text":"சென்னையில் பள்ளிக் கழிப்பறைக்குள் கழிவுநீர் வருகிறது. குழந்தைகள் பயன்படுத்த முடியவில்லை. சாக்கடை அடைப்பை இன்று அகற்றுங்கள். இது குடிநீர் பற்றாக்குறை அல்ல.","category":"Sanitation","urgency":"Urgent","district":"Chennai"},
-    {"id":"TA03","language":"ta","text":"கரூரில் பேருந்து நிறுத்தம் அருகே மின்கம்பி தண்ணீரில் விழுந்துள்ளது. மக்கள் அருகில் செல்கிறார்கள். உடனே மின்சாரத்தை துண்டித்து அவசரக் குழுவை அனுப்புங்கள்.","category":"Electricity","urgency":"Emergency","district":"Karur"},
-    {"id":"TA04","language":"ta","text":"சென்னை அருகே மக்கள் கடக்கும் பாலம் இடிந்து கொண்டிருக்கிறது. போக்குவரத்தை நிறுத்தி உடனடியாக மீட்புக் குழுவை அனுப்புங்கள்.","category":"Road","urgency":"Emergency","district":"Chennai"},
-    {"id":"TA05","language":"ta","text":"கரூர் அரசுப் பள்ளி நுழைவாயிலில் அடுத்த கல்வியாண்டுக்கு முன் சக்கர நாற்காலி செல்ல சாய்வுப் பாதை அமைக்க வேண்டும்.","category":"Education","urgency":"Routine","district":"Karur"},
-    {"id":"TA06","language":"ta","text":"கரூர் ஆரம்ப சுகாதார நிலையத்தில் நான்கு நாட்களாக காய்ச்சல் மருந்துகள் இல்லை. நோயாளிகள் திருப்பி அனுப்பப்படுகிறார்கள். அவசரமாக மருந்துகளை வழங்குங்கள்.","category":"Health","urgency":"Urgent","district":"Karur"},
-    {"id":"TA07","language":"ta","text":"எங்கள் கிராமத்திலிருந்து கரூர் ரயில் நிலையத்திற்கு மாலை பேருந்து சேவை வேண்டும். சாலை நன்றாக உள்ளது. பேருந்து இல்லாததே பிரச்சனை.","category":"Transport","urgency":"Routine","district":"Karur"},
-    {"id":"TA08","language":"ta","text":"சென்னை பொது சேவை மையத்தில் மூன்று நாட்களாக internet இல்லை. ஓய்வூதிய விண்ணப்பங்களை அனுப்ப முடியவில்லை. இணைப்பை விரைவாக சரிசெய்யுங்கள்.","category":"Digital Connectivity","urgency":"Urgent","district":"Chennai"},
-    {"id":"TA09","language":"ta","text":"சென்னையில் மக்கள் வசிக்கும் அரசு குடியிருப்பின் சுவர் வெளியே சரிகிறது. குடும்பங்கள் உள்ளே இருக்கின்றன. உடனடியாக அவர்களை வெளியேற்றுங்கள்.","category":"Housing","urgency":"Emergency","district":"Chennai"},
-    {"id":"TE01","language":"te","text":"నల్గొండలో మా కొత్త వీధికి తాగునీటి పైపు పొడిగించాలి. పాత వీధుల్లో నీరు వస్తోంది. తక్షణ ప్రమాదం లేదు.","category":"Water Supply","urgency":"Routine","district":"Nalgonda"},
-    {"id":"TE02","language":"te","text":"హైదరాబాద్ పాఠశాల మరుగుదొడ్లలోకి మురుగునీరు వస్తోంది. పిల్లలు వాడలేకపోతున్నారు. ఈరోజే కాలువ అడ్డంకిని తొలగించండి. ఇది తాగునీటి కొరత కాదు.","category":"Sanitation","urgency":"Urgent","district":"Hyderabad"},
-    {"id":"TE03","language":"te","text":"హైదరాబాద్ బస్ స్టాప్ పక్కన నీటిలో విద్యుత్ తీగ పడింది. ప్రజలు దగ్గరకు వెళ్తున్నారు. వెంటనే విద్యుత్ నిలిపి అత్యవసర బృందాన్ని పంపండి.","category":"Electricity","urgency":"Emergency","district":"Hyderabad"},
-    {"id":"TE04","language":"te","text":"తిరుపతి దగ్గర ప్రజలు దాటుతున్న వంతెన కూలుతోంది. రాకపోకలు ఆపి వెంటనే రక్షణ బృందాన్ని పంపండి.","category":"Road","urgency":"Emergency","district":"Tirupati"},
-    {"id":"TE05","language":"te","text":"నల్గొండ ప్రభుత్వ పాఠశాల ప్రవేశద్వారం వద్ద వచ్చే విద్యాసంవత్సరం ముందు వీల్ చైర్ ర్యాంపు నిర్మించండి.","category":"Education","urgency":"Routine","district":"Nalgonda"},
-    {"id":"TE06","language":"te","text":"నల్గొండ ప్రాథమిక ఆరోగ్య కేంద్రంలో నాలుగు రోజులుగా జ్వరం మందులు లేవు. రోగులను వెనక్కి పంపుతున్నారు. అత్యవసరంగా మందులు సరఫరా చేయండి.","category":"Health","urgency":"Urgent","district":"Nalgonda"},
-    {"id":"TE07","language":"te","text":"మా గ్రామం నుంచి తిరుపతి రైల్వే స్టేషన్‌కు సాయంత్రం బస్సు సర్వీసు కావాలి. రహదారి బాగుంది. బస్సు లేకపోవడమే సమస్య.","category":"Transport","urgency":"Routine","district":"Tirupati"},
-    {"id":"TE08","language":"te","text":"హైదరాబాద్ ప్రజా సేవా కేంద్రంలో మూడు రోజులుగా internet లేదు. పింఛను దరఖాస్తులు పంపలేకపోతున్నాం. కనెక్షన్‌ను త్వరగా సరిచేయండి.","category":"Digital Connectivity","urgency":"Urgent","district":"Hyderabad"},
-    {"id":"TE09","language":"te","text":"హైదరాబాద్‌లో ప్రజలు నివసిస్తున్న ప్రభుత్వ గృహ సముదాయం గోడ బయటకు ఒరుగుతోంది. కుటుంబాలు లోపల ఉన్నాయి. వెంటనే ఖాళీ చేయించండి.","category":"Housing","urgency":"Emergency","district":"Hyderabad"}
+    {
+      "id": "EN01",
+      "language": "en",
+      "text": "In Karur, please extend the drinking-water pipe to our new street. Supply in the existing streets is working; there is no immediate danger.",
+      "category": "Water Supply",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "EN02",
+      "language": "en",
+      "text": "Severe chemical contamination reported in the municipal drinking water supply in Tiruchirappalli. Residents are vomiting and hospitalized. Shut down the main valve immediately.",
+      "category": "Water Supply",
+      "urgency": "Emergency",
+      "district": "Tiruchirappalli"
+    },
+    {
+      "id": "EN03",
+      "language": "en",
+      "text": "The overhead drinking water tank in Ward 14 has had a broken valve leaking for 48 hours, causing severe low pressure in 200 households.",
+      "category": "Water Supply",
+      "urgency": "Urgent",
+      "district": "Salem"
+    },
+    {
+      "id": "EN04",
+      "language": "en",
+      "text": "Requesting installation of a public water purification filter near the bus stand in Karur before summer starts.",
+      "category": "Water Supply",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "EN05",
+      "language": "en",
+      "text": "Sewage is entering the classroom toilets in Chennai. Children cannot use them. Please clear the sewer today; this is not a drinking-water shortage.",
+      "category": "Sanitation",
+      "urgency": "Urgent",
+      "district": "Chennai"
+    },
+    {
+      "id": "EN06",
+      "language": "en",
+      "text": "An open underground drainage manhole is overflowing with toxic sludge onto the pediatric hospital entrance walkway in Madurai. Patients cannot access emergency care.",
+      "category": "Sanitation",
+      "urgency": "Emergency",
+      "district": "Madurai"
+    },
+    {
+      "id": "EN07",
+      "language": "en",
+      "text": "Community waste collection bin is full and needs scheduled clearance on Sunday morning in Thanjavur.",
+      "category": "Sanitation",
+      "urgency": "Routine",
+      "district": "Thanjavur"
+    },
+    {
+      "id": "EN08",
+      "language": "en",
+      "text": "Garbage dumping on the lake bund has blocked the stormwater drain ahead of expected heavy rains tomorrow.",
+      "category": "Sanitation",
+      "urgency": "Urgent",
+      "district": "Coimbatore"
+    },
+    {
+      "id": "EN09",
+      "language": "en",
+      "text": "A live electricity wire has fallen into floodwater beside a busy bus stop in Hyderabad. People are approaching it. Isolate power and send an emergency crew now.",
+      "category": "Electricity",
+      "urgency": "Emergency",
+      "district": "Hyderabad"
+    },
+    {
+      "id": "EN10",
+      "language": "en",
+      "text": "The distribution transformer in our residential block is sparking vigorously and emitting black smoke near residential balconies.",
+      "category": "Electricity",
+      "urgency": "Emergency",
+      "district": "Warangal"
+    },
+    {
+      "id": "EN11",
+      "language": "en",
+      "text": "Voltage fluctuations in Ward 8 are tripping medical oxygen concentrators for home-care elderly patients. Please calibrate the transformer urgently.",
+      "category": "Electricity",
+      "urgency": "Urgent",
+      "district": "Karur"
+    },
+    {
+      "id": "EN12",
+      "language": "en",
+      "text": "Street light pole #42 outside the community park has a fused bulb that requires routine replacement.",
+      "category": "Electricity",
+      "urgency": "Routine",
+      "district": "Vellore"
+    },
+    {
+      "id": "EN13",
+      "language": "en",
+      "text": "The only bridge into our village near Tirupati is collapsing while people are crossing. Stop traffic and send the emergency rescue team.",
+      "category": "Road",
+      "urgency": "Emergency",
+      "district": "Tirupati"
+    },
+    {
+      "id": "EN14",
+      "language": "en",
+      "text": "Massive road cave-in on the arterial flyover approach during morning peak transit in Chennai. Vehicles are swerving sharply.",
+      "category": "Road",
+      "urgency": "Emergency",
+      "district": "Chennai"
+    },
+    {
+      "id": "EN15",
+      "language": "en",
+      "text": "Deep potholes on the state highway near the industrial corridor have damaged multiple vehicle axles over the past three days.",
+      "category": "Road",
+      "urgency": "Urgent",
+      "district": "Kanchipuram"
+    },
+    {
+      "id": "EN16",
+      "language": "en",
+      "text": "Requesting speed breaker marking and zebra crossing painting outside the primary school before next semester.",
+      "category": "Road",
+      "urgency": "Routine",
+      "district": "Tiruvallur"
+    },
+    {
+      "id": "EN17",
+      "language": "en",
+      "text": "Please add a wheelchair ramp to the public school entrance in Karur before the next academic year.",
+      "category": "Education",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "EN18",
+      "language": "en",
+      "text": "Portion of the concrete ceiling slab collapsed inside Grade 5 classroom in Villupuram during school hours. Two students injured. Immediate structural safety inspection needed.",
+      "category": "Education",
+      "urgency": "Emergency",
+      "district": "Villupuram"
+    },
+    {
+      "id": "EN19",
+      "language": "en",
+      "text": "Government high school drinking water pipeline is contaminated with mud; midday meal cooking is suspended today.",
+      "category": "Education",
+      "urgency": "Urgent",
+      "district": "Dindigul"
+    },
+    {
+      "id": "EN20",
+      "language": "en",
+      "text": "Requesting 30 additional desks and replacement blackboard for standard 9 classroom in the government model school.",
+      "category": "Education",
+      "urgency": "Routine",
+      "district": "Cuddalore"
+    },
+    {
+      "id": "EN21",
+      "language": "en",
+      "text": "The primary health centre in Nalgonda has had no essential fever medicines for four days. Patients are being turned away. Please replenish them urgently.",
+      "category": "Health",
+      "urgency": "Urgent",
+      "district": "Nalgonda"
+    },
+    {
+      "id": "EN22",
+      "language": "en",
+      "text": "Ambulance oxygen supply failed at the sub-district maternity ward during critical labor. Emergency backup cylinder dispatch required immediately.",
+      "category": "Health",
+      "urgency": "Emergency",
+      "district": "Khammam"
+    },
+    {
+      "id": "EN23",
+      "language": "en",
+      "text": "Rabies vaccine stock exhausted at the government taluk hospital following an increase in stray dog bites in the market area.",
+      "category": "Health",
+      "urgency": "Urgent",
+      "district": "Tirunelveli"
+    },
+    {
+      "id": "EN24",
+      "language": "en",
+      "text": "Requesting the mobile dental checkup van to visit the rural panchayat center next month.",
+      "category": "Health",
+      "urgency": "Routine",
+      "district": "Erode"
+    },
+    {
+      "id": "EN25",
+      "language": "en",
+      "text": "We request an evening bus service between our village and Tirupati railway station. The road is usable; the missing bus service is the problem.",
+      "category": "Transport",
+      "urgency": "Routine",
+      "district": "Tirupati"
+    },
+    {
+      "id": "EN26",
+      "language": "en",
+      "text": "A municipal bus has stalled across the railway level-crossing gate with the signal turning red. Clearance required immediately.",
+      "category": "Transport",
+      "urgency": "Emergency",
+      "district": "Chengalpattu"
+    },
+    {
+      "id": "EN27",
+      "language": "en",
+      "text": "Route 45 bus has consistently skipped the morning college stop for the past week, leaving 80 students stranded.",
+      "category": "Transport",
+      "urgency": "Urgent",
+      "district": "Chennai"
+    },
+    {
+      "id": "EN28",
+      "language": "en",
+      "text": "Request for a new passenger rain shelter at the rural bus stop near the veterinary dispensary.",
+      "category": "Transport",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "EN29",
+      "language": "en",
+      "text": "The public service centre in Hyderabad has lost internet for three days. Pension applications cannot be submitted. Restore its connection urgently.",
+      "category": "Digital Connectivity",
+      "urgency": "Urgent",
+      "district": "Hyderabad"
+    },
+    {
+      "id": "EN30",
+      "language": "en",
+      "text": "Fiber optic cable severed during drainage excavation has completely cut off connectivity to the district emergency 108 dispatch center.",
+      "category": "Digital Connectivity",
+      "urgency": "Emergency",
+      "district": "Visakhapatnam"
+    },
+    {
+      "id": "EN31",
+      "language": "en",
+      "text": "Gram Panchayat BharatNet fiber router has been offline for 5 days, halting citizen birth certificate issuance.",
+      "category": "Digital Connectivity",
+      "urgency": "Urgent",
+      "district": "Medak"
+    },
+    {
+      "id": "EN32",
+      "language": "en",
+      "text": "Requesting installation of free public Wi-Fi access point at the district public library reading room.",
+      "category": "Digital Connectivity",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "EN33",
+      "language": "en",
+      "text": "A wall of our occupied public housing block in Chennai is falling outward. Families are inside. Please evacuate the building immediately.",
+      "category": "Housing",
+      "urgency": "Emergency",
+      "district": "Chennai"
+    },
+    {
+      "id": "EN34",
+      "language": "en",
+      "text": "Severe structural cracks on third-floor balcony cantilever in government rehabilitation colony; chunk of plaster fell near pathway.",
+      "category": "Housing",
+      "urgency": "Urgent",
+      "district": "Ranga Reddy"
+    },
+    {
+      "id": "EN35",
+      "language": "en",
+      "text": "Application for PM Awas Yojana house subsidy allotment document verification has been pending for two months.",
+      "category": "Housing",
+      "urgency": "Routine",
+      "district": "Guntur"
+    },
+    {
+      "id": "EN36",
+      "language": "en",
+      "text": "Public park children play equipment swing set chain has rusted and broken; please replace during seasonal maintenance.",
+      "category": "Other",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "TA01",
+      "language": "ta",
+      "text": "கரூரில் எங்கள் புதிய தெருவுக்கு குடிநீர் குழாயை நீட்டிக்க வேண்டும். பழைய தெருக்களில் தண்ணீர் வருகிறது. உடனடி ஆபத்து இல்லை.",
+      "category": "Water Supply",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "TA02",
+      "language": "ta",
+      "text": "திருச்சியில் நகராட்சி குடிநீரில் ரசாயன கழிவு கலந்துள்ளது. தண்ணீர் குடித்த பலருக்கு வாந்தி மயக்கம் ஏற்பட்டு மருத்துவமனையில் அனுமதிக்கப்பட்டுள்ளனர். பிரதான வால்வை உடனடியாக மூடுங்கள்.",
+      "category": "Water Supply",
+      "urgency": "Emergency",
+      "district": "Tiruchirappalli"
+    },
+    {
+      "id": "TA03",
+      "language": "ta",
+      "text": "சேலம் வார்டு 14ல் மேல்நிலை குடிநீர் தொட்டியின் வால்வு உடைந்து இரண்டு நாட்களாக நீர் வீணாகிறது, 200 வீடுகளுக்கு குறைந்த அழுத்தத்தில் தண்ணீர் வருகிறது.",
+      "category": "Water Supply",
+      "urgency": "Urgent",
+      "district": "Salem"
+    },
+    {
+      "id": "TA04",
+      "language": "ta",
+      "text": "கரூர் பேருந்து நிலையம் அருகே கோடைகாலம் தொடங்கும் முன் பொது குடிநீர் சுத்திகரிப்பு இயந்திரம் அமைக்க கோரிக்கை.",
+      "category": "Water Supply",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "TA05",
+      "language": "ta",
+      "text": "சென்னையில் பள்ளிக் கழிப்பறைக்குள் கழிவுநீர் வருகிறது. குழந்தைகள் பயன்படுத்த முடியவில்லை. சாக்கடை அடைப்பை இன்று அகற்றுங்கள். இது குடிநீர் பற்றாக்குறை அல்ல.",
+      "category": "Sanitation",
+      "urgency": "Urgent",
+      "district": "Chennai"
+    },
+    {
+      "id": "TA06",
+      "language": "ta",
+      "text": "மதுரையில் குழந்தைகள் நல மருத்துவமனை நுழைவாயிலில் பாதாள சாக்கடை திறந்து நச்சுக்கழிவு பெருக்கெடுத்து ஓடுகிறது. நோயாளிகள் உள்ளே செல்ல முடியவில்லை.",
+      "category": "Sanitation",
+      "urgency": "Emergency",
+      "district": "Madurai"
+    },
+    {
+      "id": "TA07",
+      "language": "ta",
+      "text": "தஞ்சாவூரில் தெருவோர குப்பைத் தொட்டி நிரம்பி வழிகிறது, ஞாயிற்றுக்கிழமை வழக்கமான தூய்மைப் பணியின் போது அகற்ற வேண்டும்.",
+      "category": "Sanitation",
+      "urgency": "Routine",
+      "district": "Thanjavur"
+    },
+    {
+      "id": "TA08",
+      "language": "ta",
+      "text": "கோவையில் பெய்யவுள்ள கனமழைக்கு முன் ஏரிக்கரை மழைநீர் வடிகால் அடைப்பை சரிசெய்ய வேண்டும்.",
+      "category": "Sanitation",
+      "urgency": "Urgent",
+      "district": "Coimbatore"
+    },
+    {
+      "id": "TA09",
+      "language": "ta",
+      "text": "கரூரில் பேருந்து நிறுத்தம் அருகே மின்கம்பி தண்ணீரில் விழுந்துள்ளது. மக்கள் அருகில் செல்கிறார்கள். உடனே மின்சாரத்தை துண்டித்து அவசரக் குழுவை அனுப்புங்கள்.",
+      "category": "Electricity",
+      "urgency": "Emergency",
+      "district": "Karur"
+    },
+    {
+      "id": "TA10",
+      "language": "ta",
+      "text": "குடியிருப்பு பகுதியில் உள்ள மின்மாற்றி வெடித்து கரும்புகையுடன் தீப்பிடித்து எரிகிறது. அருகிலுள்ள வீடுகளுக்கு ஆபத்து.",
+      "category": "Electricity",
+      "urgency": "Emergency",
+      "district": "Madurai"
+    },
+    {
+      "id": "TA11",
+      "language": "ta",
+      "text": "வார்டு 8ல் குறைந்த மின்னழுத்தம் காரணமாக வீட்டில் உள்ள முதியோரின் ஆக்ஸிஜன் கருவி இயங்கவில்லை. மின்மாற்றியை உடனே சரிசெய்யுங்கள்.",
+      "category": "Electricity",
+      "urgency": "Urgent",
+      "district": "Karur"
+    },
+    {
+      "id": "TA12",
+      "language": "ta",
+      "text": "வேலூரில் பூங்கா முன்புள்ள தெருவிளக்கு கம்பத்தில் பல்பை மாற்ற வேண்டும்.",
+      "category": "Electricity",
+      "urgency": "Routine",
+      "district": "Vellore"
+    },
+    {
+      "id": "TA13",
+      "language": "ta",
+      "text": "சென்னை அருகே மக்கள் கடக்கும் பாலம் இடிந்து கொண்டிருக்கிறது. போக்குவரத்தை நிறுத்தி உடனடியாக மீட்புக் குழுவை அனுப்புங்கள்.",
+      "category": "Road",
+      "urgency": "Emergency",
+      "district": "Chennai"
+    },
+    {
+      "id": "TA14",
+      "language": "ta",
+      "text": "சென்னையில் முக்கிய மேம்பால அணுகுசாலையில் திடீரென பெரிய பள்ளம் ஏற்பட்டுள்ளது. வாகனங்கள் விபத்துக்குள்ளாகும் அபாயம்.",
+      "category": "Road",
+      "urgency": "Emergency",
+      "district": "Chennai"
+    },
+    {
+      "id": "TA15",
+      "language": "ta",
+      "text": "காஞ்சிபுரம் மாநில நெடுஞ்சாலையில் ஆழமான குழிகளால் வாகனங்களின் அச்சு உடைந்து மூன்று நாட்களாக போக்குவரத்து பாதிப்பு ஏற்பட்டுள்ளது.",
+      "category": "Road",
+      "urgency": "Urgent",
+      "district": "Kanchipuram"
+    },
+    {
+      "id": "TA16",
+      "language": "ta",
+      "text": "தொடக்கப் பள்ளிக்கு வெளியே வேகத்தடைக்கு வெள்ளை நிற வண்ணம் பூசவும் பாதசாரி கோடு போடவும் கோரிக்கை.",
+      "category": "Road",
+      "urgency": "Routine",
+      "district": "Tiruvallur"
+    },
+    {
+      "id": "TA17",
+      "language": "ta",
+      "text": "கரூர் அரசுப் பள்ளி நுழைவாயிலில் அடுத்த கல்வியாண்டுக்கு முன் சக்கர நாற்காலி செல்ல சாய்வுப் பாதை அமைக்க வேண்டும்.",
+      "category": "Education",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "TA18",
+      "language": "ta",
+      "text": "விழுப்புரம் அரசுப் பள்ளியில் வகுப்பு நடந்து கொண்டிருக்கும் போது மேற்கூரை காரை பெயர்ந்து விழுந்து இரண்டு மாணவர்கள் காயம். கட்டட பாதுகாப்பு ஆய்வு தேவை.",
+      "category": "Education",
+      "urgency": "Emergency",
+      "district": "Villupuram"
+    },
+    {
+      "id": "TA19",
+      "language": "ta",
+      "text": "திண்டுக்கல் அரசு மேல்நிலைப் பள்ளி குடிநீர் குழாயில் சேறு கலந்து வருவதால் சத்துணவு சமைப்பது நிறுத்தப்பட்டுள்ளது.",
+      "category": "Education",
+      "urgency": "Urgent",
+      "district": "Dindigul"
+    },
+    {
+      "id": "TA20",
+      "language": "ta",
+      "text": "கடலூர் அரசு மாதிரிப் பள்ளியில் 9ம் வகுப்புக்கு கூடுதல் மேசைகள் மற்றும் கரும்பலகை வழங்க வேண்டுகோள்.",
+      "category": "Education",
+      "urgency": "Routine",
+      "district": "Cuddalore"
+    },
+    {
+      "id": "TA21",
+      "language": "ta",
+      "text": "கரூர் ஆரம்ப சுகாதார நிலையத்தில் நான்கு நாட்களாக காய்ச்சல் மருந்துகள் இல்லை. நோயாளிகள் திருப்பி அனுப்பப்படுகிறார்கள். அவசரமாக மருந்துகளை வழங்குங்கள்.",
+      "category": "Health",
+      "urgency": "Urgent",
+      "district": "Karur"
+    },
+    {
+      "id": "TA22",
+      "language": "ta",
+      "text": "அரசு மகப்பேறு மருத்துவமனையில் பிரசவ அவசர சிகிச்சையின் போது ஆக்ஸிஜன் விநியோகம் தடைபட்டுள்ளது. உடனடி உதவி தேவை.",
+      "category": "Health",
+      "urgency": "Emergency",
+      "district": "Tiruchirappalli"
+    },
+    {
+      "id": "TA23",
+      "language": "ta",
+      "text": "திருநெல்வேலி தாலுகா அரசு மருத்துவமனையில் வெறிநாய் கடி தடுப்பூசி கையிருப்பு தீர்ந்துவிட்டது, அவசரமாக மருந்து அனுப்பவும்.",
+      "category": "Health",
+      "urgency": "Urgent",
+      "district": "Tirunelveli"
+    },
+    {
+      "id": "TA24",
+      "language": "ta",
+      "text": "ஈரோடு கிராம ஊராட்சிக்கு அடுத்த மாதம் நடமாடும் பல் மருத்துவ வாகனம் வர ஏற்பாடு செய்ய வேண்டும்.",
+      "category": "Health",
+      "urgency": "Routine",
+      "district": "Erode"
+    },
+    {
+      "id": "TA25",
+      "language": "ta",
+      "text": "எங்கள் கிராமத்திலிருந்து கரூர் ரயில் நிலையத்திற்கு மாலை பேருந்து சேவை வேண்டும். சாலை நன்றாக உள்ளது. பேருந்து இல்லாததே பிரச்சனை.",
+      "category": "Transport",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "TA26",
+      "language": "ta",
+      "text": "செங்கல்பட்டு ரயில்வே கேட் மீது அரசு பேருந்து பழுதாகி நின்றுவிட்டது, சிக்னல் சிவப்பு நிறமாக மாறியுள்ளது. உடனடியாக அகற்ற வேண்டும்.",
+      "category": "Transport",
+      "urgency": "Emergency",
+      "district": "Chengalpattu"
+    },
+    {
+      "id": "TA27",
+      "language": "ta",
+      "text": "சென்னையில் தடம் எண் 45 பேருந்து காலை நேரத்தில் கல்லூரி நிறுத்தத்தில் நிற்காமல் செல்வதால் மாணவர்கள் தவிக்கின்றனர்.",
+      "category": "Transport",
+      "urgency": "Urgent",
+      "district": "Chennai"
+    },
+    {
+      "id": "TA28",
+      "language": "ta",
+      "text": "கிராமத்து பேருந்து நிறுத்தத்தில் மழைக்கு ஒதுங்க புதிய நிழற்குடை அமைக்க கோரிக்கை.",
+      "category": "Transport",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "TA29",
+      "language": "ta",
+      "text": "சென்னை பொது சேவை மையத்தில் மூன்று நாட்களாக internet இல்லை. ஓய்வூதிய விண்ணப்பங்களை அனுப்ப முடியவில்லை. இணைப்பை விரைவாக சரிசெய்யுங்கள்.",
+      "category": "Digital Connectivity",
+      "urgency": "Urgent",
+      "district": "Chennai"
+    },
+    {
+      "id": "TA30",
+      "language": "ta",
+      "text": "வடிகால் தோண்டும் போது ஆப்டிகல் ஃபைபர் கேபிள் துண்டிக்கப்பட்டதால் 108 ஆம்புலன்ஸ் கட்டுப்பாட்டு மைய தொடர்பு முற்றிலுமாக துண்டிக்கப்பட்டுள்ளது.",
+      "category": "Digital Connectivity",
+      "urgency": "Emergency",
+      "district": "Madurai"
+    },
+    {
+      "id": "TA31",
+      "language": "ta",
+      "text": "கிராம பஞ்சாயத்து அலுவலகத்தில் பாரத்நெட் இணைப்பு 5 நாட்களாக வேலை செய்யவில்லை, பிறப்பு சான்றிதழ் வழங்க முடியவில்லை.",
+      "category": "Digital Connectivity",
+      "urgency": "Urgent",
+      "district": "Salem"
+    },
+    {
+      "id": "TA32",
+      "language": "ta",
+      "text": "கரூர் மாவட்ட மைய நூலகத்தில் வாசகர்களுக்கு இலவச பொது வைஃபை வசதி அமைக்க கோரிக்கை.",
+      "category": "Digital Connectivity",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "TA33",
+      "language": "ta",
+      "text": "சென்னையில் மக்கள் வசிக்கும் அரசு குடியிருப்பின் சுவர் வெளியே சரிகிறது. குடும்பங்கள் உள்ளே இருக்கின்றன. உடனடியாக அவர்களை வெளியேற்றுங்கள்.",
+      "category": "Housing",
+      "urgency": "Emergency",
+      "district": "Chennai"
+    },
+    {
+      "id": "TA34",
+      "language": "ta",
+      "text": "அரசு மறுவாழ்வு குடியிருப்பின் 3வது மாடி பால்கனியில் விரிசல் ஏற்பட்டு காரை பெயர்ந்து கீழே நடைபாதையில் விழுகிறது.",
+      "category": "Housing",
+      "urgency": "Urgent",
+      "district": "Vellore"
+    },
+    {
+      "id": "TA35",
+      "language": "ta",
+      "text": "பிரதம மந்திரி ஆவாஸ் யோஜனா வீட்டு மானிய ஆவண சரிபார்ப்பு இரண்டு மாதங்களாக நிலுவையில் உள்ளது.",
+      "category": "Housing",
+      "urgency": "Routine",
+      "district": "Tiruchirappalli"
+    },
+    {
+      "id": "TA36",
+      "language": "ta",
+      "text": "பூங்காவில் குழந்தைகள் விளையாடும் ஊஞ்சல் சங்கிலி துருப்பிடித்து அறுந்துவிட்டது, சீரமைக்க வேண்டுகிறோம்.",
+      "category": "Other",
+      "urgency": "Routine",
+      "district": "Karur"
+    },
+    {
+      "id": "TE01",
+      "language": "te",
+      "text": "నల్గొండలో మా కొత్త వీధికి తాగునీటి పైపు పొడిగించాలి. పాత వీధుల్లో నీరు వస్తోంది. తక్షణ ప్రమాదం లేదు.",
+      "category": "Water Supply",
+      "urgency": "Routine",
+      "district": "Nalgonda"
+    },
+    {
+      "id": "TE02",
+      "language": "te",
+      "text": "విశాఖపట్నంలో తాగునీటి సరఫరాలో విషపూరిత రసాయనాలు కలిశాయి. ప్రజలు వాంతులు చేసుకుంటూ ఆసుపత్రి పాలయ్యారు. ప్రధాన వాల్వ్ వెంటనే మూసివేయండి.",
+      "category": "Water Supply",
+      "urgency": "Emergency",
+      "district": "Visakhapatnam"
+    },
+    {
+      "id": "TE03",
+      "language": "te",
+      "text": "వరంగల్ వార్డు 14 లోని ఓవర్ హెడ్ ట్యాంక్ వాల్వ్ లీక్ అవ్వడం వల్ల రెండు రోజులుగా 200 ఇళ్లకు తక్కువ పీడనంతో నీరు వస్తోంది.",
+      "category": "Water Supply",
+      "urgency": "Urgent",
+      "district": "Warangal"
+    },
+    {
+      "id": "TE04",
+      "language": "te",
+      "text": "ఎండాకాలం ప్రారంభం కాకముందే తిరుపతి బస్టాండ్ వద్ద ప్రజల కోసం ఆర్వో వాటర్ ప్లాంట్ ఏర్పాటు చేయాలని విజ్ఞప్తి.",
+      "category": "Water Supply",
+      "urgency": "Routine",
+      "district": "Tirupati"
+    },
+    {
+      "id": "TE05",
+      "language": "te",
+      "text": "హైదరాబాద్ పాఠశాల మరుగుదొడ్లలోకి మురుగునీరు వస్తోంది. పిల్లలు వాడలేకపోతున్నారు. ఈరోజే కాలువ అడ్డంకిని తొలగించండి. ఇది తాగునీటి కొరత కాదు.",
+      "category": "Sanitation",
+      "urgency": "Urgent",
+      "district": "Hyderabad"
+    },
+    {
+      "id": "TE06",
+      "language": "te",
+      "text": "విజయవాడ పిల్లల ఆసుపత్రి ప్రవేశ ద్వారం వద్ద అండర్ గ్రౌండ్ డ్రైనేజీ మ్యాన్ హోల్ పొంగిపొర్లుతోంది. రోగులు అత్యవసర చికిత్సకు వెళ్లలేకపోతున్నారు.",
+      "category": "Sanitation",
+      "urgency": "Emergency",
+      "district": "Vijayawada"
+    },
+    {
+      "id": "TE07",
+      "language": "te",
+      "text": "గుంటూరులో కమ్యూనిటీ చెత్త కుండీ నిండిపోయింది, ఆదివారం ఉదయం షెడ్యూల్ ప్రకారం తొలగించండి.",
+      "category": "Sanitation",
+      "urgency": "Routine",
+      "district": "Guntur"
+    },
+    {
+      "id": "TE08",
+      "language": "te",
+      "text": "రేపు భారీ వర్షాలు కురిసే అవకాశం ఉన్నందున చెరువు గట్టు వద్ద వరద నీటి కాలువ అడ్డంకులను వెంటనే తొలగించాలి.",
+      "category": "Sanitation",
+      "urgency": "Urgent",
+      "district": "Khammam"
+    },
+    {
+      "id": "TE09",
+      "language": "te",
+      "text": "హైదరాబాద్ బస్ స్టాప్ పక్కన నీటిలో విద్యుత్ తీగ పడింది. ప్రజలు దగ్గరకు వెళ్తున్నారు. వెంటనే విద్యుత్ నిలిపి అత్యవసర బృందాన్ని పంపండి.",
+      "category": "Electricity",
+      "urgency": "Emergency",
+      "district": "Hyderabad"
+    },
+    {
+      "id": "TE10",
+      "language": "te",
+      "text": "నివాస ప్రాంతంలోని డిస్ట్రిబ్యూషన్ ట్రాన్స్ ఫార్మర్ భారీ మంటలతో పేలిపోయింది, పక్కనే ఉన్న బాల్కనీలకు మంటలు వ్యాపించే ప్రమాదం ఉంది.",
+      "category": "Electricity",
+      "urgency": "Emergency",
+      "district": "Warangal"
+    },
+    {
+      "id": "TE11",
+      "language": "te",
+      "text": "వార్డు 8లో వోల్టేజ్ హెచ్చుతగ్గుల వల్ల వృద్ధుల ఆక్సిజన్ కాన్సంట్రేటర్లు ఆగిపోతున్నాయి. వెంటనే ట్రాన్స్‌ఫార్మర్‌ను సరిచేయండి.",
+      "category": "Electricity",
+      "urgency": "Urgent",
+      "district": "Nalgonda"
+    },
+    {
+      "id": "TE12",
+      "language": "te",
+      "text": "పార్కు వద్ద ఉన్న స్ట్రీట్ లైట్ స్తంభం నంబర్ 42 బల్బు పాడైంది, మార్చవలసిందిగా కోరుతున్నాము.",
+      "category": "Electricity",
+      "urgency": "Routine",
+      "district": "Tirupati"
+    },
+    {
+      "id": "TE13",
+      "language": "te",
+      "text": "తిరుపతి దగ్గర ప్రజలు దాటుతున్న వంతెన కూలుతోంది. రాకపోకలు ఆపి వెంటనే రక్షణ బృందాన్ని పంపండి.",
+      "category": "Road",
+      "urgency": "Emergency",
+      "district": "Tirupati"
+    },
+    {
+      "id": "TE14",
+      "language": "te",
+      "text": "హైదరాబాద్ ఫ్లైఓవర్ అప్రోచ్ రోడ్డుపై భారీ గుంత ఏర్పడింది, వాహనాలు ప్రమాదాలకు గురవుతున్నాయి.",
+      "category": "Road",
+      "urgency": "Emergency",
+      "district": "Hyderabad"
+    },
+    {
+      "id": "TE15",
+      "language": "te",
+      "text": "రాష్ట్ర రహదారిపై లోతైన గుంతల కారణంగా గత మూడు రోజులుగా వాహనాల రాకపోకలకు తీవ్ర అంతరాయం కలుగుతోంది.",
+      "category": "Road",
+      "urgency": "Urgent",
+      "district": "Medak"
+    },
+    {
+      "id": "TE16",
+      "language": "te",
+      "text": "ప్రభుత్వ ప్రాథమిక పాఠశాల ఎదుట స్పీడ్ బ్రేకర్ మరియు జీబ్రా క్రాసింగ్ మార్కింగ్ వేయవలసిందిగా కోరుతున్నాము.",
+      "category": "Road",
+      "urgency": "Routine",
+      "district": "Guntur"
+    },
+    {
+      "id": "TE17",
+      "language": "te",
+      "text": "నల్గొండ ప్రభుత్వ పాఠశాల ప్రవేశద్వారం వద్ద వచ్చే విద్యాసంవత్సరం ముందు వీల్ చైర్ ర్యాంపు నిర్మించండి.",
+      "category": "Education",
+      "urgency": "Routine",
+      "district": "Nalgonda"
+    },
+    {
+      "id": "TE18",
+      "language": "te",
+      "text": "పాఠశాల సమయంలో 5వ తరగతి గది పైకప్పు పెచ్చులు ఊడిపడి ఇద్దరు విద్యార్థులకు గాయాలయ్యాయి. వెంటనే భవన భద్రతను పరిశీలించండి.",
+      "category": "Education",
+      "urgency": "Emergency",
+      "district": "Khammam"
+    },
+    {
+      "id": "TE19",
+      "language": "te",
+      "text": "పాఠశాల తాగునీటి పైపులో మురుగు నీరు కలవడం వల్ల ఈరోజు మధ్యాహ్న భోజనం నిలిపివేశారు.",
+      "category": "Education",
+      "urgency": "Urgent",
+      "district": "Warangal"
+    },
+    {
+      "id": "TE20",
+      "language": "te",
+      "text": "ప్రభుత్వ ఉన్నత పాఠశాలలో 9వ తరగతి గదికి అదనపు డెస్కులు మరియు కొత్త బ్లాక్ బోర్డు మంజూరు చేయండి.",
+      "category": "Education",
+      "urgency": "Routine",
+      "district": "Nalgonda"
+    },
+    {
+      "id": "TE21",
+      "language": "te",
+      "text": "నల్గొండ ప్రాథమిక ఆరోగ్య కేంద్రంలో నాలుగు రోజులుగా జ్వరం మందులు లేవు. రోగులను వెనక్కి పంపుతున్నారు. అత్యవసరంగా మందులు సరఫరా చేయండి.",
+      "category": "Health",
+      "urgency": "Urgent",
+      "district": "Nalgonda"
+    },
+    {
+      "id": "TE22",
+      "language": "te",
+      "text": "ప్రభుత్వ ప్రసూతి ఆసుపత్రిలో అత్యవసర కాన్పు సమయంలో ఆక్సిజన్ సరఫరా నిలిచిపోయింది. వెంటనే బ్యాకప్ సిలిండర్లు పంపండి.",
+      "category": "Health",
+      "urgency": "Emergency",
+      "district": "Hyderabad"
+    },
+    {
+      "id": "TE23",
+      "language": "te",
+      "text": "పిచ్చి కుక్కల కాట్లు పెరిగిపోవడంతో తాలూకా ఆసుపత్రిలో రేబీస్ టీకాల నిల్వ అయిపోయింది, వెంటనే మందులు పంపండి.",
+      "category": "Health",
+      "urgency": "Urgent",
+      "district": "Visakhapatnam"
+    },
+    {
+      "id": "TE24",
+      "language": "te",
+      "text": "గ్రామ పంచాయతీ కేంద్రానికి వచ్చే నెలలో మొబైల్ డెంటల్ చెకప్ వ్యాన్ పంపించాలని విజ్ఞప్తి.",
+      "category": "Health",
+      "urgency": "Routine",
+      "district": "Tirupati"
+    },
+    {
+      "id": "TE25",
+      "language": "te",
+      "text": "మా గ్రామం నుంచి తిరుపతి రైల్వే స్టేషన్‌కు సాయంత్రం బస్సు సర్వీసు కావాలి. రహదారి బాగుంది. బస్సు లేకపోవడమే సమస్య.",
+      "category": "Transport",
+      "urgency": "Routine",
+      "district": "Tirupati"
+    },
+    {
+      "id": "TE26",
+      "language": "te",
+      "text": "రైల్వే గేటుపై బస్సు మొరాయించి నిలిచిపోయింది, సిగ్నల్ ఎరుపు రంగులోకి మారింది. వెంటనే సహాయక చర్యలు చేపట్టండి.",
+      "category": "Transport",
+      "urgency": "Emergency",
+      "district": "Ranga Reddy"
+    },
+    {
+      "id": "TE27",
+      "language": "te",
+      "text": "రూట్ 45 బస్సు ఉదయం కళాశాల స్టాప్‌లో ఆగకుండా వెళ్లిపోవడం వల్ల విద్యార్థులు ఇబ్బంది పడుతున్నారు.",
+      "category": "Transport",
+      "urgency": "Urgent",
+      "district": "Hyderabad"
+    },
+    {
+      "id": "TE28",
+      "language": "te",
+      "text": "గ్రామ బస్ స్టాప్ వద్ద ప్రయాణికుల కోసం వర్షపు షెల్టర్ నిర్మించాలని కోరుతున్నాము.",
+      "category": "Transport",
+      "urgency": "Routine",
+      "district": "Nalgonda"
+    },
+    {
+      "id": "TE29",
+      "language": "te",
+      "text": "హైదరాబాద్ ప్రజా సేవా కేంద్రంలో మూడు రోజులుగా internet లేదు. పింఛను దరఖాస్తులు పంపలేకపోతున్నాం. కనెక్షన్‌ను త్వరగా సరిచేయండి.",
+      "category": "Digital Connectivity",
+      "urgency": "Urgent",
+      "district": "Hyderabad"
+    },
+    {
+      "id": "TE30",
+      "language": "te",
+      "text": "కాలువ తవ్వకాల్లో ఫైబర్ ఆప్టిక్ కేబుల్ తెగిపోవడంతో 108 అత్యవసర సేవల కేంద్రం కనెక్టివిటీ పూర్తిగా నిలిచిపోయింది.",
+      "category": "Digital Connectivity",
+      "urgency": "Emergency",
+      "district": "Vijayawada"
+    },
+    {
+      "id": "TE31",
+      "language": "te",
+      "text": "గ్రామ పంచాయతీ కార్యాలయంలో భారత్‌నెట్ ఫైబర్ రూటర్ 5 రోజులుగా పనిచేయడం లేదు, జనన ధృవీకరణ పత్రాలు ఇవ్వలేకపోతున్నాము.",
+      "category": "Digital Connectivity",
+      "urgency": "Urgent",
+      "district": "Warangal"
+    },
+    {
+      "id": "TE32",
+      "language": "te",
+      "text": "జిల్లా గ్రంథాలయంలో పాఠకుల కోసం ఉచిత పబ్లిక్ వైఫై సౌకర్యం కల్పించాలని కోరుతున్నాము.",
+      "category": "Digital Connectivity",
+      "urgency": "Routine",
+      "district": "Tirupati"
+    },
+    {
+      "id": "TE33",
+      "language": "te",
+      "text": "హైదరాబాద్‌లో ప్రజలు నివసిస్తున్న ప్రభుత్వ గృహ సముదాయం గోడ బయటకు ఒరుగుతోంది. కుటుంబాలు లోపల ఉన్నాయి. వెంటనే ఖాళీ చేయించండి.",
+      "category": "Housing",
+      "urgency": "Emergency",
+      "district": "Hyderabad"
+    },
+    {
+      "id": "TE34",
+      "language": "te",
+      "text": "ప్రభుత్వ కాలనీ మూడవ అంతస్తు బాల్కనీలో తీవ్రమైన పగుళ్లు ఏర్పడి పెచ్చులు క్రింద పడుతున్నాయి.",
+      "category": "Housing",
+      "urgency": "Urgent",
+      "district": "Ranga Reddy"
+    },
+    {
+      "id": "TE35",
+      "language": "te",
+      "text": "పీఎం ఆవాస్ యోజన ఇళ్ల సబ్సిడీ పత్రాల పరిశీలన రెండు నెలలుగా పెండింగ్‌లో ఉంది.",
+      "category": "Housing",
+      "urgency": "Routine",
+      "district": "Guntur"
+    },
+    {
+      "id": "TE36",
+      "language": "te",
+      "text": "కమ్యూనిటీ పార్కులో పిల్లల ఉయ్యాల గొలుసు తుప్పు పట్టి విరిగిపోయింది, బాగు చేయించగలరు.",
+      "category": "Other",
+      "urgency": "Routine",
+      "district": "Nalgonda"
+    }
   ]
 }

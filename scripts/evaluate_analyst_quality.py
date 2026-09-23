@@ -32,7 +32,7 @@ def metrics(rows):
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--provider',choices=['baseline','google'],default='baseline');parser.add_argument('--limit',type=int,default=27);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--provider',choices=['baseline','google'],default='baseline');parser.add_argument('--limit',type=int,default=108);args=parser.parse_args()
     root=Path(__file__).resolve().parents[1];pack=json.loads((root/'docs/evaluation/review-pack.json').read_text(encoding='utf-8'))
     client=None
     if args.provider=='google':

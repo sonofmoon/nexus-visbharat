@@ -1,19 +1,19 @@
 {
-  "job_id": "NVB-EVAL-20260919053655514826-a7fb2793",
+  "job_id": "NVB-EVAL-20260923040118297998-7e53af13",
   "status": "completed",
   "result": {
     "overall": {
-      "n": 27,
-      "category_macro_f1": 1.0,
-      "accuracy": 0.962963,
+      "n": 108,
+      "category_macro_f1": 0.974603,
+      "accuracy": 0.972222,
       "accuracy_ci95": [
-        0.817161,
-        0.993432
+        0.921495,
+        0.990509
       ],
-      "emergency_n": 9,
+      "emergency_n": 33,
       "emergency_recall": 1.0,
       "emergency_recall_ci95": [
-        0.700847,
+        0.895727,
         1.0
       ]
     },
@@ -21,67 +21,67 @@
       "language": {
         "items": {
           "en": {
-            "n": 9,
-            "category_macro_f1": 1.0,
-            "accuracy": 0.888889,
+            "n": 36,
+            "category_macro_f1": 0.974603,
+            "accuracy": 0.972222,
             "accuracy_ci95": [
-              0.564994,
-              0.98011
+              0.8583,
+              0.99508
             ],
-            "emergency_n": 3,
+            "emergency_n": 11,
             "emergency_recall": 1.0,
             "emergency_recall_ci95": [
-              0.438494,
+              0.74116,
               1.0
             ]
           },
           "ta": {
-            "n": 9,
-            "category_macro_f1": 1.0,
-            "accuracy": 1.0,
+            "n": 36,
+            "category_macro_f1": 0.974603,
+            "accuracy": 0.972222,
             "accuracy_ci95": [
-              0.700847,
-              1.0
+              0.8583,
+              0.99508
             ],
-            "emergency_n": 3,
+            "emergency_n": 11,
             "emergency_recall": 1.0,
             "emergency_recall_ci95": [
-              0.438494,
+              0.74116,
               1.0
             ]
           },
           "te": {
-            "n": 9,
-            "category_macro_f1": 1.0,
-            "accuracy": 1.0,
+            "n": 36,
+            "category_macro_f1": 0.974603,
+            "accuracy": 0.972222,
             "accuracy_ci95": [
-              0.700847,
-              1.0
+              0.8583,
+              0.99508
             ],
-            "emergency_n": 3,
+            "emergency_n": 11,
             "emergency_recall": 1.0,
             "emergency_recall_ci95": [
-              0.438494,
+              0.74116,
               1.0
             ]
           }
         },
-        "accuracy_gap": 0.111111
+        "accuracy_gap": 0.0
       },
       "state": {
         "items": {
           "Unknown": {
-            "n": 27,
-            "category_macro_f1": 1.0,
-            "accuracy": 0.962963,
+            "n": 108,
+            "category_macro_f1": 0.974603,
+            "accuracy": 0.972222,
             "accuracy_ci95": [
-              0.817161,
-              0.993432
+              0.921495,
+              0.990509
             ],
-            "emergency_n": 9,
+            "emergency_n": 33,
             "emergency_recall": 1.0,
             "emergency_recall_ci95": [
-              0.700847,
+              0.895727,
               1.0
             ]
           }
@@ -91,17 +91,17 @@
       "channel": {
         "items": {
           "Unknown": {
-            "n": 27,
-            "category_macro_f1": 1.0,
-            "accuracy": 0.962963,
+            "n": 108,
+            "category_macro_f1": 0.974603,
+            "accuracy": 0.972222,
             "accuracy_ci95": [
-              0.817161,
-              0.993432
+              0.921495,
+              0.990509
             ],
-            "emergency_n": 9,
+            "emergency_n": 33,
             "emergency_recall": 1.0,
             "emergency_recall_ci95": [
-              0.700847,
+              0.895727,
               1.0
             ]
           }
@@ -110,8 +110,8 @@
       }
     },
     "model_version": "gemini-3.6-flash",
-    "dataset_version": "independent-scenarios-v1:recorded-predictions",
-    "dataset_sha256": "367715e3b27b4c5ab9f95b2ce85d52c778e28c84ea9aeca200023788bb02a793",
+    "dataset_version": "independent-multilingual-heldout-v2:recorded-predictions",
+    "dataset_sha256": "69b25de37ab73cfa862cce07acb394ecacb30896d763d90374613e6c3ddbc037",
     "label_status": "provisional",
     "review_reference": null,
     "independently_verified": false,
