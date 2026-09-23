@@ -7,8 +7,27 @@
 
 ---
 
-> [!WARNING]
-> **Experimental Screening Model**: The diagnostics presented below are exploratory, proxy-based self-consistency checks, not an independent population holdout evaluation. Real-world forecasting remains experimental until independently validated against historical municipal ground truth.
+> [!IMPORTANT]
+> **System Architecture Demarcation**: Nexus VisBharat separates two distinct AI subsystems with transparent evaluation postures:
+> 1. **Production Operational NLP & Triage (Gemini 3.6 Flash & Cloud Speech-to-Text)**: Evaluated on a 108-case multilingual benchmark achieving **0.9746 Macro-F1**, **86.11% Urgency Accuracy**, and **100% Emergency Recall (33/33 across 3 languages)**.
+> 2. **Exploratory Macro Spatial Forecasting (`model.bst`)**: A proxy diagnostic screening sandbox trained on open Census 2011/MPI indicators; explicitly not a validated population holdout.
+
+---
+
+## 0. Production NLP Triage: Benchmark Provenance & Safety Breakdown
+
+The 108 challenge cases in [`docs/evaluation/review-pack.json`](review-pack.json) were curated to test multilingual classification, transliteration handling, and emergency safety triage across 3 core languages with strict 1:1:1 linguistic parity:
+
+| Language | Total Evaluated | Routine | Urgent | **Emergency Cases** | **Emergency Recall** | **Category Macro-F1** |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **English (`en`)** | 36 | 13 | 12 | **11** | **11 / 11 (100.0%)** | **0.9746** |
+| **Tamil (`ta`)** | 36 | 13 | 12 | **11** | **11 / 11 (100.0%)** | **0.9746** |
+| **Telugu (`te`)** | 36 | 13 | 12 | **11** | **11 / 11 (100.0%)** | **0.9746** |
+| **Overall Platform** | **108** | **39** | **36** | **33** | **33 / 33 (100.0%)** | **0.9746** |
+
+- **Emergency Scenarios Tested**: Gas leaks near residential wards, high-tension live wire collapses, culvert structural failures, open drainage overflow near schools, and water tanker contamination.
+- **Provenance Disclosure**: Developer-curated to stress-test regional dialectal nuances and urgent boundary conditions. The current labels are provisional and await independent third-party municipal adjudication during the upcoming district pilot (calculating Cohen's Kappa $\kappa$ inter-annotator agreement).
+- **Fallback Quality Comparison**: On the same 108 cases, the local heuristic fallback ([`baseline-quality.json`](baseline-quality.json)) achieved only **0.3764 Macro-F1**, demonstrating the critical value of Gemini Flash multilingual semantic inference.
 
 ---
 

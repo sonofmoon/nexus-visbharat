@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexus VisBharat (NVB) | Enterprise Showcase & Digital Public Infrastructure</title>
-  <meta name="description" content="Nexus VisBharat (NVB) is a sovereign Digital Public Infrastructure platform transforming multilingual citizen voice into evidence-linked, tamper-evident municipal infrastructure budgeting using Google Cloud Vertex AI, Gemini Flash, and Chirp-2 Speech-to-Text.">
-  <meta name="author" content="Dr. Ravikumar Chandrasekaran, Thanthai Periyar E.V. Ramasamy Government Polytechnic College, Vellore, Tamil Nadu">
-  <meta name="keywords" content="Nexus VisBharat, NVB, Digital Public Infrastructure, DPI, Google Cloud, Vertex AI, Gemini Flash, Chirp-2, Code for Communities, Hack2Skill, DPDP Act 2023, Tamil Nadu, Andhra Pradesh, Vellore, Tirupati">
+  <title>Nexus VisBharat | Trusted civic intelligence</title>
+  <meta name="description" content="Nexus VisBharat turns multilingual citizen voice into structured, traceable civic intelligence for public-service teams.">
+  <meta name="author" content="Nexus AI Tech">
+  <meta name="keywords" content="Nexus VisBharat, NVB, civic intelligence, multilingual public services, Google Cloud, Tamil Nadu, Andhra Pradesh, Vellore, Tirupati">
 
   <!-- Open Graph / Social Meta -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://nexusaitech.in/apps/nvb/index.html">
-  <meta property="og:title" content="Nexus VisBharat (NVB) | Voice-to-Budget Sovereign DPI">
-  <meta property="og:description" content="Multilingual citizen voice grievance ingestion to evidence-linked, tamper-evident municipal infrastructure budget allocation powered by Google Cloud Gen AI.">
+  <meta property="og:title" content="Nexus VisBharat | Trusted civic intelligence">
+  <meta property="og:description" content="A multilingual civic intelligence platform for intake, triage, evidence and accountable public-service delivery.">
   <meta property="og:image" content="https://nexus-visbharath-510474645723.asia-south1.run.app/static/img/hero-preview.png">
 
   <!-- Google Fonts: Google Sans / Inter & Fira Code -->
@@ -394,7 +394,7 @@
       line-height: 1.6;
     }
 
-    /* Mandatory Requirements Grid (Hack2Skill Alignment) */
+    /* Platform capability cards */
     .requirements-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
@@ -529,8 +529,8 @@
       font-weight: bold;
     }
 
-    /* Rubric Compliance Matrix */
-    .rubric-table-wrapper {
+    /* Trust and governance */
+    .governance-table-wrapper {
       background: var(--bg-surface-card);
       border: 1px solid var(--border-subtle);
       border-radius: 14px;
@@ -538,13 +538,13 @@
       box-shadow: var(--shadow-sm);
       margin-bottom: 4.5rem;
     }
-    .rubric-table {
+    .governance-table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
       font-size: 0.88rem;
     }
-    .rubric-table th {
+    .governance-table th {
       background: var(--bg-surface-elevated);
       padding: 1rem 1.25rem;
       font-weight: 700;
@@ -552,16 +552,16 @@
       border-bottom: 1px solid var(--border-strong);
       white-space: nowrap;
     }
-    .rubric-table td {
+    .governance-table td {
       padding: 1rem 1.25rem;
       border-bottom: 1px solid var(--border-subtle);
       color: var(--text-secondary);
       vertical-align: top;
     }
-    .rubric-table tr:last-child td {
+    .governance-table tr:last-child td {
       border-bottom: none;
     }
-    .rubric-weight {
+    .governance-weight {
       font-family: var(--font-mono);
       font-weight: 700;
       color: var(--accent-blue);
@@ -570,7 +570,7 @@
       border-radius: 4px;
       display: inline-block;
     }
-    .rubric-score {
+    .governance-score {
       font-family: var(--font-mono);
       font-weight: 700;
       color: var(--accent-green);
@@ -874,9 +874,9 @@
 
   <!-- Top Announcement Ribbon -->
   <div class="top-ribbon">
-    <span class="badge">Official Submission</span>
-    <strong>Build with AI: Code for Communities (Second Edition)</strong> &bull; Track: <em>AI for Digital Public Infrastructure &amp; Governance — Innovation</em>
-    <a href="https://hack2skill.com/event/codeforcommunities2" target="_blank" rel="noopener">Event Guidelines &rarr;</a>
+    <span class="badge">PRODUCT PLATFORM</span>
+    <strong>Civic intelligence infrastructure</strong> &bull; Track: <em>AI for Digital Public Infrastructure &amp; Governance — Innovation</em>
+    <a href="https://hack2skill.com/event/codeforcommunities2" target="_blank" rel="noopener">Open source repository →</a>
   </div>
 
   <!-- Sticky Navigation Header -->
@@ -891,13 +891,13 @@
       </a>
 
       <ul class="nav-menu">
-        <li><a href="#vision">Problem &amp; Vision</a></li>
-        <li><a href="#deliverables">5 Requirements</a></li>
+        <li><a href="#vision">Overview</a></li>
+        <li><a href="#deliverables">Platform</a></li>
         <li><a href="#architecture">Architecture</a></li>
-        <li><a href="#rubric">Rubric Compliance</a></li>
-        <li><a href="#corridor">Pilot Corridor</a></li>
-        <li><a href="#evidence">Evaluation Evidence</a></li>
-        <li><a href="#faq">FAQ</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#corridor">Capabilities</a></li>
+        <li><a href="#evidence">Trust</a></li>
+        <li><a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener">GitHub ↗</a></li>
       </ul>
 
       <div class="nav-actions">
@@ -913,33 +913,32 @@
   <section class="hero-section" id="vision">
     <div class="container">
       <div class="badge-bar">
-        <span class="chip chip-accent">🏆 Google Cloud Gen AI Hackathon Submission</span>
-        <span class="chip">Track: Digital Public Infrastructure &amp; Governance</span>
-        <span class="chip chip-green">🏛 Digital Public Good (DPG) Open Source</span>
-        <span class="chip">📍 Vellore (TN) — Tirupati (AP) Municipal Corridor</span>
+        <span class="chip chip-accent">🏆 Multilingual civic intelligence</span>
+        <span class="chip">Human-reviewed workflows</span>
+        <span class="chip chip-green">•s</span>
+        <span class="chip">•</span>
       </div>
 
       <h1 class="hero-title">
-        Transforming Multilingual Citizen Voice into <span class="gradient-text">Evidence-Linked, Tamper-Evident</span> Capital Allocation.
+        Turn citizen voice into <span class="gradient-text">better public services.</span>
       </h1>
 
       <p class="hero-subtitle">
-        A sovereign Digital Public Infrastructure (DPI) platform bridging marginalized vernacular communities with transparent municipal budgeting using Google Cloud Vertex AI, Gemini Flash, Chirp-2 Speech-to-Text, and verifiable SHA-256 audit ledgers.
+        Nexus VisBharat brings multilingual intake, AI-assisted triage, evidence, prioritization and accountable follow-through into one operational platform for public-service teams.
       </p>
 
       <!-- Live Action CTAs (Evaluator Deep Links) -->
       <div class="hero-cta-grid">
         <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener" class="btn btn-primary">
-          🎙️ Test Citizen Voice Intake (Live)
+          •st Citizen Voice Intake (Live)
         </a>
         <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener" class="btn btn-secondary">
-          📋 Trace Authorized Ticket Journey
-        </a>
+          •</a>
         <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener" class="btn btn-secondary">
-          📊 Explore Policy Analyst Scenarios
+          •st Scenarios
         </a>
         <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/auditor" target="_blank" rel="noopener" class="btn btn-secondary">
-          🛡️ Inspect Tamper-Evident Audit Ledger
+          •spect Tamper-Evident Audit Ledger
         </a>
       </div>
 
@@ -958,12 +957,12 @@
         <div class="vital-card">
           <div class="vital-metric">&lt;800ms</div>
           <div class="vital-label">FastPath Hazard Recall</div>
-          <div class="vital-subtext">100% (9/9) emergency recall on evaluated benchmark cases</div>
+          <div class="vital-subtext">100% (33/33) emergency recall across English, Tamil &amp; Telugu</div>
         </div>
         <div class="vital-card">
-          <div class="vital-metric">1.00 / 96.3%</div>
+          <div class="vital-metric">0.975 / 86.1%</div>
           <div class="vital-label">Macro-F1 &amp; Urgency Acc</div>
-          <div class="vital-subtext">Empirical accuracy across 27-case benchmark suite</div>
+          <div class="vital-subtext">Empirical accuracy across 108-case multilingual benchmark suite</div>
         </div>
         <div class="vital-card">
           <div class="vital-metric">SHA-256</div>
@@ -971,21 +970,21 @@
           <div class="vital-subtext">Cryptographic block verification with zero prompt/PII leakage</div>
         </div>
         <div class="vital-card">
-          <div class="vital-metric">337/337</div>
-          <div class="vital-label">Automated Tests Passing</div>
+          <div class="vital-metric">12.5k</div>
+          <div class="vital-label">Prepared showcase recordsing</div>
           <div class="vital-subtext">100% automated regression coverage across pilots &amp; audit trails</div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- The 5 Mandatory Event Deliverables (Hack2Skill Guidelines) -->
+  <!-- Platform capabilities -->
   <section class="container" id="deliverables" style="padding-top: 2rem;">
     <div class="section-header">
-      <div class="section-eyebrow">Official Event Requirements</div>
-      <h2 class="section-title">Fully Addressed Hackathon Deliverables</h2>
+      <div class="section-eyebrow">Platform capabilities</div>
+      <h2 class="section-title">One operating picture for public-service teams</h2>
       <p class="section-desc">
-        Nexus VisBharat directly satisfies all five mandatory requirements specified in the <em>Build with AI: Code for Communities (Second Edition)</em> guidelines.
+        A connected operating platform for multilingual intake, analysis, delivery and audit.
       </p>
     </div>
 
@@ -1176,90 +1175,7 @@
     </div>
   </section>
 
-  <!-- Official Rubric Self-Assessment (Hack2Skill Alignment) -->
-  <section class="container" id="rubric">
-    <div class="section-header">
-      <div class="section-eyebrow">Official Hackathon Rubric</div>
-      <h2 class="section-title">Evaluation Criteria &amp; Alignment Matrix</h2>
-      <p class="section-desc">
-        How Nexus VisBharat demonstrates rigorous adherence to the five judging criteria established for <em>Build with AI: Code for Communities (Second Edition)</em>.
-      </p>
-    </div>
 
-    <div class="rubric-table-wrapper">
-      <table class="rubric-table">
-        <thead>
-          <tr>
-            <th>Official Criterion</th>
-            <th>Weight</th>
-            <th>Platform Evidence &amp; Verification Mechanism</th>
-            <th>Validation Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <strong>1. Problem Alignment &amp; Social Impact</strong><br>
-              <span style="font-size: 0.78rem; color: var(--text-tertiary);">Relevance to citizen welfare, community impact</span>
-            </td>
-            <td><span class="rubric-weight">25%</span></td>
-            <td>
-              Eliminates the structural barrier where 70%+ of rural and semi-urban citizens cannot engage with text-heavy grievance portals. Bridges raw vernacular citizen voice with municipal capital allocations, preventing budget capture by politically vocal enclaves. Grounded across 12,500 demonstration records.
-            </td>
-            <td><span class="rubric-score">Complete &bull; Live Pilot</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <strong>2. Technical Architecture &amp; Google AI</strong><br>
-              <span style="font-size: 0.78rem; color: var(--text-tertiary);">Quality of design, deep Google Cloud integration</span>
-            </td>
-            <td><span class="rubric-weight">25%</span></td>
-            <td>
-              Native enterprise integration across Google Cloud Run, Gemini Flash, Cloud STT (Chirp-2), Cloud Translation v3, BigQuery, and Pub/Sub. Architectural defense-in-depth with deterministic FastPath fallback, zero unhandled exceptions, and real-time provider telemetry.
-            </td>
-            <td><span class="rubric-score">Verified &bull; 6 Services</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <strong>3. Innovation &amp; DPG Readiness</strong><br>
-              <span style="font-size: 0.78rem; color: var(--text-tertiary);">Novelty, Digital Public Good alignment</span>
-            </td>
-            <td><span class="rubric-weight">20%</span></td>
-            <td>
-              Novel multi-objective Strategic Prioritization Score (SPS v2.4) balancing urgency, deprivation weight, spatial clustering, and community verification. Formulated under Apache 2.0 open-source license with standardized OpenAPI specifications and DPG candidate schemas.
-            </td>
-            <td><span class="rubric-score">Compliant &bull; Apache 2.0</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <strong>4. Scalability, Reliability &amp; DPDP 2023</strong><br>
-              <span style="font-size: 0.78rem; color: var(--text-tertiary);">Production readiness, data protection</span>
-            </td>
-            <td><span class="rubric-weight">15%</span></td>
-            <td>
-              Autoscaling containerized microservices on Cloud Run. Rigorous compliance with India's Digital Personal Data Protection (DPDP) Act 2023: client/edge deterministic PII redaction, tamper-evident SHA-256 audit chaining, and explicit Cloud SQL PostgreSQL durability instructions.
-            </td>
-            <td><span class="rubric-score">Compliant &bull; DPDP 2023</span></td>
-          </tr>
-
-          <tr>
-            <td>
-              <strong>5. Completeness &amp; Usability of Demo</strong><br>
-              <span style="font-size: 0.78rem; color: var(--text-tertiary);">User experience, working deployment, documentation</span>
-            </td>
-            <td><span class="rubric-weight">15%</span></td>
-            <td>
-              100% accessible public deployment on Cloud Run. 337 passing automated tests. Intuitive citizen intake UI with live audio visualizer and language switching. Dedicated analytical dashboard, 12-slide pitch deck, 3-minute video walkthrough, and exhaustive GitHub documentation.
-            </td>
-            <td><span class="rubric-score">337/337 Tests Pass</span></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
 
   <!-- Dual Pilot Municipal Corridor -->
   <section class="container" id="corridor">
@@ -1327,14 +1243,14 @@
         <div>
           <div class="evidence-icon">🎯</div>
           <h4 class="evidence-title">Quality Benchmark Suite</h4>
-          <p class="evidence-desc">27 evaluated bilingual cases measuring Category Macro-F1 (1.00), Urgency Accuracy (96.3%), and Emergency Recall (9/9).</p>
+          <p class="evidence-desc">108 evaluated multilingual cases across English, Tamil, and Telugu measuring Category Macro-F1 (0.975), Urgency Accuracy (86.1%), and Emergency Recall (33/33).</p>
         </div>
         <div class="evidence-link">docs/evaluation/quality.json ↗</div>
       </a>
 
       <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/MODEL_EVIDENCE_DOSSIER.md" target="_blank" rel="noopener" class="evidence-card">
         <div>
-          <div class="evidence-icon">📑</div>
+          <div class="evidence-icon">•</div>
           <h4 class="evidence-title">Model Evidence Dossier</h4>
           <p class="evidence-desc">Complete scientific documentation of Gemini Flash prompting strategies, fallback triggers, and proxy forecasting disclosures.</p>
         </div>
@@ -1343,7 +1259,7 @@
 
       <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/evidence-manifest.json" target="_blank" rel="noopener" class="evidence-card">
         <div>
-          <div class="evidence-icon">🔒</div>
+          <div class="evidence-icon">•</div>
           <h4 class="evidence-title">Cryptographic Manifest</h4>
           <p class="evidence-desc">SHA-256 checksum verification verifying the tamper-evident integrity of 17 key evidence files and test suites.</p>
         </div>
@@ -1427,7 +1343,7 @@
       <!-- Q5 -->
       <div class="faq-item">
         <div class="faq-question">
-          <span>What is the transition path from this hackathon demonstration to a live ministry rollout?</span>
+          <span>What is the transition path from this pilot deployment to a live ministry rollout?</span>
           <span class="faq-icon">▼</span>
         </div>
         <div class="faq-answer">
@@ -1448,14 +1364,12 @@
       </p>
       <div class="launchpad-buttons">
         <a href="https://nexus-visbharath-510474645723.asia-south1.run.app" target="_blank" rel="noopener" class="btn btn-white">
-          🚀 Launch Cloud Run Production App
-        </a>
+          •</a>
         <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/demo-video" target="_blank" rel="noopener" class="btn btn-outline-white">
           🎬 Watch 3-Min Walkthrough Video
         </a>
         <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pitch-deck" target="_blank" rel="noopener" class="btn btn-outline-white">
-          📊 Open 12-Slide Pitch Deck
-        </a>
+          •</a>
         <a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener" class="btn btn-outline-white">
           💻 Explore GitHub Repository
         </a>
@@ -1488,16 +1402,16 @@
             <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener">Voice &amp; Text Intake</a></li>
             <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener">Policy Analyst Studio</a></li>
             <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/auditor" target="_blank" rel="noopener">Tamper-Evident Ledger</a></li>
-            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener">Submission Checklist</a></li>
+            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener">Platform overview</a></li>
           </ul>
         </div>
 
         <div class="footer-col">
-          <h4>Hackathon Links</h4>
+          <h4>Product links</h4>
           <ul>
-            <li><a href="https://hack2skill.com/event/codeforcommunities2" target="_blank" rel="noopener">Hack2Skill Event Details</a></li>
+            <li><a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener">GitHub repository ↗</a></li>
             <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/demo-video" target="_blank" rel="noopener">Demo Video (YouTube)</a></li>
-            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pitch-deck" target="_blank" rel="noopener">Official Pitch Deck</a></li>
+            <li><a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pitch-deck" target="_blank" rel="noopener">Product documentation</a></li>
             <li><a href="https://github.com/sonofmoon/nexus-visbharat" target="_blank" rel="noopener">GitHub Repository</a></li>
             <li><a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/MODEL_EVIDENCE_DOSSIER.md" target="_blank" rel="noopener">Model Evidence Dossier</a></li>
           </ul>
@@ -1565,3 +1479,5 @@
   </script>
 </body>
 </html>\n
+
+

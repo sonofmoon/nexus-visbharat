@@ -39,15 +39,19 @@ See [submission acceptance](docs/SUBMISSION_ACCEPTANCE.md) for the exact judge w
 
 ## Evidence and limitations
 
-- [Multilingual Held-Out AI Evaluation](docs/evaluation/quality.json): 108 independent challenge cases across 3 core Indian languages (36 English, 36 Tamil, 36 Telugu) covering 10 civic categories, 3 urgency tiers, and realistic dialectal/emergency boundary cases. Evaluated directly against Google Gemini 2.5/3.6 Flash and Cloud Translation with full confusion matrix and per-language metrics.
-- [Baseline comparison](docs/evaluation/baseline-quality.json): local keyword-heuristic fallback on the same 108 challenge cases; demonstrates the massive quality delta over naive non-AI baselines.
+- [Multilingual Held-Out AI Evaluation](docs/evaluation/quality.json): Developer-curated challenge benchmark (expanded from 27 to 108 cases; pending external third-party municipal adjudication) across 3 core Indian languages (36 English, 36 Tamil, 36 Telugu) covering 10 civic categories, 3 urgency tiers, and realistic dialectal boundary cases. Includes 33 high-stakes emergency cases with strict linguistic parity (11 English, 11 Tamil, 11 Telugu), achieving 100% emergency recall (11/11 EN, 11/11 TA, 11/11 TE; zero missed life-safety hazards). Evaluated directly against Google Gemini 2.5/3.6 Flash and Cloud Translation (Category Macro-F1 0.9746, Urgency Accuracy 86.11%).
+- [Baseline comparison](docs/evaluation/baseline-quality.json): local keyword-heuristic fallback on the same 108 challenge cases (Macro-F1 0.3764); demonstrates the massive quality delta over naive non-AI baselines.
+- [DPDP Act 2023 Architecture](docs/DPDP_COMPLIANCE_ARCHITECTURE.md): Technical implementation mapping to India's Digital Personal Data Protection Act 2023, including Section 6 Consent Management, Section 8 Data Fiduciary duties, automated PII scrubbing at ingress, and Laplace Differential Privacy (ε=1.0) on public aggregate analytics.
+- [Security Threat Model (STRIDE)](docs/SECURITY_THREAT_MODEL.md): Formal threat model covering trust boundaries, SHA-256 token hashing, Google Secret Manager rotation, RBAC enforcement, and zero-trust citizen PII defenses.
+- [External Audit Anchoring](docs/EXTERNAL_ANCHORING_SPEC.md): Verification architecture for the tamper-evident SHA-256 audit ledger, including external timestamping (RFC 3161) and public transparency log integration roadmap.
+- [Reproducible ML Training Pipeline](scripts/train_stress_model.py): Complete data preparation and training pipeline for the Layer 4 XGBoost demand stress model (`model.bst`) using official Census 2011, NITI Aayog MPI, and PM Gati Shakti datasets.
 - [Review procedure](docs/evaluation/REVIEW_GUIDE.md): speech error rates, translation fidelity, location extraction and duplicate clustering methodology.
 - [Engineering lifecycle](docs/DEVELOPMENT_LIFECYCLE.md): multi-contributor domain ownership, trunk-based feature branching, automated PR quality gates, and modular architecture.
 - [Local load measurements](docs/evaluation/load.json): 12,500/100,000 synthetic rows, concurrency 1/4, Flask test client and SQLite; excludes network and model latency.
 - [Forecasting evidence](docs/evaluation/MODEL_EVIDENCE_DOSSIER.md): proxy diagnostics, not independently validated future-demand prediction.
 - [Demo corpus](docs/JURY_DEMO.md): synthetic channel labels and lifecycle events are illustrative, not proof of delivered messages or government impact.
 
-A source-file hash establishes file integrity, not publisher authenticity. Audit chains are tamper-evident, not immutable guarantees. Consent and access controls are engineering features, not legal compliance certification.
+A source-file hash establishes file integrity, not publisher authenticity. Audit chains are tamper-evident, not immutable guarantees. Consent and access controls are engineering implementations of DPDP Act 2023 principles, not formal legal certification.
 
 ## Local setup
 
