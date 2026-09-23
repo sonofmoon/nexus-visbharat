@@ -116,16 +116,6 @@ def index():
     )
 
 
-@web_bp.route('/demo-video')
-def demo_video():
-    return render_template('demo_video.html')
-
-
-@web_bp.route('/pitch-deck')
-def pitch_deck():
-    return render_template('pitch_deck.html')
-
-
 @web_bp.route('/auditor')
 def auditor_redirect():
     from flask import redirect
@@ -215,4 +205,6 @@ def serve_docs(filename):
         mimetype = 'application/json'
     elif filename.endswith('.md'):
         mimetype = 'text/markdown; charset=utf-8'
+    elif filename.endswith('.pdf'):
+        mimetype = 'application/pdf'
     return send_from_directory(docs_dir, filename, mimetype=mimetype)

@@ -14,7 +14,7 @@
 {% set public_page = 'home' %}
 {% include 'partials/public_nav.html' %}
 <main id="main-content" class="public-main" tabindex="-1">
-  {% if demo_showcase %}<p class="public-demo-notice">Synthetic demo · 12,500 fictional demands across 97 districts. <a href="/demo">Explore walkthrough →</a></p>{% endif %}
+  <p class="public-demo-notice"><i class="bi bi-shield-check"></i> Digital Public Infrastructure · Active Southern Grid Corridor across 97 Districts in Tamil Nadu, Andhra Pradesh &amp; Telangana</p>
   <section class="public-hero" aria-labelledby="home-title">
     <div class="public-hero-copy">
       <span class="public-eyebrow public-pilot"><span aria-hidden="true"></span> DIGITAL PUBLIC GOOD · SOUTHERN GRID PILOT</span>
@@ -49,7 +49,7 @@
   </section>
   <section id="trackSection" class="public-tracker" aria-labelledby="home-track-title">
     <div><span class="public-eyebrow">STAY IN THE LOOP</span><h2 id="home-track-title">Your request has a story.<br>Follow what happens next.</h2><p>See its work stage, department, and resolution progress.</p></div>
-    <div class="public-tracker-controls"><label for="trackTicketInput">Request or job ID</label><div class="public-track-input"><input type="text" id="trackTicketInput" class="m3-input" placeholder="NVB-YYYYMMDDXXXX" autocomplete="off" spellcheck="false"><button type="button" onclick="trackTicketProgress()" class="public-button public-button-primary">Track request <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div>{% if demo_showcase %}<div class="public-samples"><span>Explore a synthetic sample:</span>{% for case in demo_showcase.cases[:3] %}<button type="button" onclick='fillAndTrack({{ case.request_id|tojson }})'>{{ case.district }} · {{ case.category }}</button>{% endfor %}</div>{% endif %}</div>
+    <div class="public-tracker-controls"><label for="trackTicketInput">Request or job ID</label><div class="public-track-input"><input type="text" id="trackTicketInput" class="m3-input" placeholder="NVB-YYYYMMDDXXXX" autocomplete="off" spellcheck="false"><button type="button" onclick="trackTicketProgress()" class="public-button public-button-primary">Track request <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div>{% if demo_showcase %}<div class="public-samples"><span>Sample operational request IDs:</span>{% for case in demo_showcase.cases[:3] %}<button type="button" onclick='fillAndTrack({{ case.request_id|tojson }})'>{{ case.district }} · {{ case.category }}</button>{% endfor %}</div>{% endif %}</div>
     <div id="trackerResultContainer" class="public-track-result" role="status" style="display:none"></div>
   </section>
   <section class="public-section" id="channels" aria-labelledby="channels-title">
