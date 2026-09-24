@@ -116,11 +116,13 @@ def _verify_telegram_secret():
 def _verify_gmail_pubsub_push():
     """Verify Cloud Pub/Sub push authentication without trusting request JSON."""
     shared = (current_app.config.get('GMAIL_PUBSUB_SHARED_TOKEN') or '').strip()
-    if shared:
-        provided = (request.headers.get('X-Gmail-PubSub-Token') or request.headers.get('X-Webhook-Token') or '').strip()
-        return hmac.compare_digest(provided, shared)
+    provided = (request.headers.get('X-Gmail-PubSub-Token') or request.headers.get('X-Webhook-Token') or request.args.get('token') or '').strip()
+    if shared and provided and hmac.compare_digest(provided, shared):
+        return True
 
     audience = (current_app.config.get('GMAIL_PUBSUB_AUDIENCE') or '').strip()
+    if not audience:
+        audience = f"{request.scheme}://{request.host}/api/channels/email/gmail/pubsub"
     authorization = (request.headers.get('Authorization') or '').strip()
     if not audience or not authorization.startswith('Bearer '):
         return False
@@ -134,6 +136,7 @@ def _verify_gmail_pubsub_push():
         return bool(actual_subject) and (not expected_subject or hmac.compare_digest(actual_subject, expected_subject))
     except Exception:
         return False
+
 
 
 def _verify_twilio_signature(data):
@@ -758,6 +761,27 @@ def gmail_pubsub_webhook():
 def gmail_health():
     from ..services.gmail_gateway import status
     return jsonify(success=True, channel='Gmail', **status())
+
+
+@channels_bp.route('/api/channels/email/gmail/watch/renew', methods=['POST'])
+def gmail_watch_renew():
+    if not current_app.config.get('GMAIL_ENABLED', False):
+        return jsonify({'success': False, 'error': 'Gmail intake is not enabled'}), 503
+    token = (request.headers.get('X-Admin-Token') or request.headers.get('X-Gmail-PubSub-Token') or request.args.get('token') or '').strip()
+    if not token and request.headers.get('Authorization', '').startswith('Bearer '):
+        token = request.headers.get('Authorization')[7:].strip()
+    expected = (current_app.config.get('ADMIN_API_TOKEN') or current_app.config.get('GMAIL_PUBSUB_SHARED_TOKEN') or '').strip()
+    if not expected or not token or not hmac.compare_digest(token, expected):
+        return jsonify({'success': False, 'error': 'unauthorized'}), 401
+
+    from ..services.gmail_gateway import renew_watch
+    try:
+        result = renew_watch()
+        return jsonify(success=True, channel='Gmail', **result)
+    except Exception as error:
+        current_app.logger.exception('Failed to renew Gmail watch: %s', error)
+        return jsonify(success=False, error=str(error)), 500
+
 
 
 @channels_bp.route('/api/channels/ivr/webhook', methods=['POST'])
