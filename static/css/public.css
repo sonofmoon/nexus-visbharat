@@ -151,6 +151,27 @@
 .public-channel-card > p { font-size: 14px; margin-bottom: 20px; }
 .public-channel-actions { display: flex; flex-direction: column; gap: 4px; margin-top: auto; }
 .public-channel-actions .public-text-link { align-self: center; font-size: 12px; overflow-wrap: anywhere; }
+.public-channel-heading { align-items: flex-end; }
+.public-channel-summary { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.public-status-chip { display: inline-flex; align-items: center; gap: 7px; padding: 6px 10px; border-radius: 999px; font: 600 11px/1.4 'Inter', sans-serif; letter-spacing: .35px; white-space: nowrap; }
+.public-status-live, .public-status-text-live { color: var(--public-success); }
+.public-status-chip.public-status-live { background: var(--public-success-soft); }
+.public-status-demo, .public-status-text-demo { color: #9a6700; }
+.public-status-chip.public-status-demo { background: #fff4cc; }
+.public-status-preparing, .public-status-text-preparing { color: #8a4b08; }
+.public-status-chip.public-status-preparing { background: #fff0dc; }
+.public-status-dot { display: inline-block; width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: currentColor; }
+.public-channel-intro { max-width: 760px; margin: -8px 0 28px; font-size: 14px; }
+.public-channel-group + .public-channel-group { margin-top: 40px; }
+.public-channel-group-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 16px; }
+.public-channel-group-heading h3 { margin-top: 8px; font-size: 22px; }
+.public-channel-group-heading > p { max-width: 430px; margin: 0; font-size: 13px; text-align: right; }
+.public-eyebrow-live, .public-eyebrow-demo { display: inline-flex; align-items: center; gap: 7px; }
+.public-eyebrow-live { color: var(--public-success); }
+.public-eyebrow-demo { color: #9a6700; }
+.public-channel-live-card { border-color: #c6e5cf; }
+.public-channel-demo-card { border-color: #eadfb9; }
+.public-channel-preparing-card { border-color: #f0d2a7; background: linear-gradient(155deg, var(--public-surface), #fffaf1); }
 .public-process-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; padding: 16px 0 32px; }
 .public-process-grid article > span { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--public-primary-soft); color: var(--public-primary); font-size: 13px; margin-bottom: 20px; }
 .public-process-grid h3 { margin-bottom: 12px; }
@@ -307,6 +328,22 @@
 .public-page .public-legacy :is([style*="color:#1a73e8"], [style*="color: #1a73e8"], [style*="color:#0b57d0"], [style*="color:#174ea6"]) { color: var(--public-primary) !important; }
 .public-page .public-legacy :is([style*="color:#137333"], [style*="color:#166534"], [style*="color:#14532d"]) { color: var(--public-success) !important; }
 .public-page .public-legacy-modal button:not([onclick^="close"]) { background: var(--public-primary) !important; color: var(--public-on-primary) !important; }
+.public-page .sms-modal-backdrop { overflow-y: auto; }
+.public-page .sms-modal-dialog { max-height: calc(100dvh - 32px) !important; overflow-y: auto !important; overflow-x: hidden !important; overscroll-behavior: contain; }
+.public-page .sms-modal-header { color: #fff !important; }
+.public-page .sms-modal-header .sms-modal-title,
+.public-page .sms-modal-header .sms-modal-tagline { color: #fff !important; }
+.public-page .sms-modal-header .sms-modal-tagline { opacity: .92 !important; }
+.public-page .sms-modal-body { min-width: 0; }
+.public-page .sms-status-box { text-align: center; }
+.public-page .sms-receipt { max-height: min(38vh, 320px); overflow-y: auto; overflow-x: hidden; text-align: left !important; overflow-wrap: anywhere; }
+.public-page .sms-receipt-heading { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; color: #166534 !important; font-weight: 800; }
+.public-page .sms-receipt-grid { display: grid; gap: 7px; }
+.public-page .sms-receipt-row { display: grid; grid-template-columns: minmax(92px, 34%) minmax(0, 1fr); gap: 10px; padding: 7px 0; border-top: 1px solid rgba(22, 101, 52, .14); line-height: 1.4; }
+.public-page .sms-receipt-row span { color: #166534; font-weight: 600; }
+.public-page .sms-receipt-row strong { color: #14532d; min-width: 0; overflow-wrap: anywhere; }
+.public-page .sms-receipt-error { color: #b42318 !important; }
+.public-page .sms-receipt-error-copy { color: #7f1d1d; line-height: 1.45; }
 .public-page .public-legacy .dfcx-msg-bot { background: var(--public-surface); color: var(--public-text); border-color: var(--public-border); }
 .public-page .public-legacy .dfcx-msg-user { background: var(--public-primary); color: var(--public-on-primary); }
 .public-page .public-legacy .alert-danger { color: var(--public-error); background: var(--public-surface); border: 1px solid var(--public-border); }
@@ -379,6 +416,9 @@
   .public-tracker { padding: 24px; }
   .public-tracker h2 { font-size: 25px; }
   .public-section { margin-top: 40px; }
+  .public-channel-heading .public-channel-summary { justify-content: flex-start; }
+  .public-channel-group-heading { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .public-channel-group-heading > p { max-width: none; text-align: left; }
   .public-page h2 { font-size: 28px; }
   .public-section-heading h2 { font-size: 28px; }
   .public-process-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -446,6 +486,11 @@
   .public-page #dfcxWidgetToggleBtn { width: 56px; height: 56px; padding: 0 !important; justify-content: center; margin-left: auto; }
   .public-page #dfcxWidgetToggleBtn > span { display: none !important; }
   .public-page .public-legacy-modal > div { max-height: calc(100dvh - 16px) !important; }
+  .public-page .sms-modal-dialog { max-height: calc(100dvh - 16px) !important; border-radius: 16px; }
+  .public-page .sms-modal-body { padding: 1rem !important; }
+  .public-page .sms-modal-header { padding: 1.15rem !important; }
+  .public-page .sms-receipt-row { grid-template-columns: 1fr; gap: 2px; }
+  .public-page .sms-receipt { max-height: 42vh; }
   .public-page .public-legacy-modal [style*="grid-template-columns:1fr 1fr"] { grid-template-columns: minmax(0, 1fr) !important; }
 }
 @media (prefers-reduced-motion: reduce) {

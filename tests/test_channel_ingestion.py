@@ -222,8 +222,88 @@ class TestChannelIngestion(unittest.TestCase):
         self.assertTrue(payload['success'])
         self.assertEqual(payload['channel'], 'Voice IVR')
 
+    def test_gmail_health_endpoint(self):
+        response = self.client.get('/api/channels/email/gmail/health')
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertTrue(payload['success'])
+        self.assertEqual(payload['channel'], 'Gmail')
+        self.assertIn('enabled', payload)
+
+    def test_gmail_pubsub_webhook_rejects_when_disabled(self):
+        self.app.config['GMAIL_ENABLED'] = False
+        response = self.client.post('/api/channels/email/gmail/pubsub', json={})
+        self.assertEqual(response.status_code, 503)
+
+    def test_gmail_pubsub_webhook_rejects_bad_token(self):
+        self.app.config.update(
+            GMAIL_ENABLED=True,
+            GMAIL_MAILBOX='nexusvisbharat@gmail.com',
+            GMAIL_PUBSUB_SHARED_TOKEN='secret-token-123',
+        )
+        response = self.client.post(
+            '/api/channels/email/gmail/pubsub',
+            headers={'X-Gmail-PubSub-Token': 'wrong-token'},
+            json={},
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_gmail_pubsub_ingests_and_deduplicates(self):
+        from unittest.mock import MagicMock, patch
+        from visbharat.services.gmail_gateway import renew_watch
+
+        self.app.config.update(
+            GMAIL_ENABLED=True,
+            GMAIL_MAILBOX='nexusvisbharat@gmail.com',
+            GMAIL_PUBSUB_SHARED_TOKEN='secret-token-123',
+            GMAIL_PUBSUB_TOPIC='projects/test/topics/test',
+            GMAIL_SEND_CONFIRMATIONS=True,
+        )
+
+        mock_client = MagicMock()
+        mock_client.mailbox = 'nexusvisbharat@gmail.com'
+        mock_client.watch.return_value = {'historyId': '100', 'expiration': 1800000000000}
+        mock_client.history.return_value = ['msg_abc_1']
+        mock_client.message.return_value = {
+            'id': 'msg_abc_1',
+            'threadId': 'thread_1',
+            'payload': {
+                'headers': [
+                    {'name': 'From', 'value': 'Citizen User <citizen@example.com>'},
+                    {'name': 'Subject', 'value': 'Pothole on Main Road in Chennai'},
+                ],
+                'body': {'data': base64.urlsafe_b64encode(b'Please repair the deep pothole on Main Road.').decode('ascii')},
+            },
+        }
+        mock_client.send_confirmation.return_value = {'id': 'sent_1'}
+
+        with self.app.app_context():
+            renew_watch(mock_client)
+
+        pubsub_data = base64.b64encode(json.dumps({'emailAddress': 'nexusvisbharat@gmail.com', 'historyId': '105'}).encode('utf-8')).decode('ascii')
+        headers = {'X-Gmail-PubSub-Token': 'secret-token-123'}
+
+        with patch('visbharat.services.gmail_gateway.GmailClient', return_value=mock_client):
+            res1 = self.client.post('/api/channels/email/gmail/pubsub', headers=headers, json={'message': {'data': pubsub_data}})
+            self.assertEqual(res1.status_code, 200)
+            data1 = res1.get_json()
+            self.assertTrue(data1['success'])
+            self.assertEqual(data1['status'], 'ok')
+            self.assertEqual(len(data1['processed']), 1)
+            self.assertEqual(data1['processed'][0]['status'], 'processed')
+            ticket_id = data1['processed'][0]['request_id']
+            self.assertTrue(ticket_id.startswith('NVB-'))
+            mock_client.send_confirmation.assert_called_once()
+
+            res2 = self.client.post('/api/channels/email/gmail/pubsub', headers=headers, json={'message': {'data': pubsub_data}})
+            self.assertEqual(res2.status_code, 200)
+            data2 = res2.get_json()
+            self.assertEqual(data2['processed'][0]['status'], 'duplicate')
+            self.assertEqual(data2['processed'][0]['request_id'], ticket_id)
+
 
 if __name__ == '__main__':
     unittest.main()
+
 
 

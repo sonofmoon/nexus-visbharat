@@ -52,14 +52,26 @@
     <div class="public-tracker-controls"><label for="trackTicketInput">Request or job ID</label><div class="public-track-input"><input type="text" id="trackTicketInput" class="m3-input" placeholder="NVB-YYYYMMDDXXXX" autocomplete="off" spellcheck="false"><button type="button" onclick="trackTicketProgress()" class="public-button public-button-primary">Track request <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div>{% if demo_showcase %}<div class="public-samples"><span>Sample operational request IDs:</span>{% for case in demo_showcase.cases[:3] %}<button type="button" onclick='fillAndTrack({{ case.request_id|tojson }})'>{{ case.district }} · {{ case.category }}</button>{% endfor %}</div>{% endif %}</div>
     <div id="trackerResultContainer" class="public-track-result" role="status" style="display:none"></div>
   </section>
-  <section class="public-section" id="channels" aria-labelledby="channels-title">
-    <div class="public-section-heading"><div><span class="public-eyebrow">PARTICIPATION, WITHOUT THE BARRIERS</span><h2 id="channels-title">One platform. More ways to be heard.</h2></div><p>Choose the channel that works for you.<br>Voice-first, across Tamil, Telugu, and English.</p></div>
-    <div class="public-channel-grid"><article class="public-channel-card public-channel-featured"><div class="public-row"><span class="public-circle "><i class="bi bi-mic" aria-hidden="true"></i></span><span class="public-channel-tag">Recommended</span></div><h3>Voice & web</h3><p>Speak in Tamil, Telugu, or English. Add a photo or describe your request in your own words.</p><div class="public-channel-actions"><a href="/submit" class="public-button public-button-primary">Start a request <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></article>
-<article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-telephone" aria-hidden="true"></i></span><span class="public-channel-tag">1800-103-8472</span></div><h3>Voice IVR</h3><p>A voice-first route for basic phones. Explore the missed-call and callback flow.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openIvrModal()">Explore IVR demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
-<article class="public-channel-card "><div class="public-row"><span class="public-circle public-circle-green"><i class="bi bi-whatsapp" aria-hidden="true"></i></span><span class="public-channel-tag">Messaging</span></div><h3>WhatsApp</h3><p>Use a familiar conversation to share your community’s infrastructure needs.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openWhatsAppModal()">Try WhatsApp demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
-<article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-telegram" aria-hidden="true"></i></span><span class="public-channel-tag">Messaging</span></div><h3>Telegram</h3><p>Send your request directly to @NexusVisBharatBot on Telegram.</p><div class="public-channel-actions"><a href="https://t.me/NexusVisBharatBot" target="_blank" rel="noopener noreferrer" class="public-button">Open Telegram bot <i class="bi bi-arrow-up-right" aria-hidden="true"></i><span class="public-sr-only">(opens in a new tab)</span></a></div></article>
-<article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-chat-left-text" aria-hidden="true"></i></span><span class="public-channel-tag">NVB to 56161</span></div><h3>SMS</h3><p>No mobile data? Explore SMS intake using NVB followed by your request text.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openSmsModal()">Explore SMS demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
- <article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-envelope" aria-hidden="true"></i></span><span class="public-channel-tag">Email</span></div><h3>Email</h3><p>Send a request by email for automated intake.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openEmailModal()">Try email demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article></div>
+  <section class="public-section public-channel-status-section" id="channels" aria-labelledby="channels-title">
+    <div class="public-section-heading public-channel-heading"><div><span class="public-eyebrow">PARTICIPATION, WITHOUT THE BARRIERS</span><h2 id="channels-title">One platform. More ways to be heard.</h2></div><div class="public-channel-summary" aria-label="Channel availability summary"><span class="public-status-chip public-status-live"><span class="public-status-dot" aria-hidden="true"></span>{{ live_channel_count }} LIVE</span><span class="public-status-chip public-status-demo"><span class="public-status-dot" aria-hidden="true"></span>{{ demo_channel_count }} DEMO</span>{% if channel_statuses.gmail != 'live' %}<span class="public-status-chip public-status-preparing"><span class="public-status-dot" aria-hidden="true"></span>Email preparing</span>{% endif %}</div></div>
+    <p class="public-channel-intro">Choose the channel that works for you. Live channels route requests into NVB intake; demo channels let you explore the planned experience.</p>
+    <section class="public-channel-group public-channel-group-live" aria-labelledby="live-channels-title">
+      <div class="public-channel-group-heading"><div><span class="public-eyebrow public-eyebrow-live"><span class="public-status-dot" aria-hidden="true"></span> LIVE NOW</span><h3 id="live-channels-title">Connected channels</h3></div><p>Requests are received and routed to the NVB intake system.</p></div>
+    <div class="public-channel-grid"><article class="public-channel-card public-channel-featured public-channel-live-card"><div class="public-row"><span class="public-circle "><i class="bi bi-mic" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE · Recommended</span></div><h3>Voice & web</h3><p>Speak in Tamil, Telugu, or English. Add a photo or describe your request in your own words.</p><div class="public-channel-actions"><a href="/submit" class="public-button public-button-primary">Start a request <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></article>
+<article class="public-channel-card public-channel-assistant public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-robot" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE · AI Assistant</span></div><h3>NVB Citizen Assistant</h3><p>Describe your civic need by text or voice and receive guided help in English, Tamil, or Telugu.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="if(typeof toggleDfcxAssistant==='function'){toggleDfcxAssistant();}else{document.getElementById('dfcxWidgetToggleBtn')?.click();}">Talk to NVB <i class="bi bi-chat-dots-fill" aria-hidden="true"></i></button></div></article>
+{% if channel_statuses.telegram == 'live' %}<article class="public-channel-card public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-telegram" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE</span></div><h3>Telegram</h3><p>Send your request directly to @NexusVisBharatBot on Telegram.</p><div class="public-channel-actions"><a href="https://t.me/NexusVisBharatBot" target="_blank" rel="noopener noreferrer" class="public-button">Open Telegram bot <i class="bi bi-arrow-up-right" aria-hidden="true"></i><span class="public-sr-only">(opens in a new tab)</span></a></div></article>{% endif %}
+{% if channel_statuses.gmail == 'live' %}<article class="public-channel-card public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-envelope" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE</span></div><h3>Email</h3><p>Send a request by email for automated intake.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openEmailModal()">Open email intake <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>{% endif %}
+      </div>
+    </section>
+    <section class="public-channel-group public-channel-group-demo" aria-labelledby="demo-channels-title">
+      <div class="public-channel-group-heading"><div><span class="public-eyebrow public-eyebrow-demo"><span class="public-status-dot" aria-hidden="true"></span> DEMO EXPERIENCE</span><h3 id="demo-channels-title">Explore planned channels</h3></div><p>These flows are simulations and do not connect to external telecom or messaging providers.</p></div>
+      <div class="public-channel-grid">
+<article class="public-channel-card public-channel-demo-card"><div class="public-row"><span class="public-circle "><i class="bi bi-telephone" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-demo"><span class="public-status-dot" aria-hidden="true"></span>DEMO · 1800-103-8472</span></div><h3>Voice IVR</h3><p>A voice-first route for basic phones. Explore the missed-call and callback flow.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openIvrModal()">Explore IVR demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
+<article class="public-channel-card public-channel-demo-card"><div class="public-row"><span class="public-circle public-circle-green"><i class="bi bi-whatsapp" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-demo"><span class="public-status-dot" aria-hidden="true"></span>DEMO · Messaging</span></div><h3>WhatsApp</h3><p>Use a familiar conversation by text or voice.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openWhatsAppModal()">Try WhatsApp demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
+<article class="public-channel-card public-channel-demo-card"><div class="public-row"><span class="public-circle "><i class="bi bi-chat-left-text" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-demo"><span class="public-status-dot" aria-hidden="true"></span>DEMO · NVB to 56161</span></div><h3>SMS</h3><p>No mobile data? Explore SMS intake using NVB followed by your request text.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openSmsModal()">Explore SMS demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
+ {% if channel_statuses.gmail != 'live' %}<article class="public-channel-card public-channel-preparing-card"><div class="public-row"><span class="public-circle "><i class="bi bi-envelope" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-preparing"><span class="public-status-dot" aria-hidden="true"></span>PREPARING</span></div><h3>Email</h3><p>Gmail intake is wired and will move to LIVE after OAuth, Pub/Sub, and watch activation.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openEmailModal()">Preview email demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>{% endif %}
+      </div>
+    </section>
   </section>
   <section class="public-section public-how" aria-labelledby="how-title">
     <div class="public-section-heading"><div><span class="public-eyebrow">VOICE → DATA → DECISION</span><h2 id="how-title">Local knowledge. Better-informed decisions.</h2></div><a href="/dashboard" class="public-text-link">See policy intelligence <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div>
@@ -221,22 +233,22 @@
  </div>
 
  <!-- 2b. Zero-Internet SMS Keyword Helpline Modal (56161) -->
- <div id="smsModalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:99999; align-items:center; justify-content:center; padding:1rem;">
- <div style="background:white; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden; animation:modalFadeIn 0.25s ease-out;">
- <div style="background:linear-gradient(135deg, #4338ca 0%, #3730a3 100%); padding:1.5rem; color:white; position:relative;">
+ <div id="smsModalOverlay" class="sms-modal-backdrop" onclick="if(event.target===this) closeSmsModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:99999; align-items:center; justify-content:center; padding:1rem;">
+ <div class="sms-modal-dialog" style="background:white; border-radius:20px; max-width:540px; width:100%; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden; animation:modalFadeIn 0.25s ease-out;">
+ <div class="sms-modal-header" style="background:linear-gradient(135deg, #4338ca 0%, #3730a3 100%); padding:1.5rem; color:white; position:relative;">
  <button type="button" onclick="closeSmsModal()" style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; font-size:1.1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;">&times;</button>
  <div style="display:flex; align-items:center; gap:12px;">
  <div style="width:48px; height:48px; border-radius:12px; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
  <i class="bi bi-chat-square-dots-fill"></i>
  </div>
  <div>
- <h3 style="margin:0; font-size:1.25rem; font-weight:700;">Zero-Internet SMS Helpline</h3>
- <p style="margin:2px 0 0 0; font-size:0.85rem; opacity:0.9;">Feature Phone SMS Gateway (Shortcode: 56161)</p>
+ <h3 class="sms-modal-title" style="margin:0; font-size:1.25rem; font-weight:700;">Zero-Internet SMS Helpline</h3>
+ <p class="sms-modal-tagline" style="margin:2px 0 0 0; font-size:0.85rem; opacity:0.9;">Feature Phone SMS Gateway (Shortcode: 56161)</p>
  </div>
  </div>
  </div>
 
- <div style="padding:1.5rem;">
+ <div class="sms-modal-body" style="padding:1.5rem;">
  <div style="background:#eef2ff; border-left:4px solid #4f46e5; padding:12px; border-radius:8px; margin-bottom:1.25rem;">
  <div style="font-size:0.85rem; color:#3730a3; line-height:1.4;">
  <strong> How SMS Ingestion Works:</strong><br>
@@ -260,9 +272,9 @@
  <i class="bi bi-send-fill"></i> Simulate SMS Transmission to 56161
  </button>
 
- <div id="smsStatusBox" style="display:none; margin-top:1.25rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem; text-align:center;">
+ <div id="smsStatusBox" class="sms-status-box" style="display:none; margin-top:1.25rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem; text-align:center;">
  <h4 id="smsStatusTitle" style="margin:0 0 4px 0; font-size:1.05rem; font-weight:700; color:#0f172a;">Sending SMS...</h4>
- <div id="smsReceiptDetails" style="display:none; margin-top:10px; background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; font-size:0.85rem; color:#166534; text-align:left;">
+ <div id="smsReceiptDetails" class="sms-receipt" style="display:none; margin-top:10px; background:#f0fdf4; border:1px solid #bbf7d0; padding:10px; border-radius:8px; font-size:0.85rem; color:#166534; text-align:left;">
  </div>
  </div>
  </div>
@@ -410,22 +422,26 @@
  })
  });
  const res = await resp.json();
+ if (!resp.ok || !res.success) throw new Error(res.error || 'SMS submission failed');
  const reqId = res.request_id || ('NVB-SMS-' + Math.floor(Math.random()*899999+100000));
  const cat = (res.classification && res.classification.category) || 'Road';
  const dept = (res.routing && res.routing.routed_department) || 'Municipal Administration';
+ const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
  details.style.display = 'block';
  details.innerHTML = `
- <strong><i class="bi bi-shield-check"></i> SMS Ingested & Saved into DB:</strong><br>
- | <strong>Ticket ID:</strong> ${reqId}<br>
- | <strong>Channel:</strong> SMS Helpline (56161)<br>
- | <strong>Category:</strong> ${cat}<br>
- | <strong>Routed To:</strong> ${dept}<br>
- | <strong>Auto Confirmation:</strong> Reply SMS dispatched to ${phone}.
+ <div class="sms-receipt-heading"><i class="bi bi-shield-check"></i> SMS Ingested &amp; Saved into DB</div>
+ <div class="sms-receipt-grid">
+ <div class="sms-receipt-row"><span>Ticket ID</span><strong>${safe(reqId)}</strong></div>
+ <div class="sms-receipt-row"><span>Channel</span><strong>SMS Helpline (56161)</strong></div>
+ <div class="sms-receipt-row"><span>Category</span><strong>${safe(cat)}</strong></div>
+ <div class="sms-receipt-row"><span>Routed To</span><strong>${safe(dept)}</strong></div>
+ <div class="sms-receipt-row"><span>Confirmation</span><strong>Reply SMS dispatched to ${safe(phone)}</strong></div>
+ </div>
  `;
  } catch (e) {
  details.style.display = 'block';
- details.innerHTML = '<strong>SMS Ingested:</strong> Request saved to database successfully.';
+ details.innerHTML = '<div class="sms-receipt-heading sms-receipt-error"><i class="bi bi-exclamation-circle"></i> SMS could not be submitted</div><div class="sms-receipt-error-copy">Please review the message and try again.</div>';
  }
 
  btn.disabled = false;

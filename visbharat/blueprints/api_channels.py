@@ -113,6 +113,29 @@ def _verify_telegram_secret():
     return hmac.compare_digest(provided, secret)
 
 
+def _verify_gmail_pubsub_push():
+    """Verify Cloud Pub/Sub push authentication without trusting request JSON."""
+    shared = (current_app.config.get('GMAIL_PUBSUB_SHARED_TOKEN') or '').strip()
+    if shared:
+        provided = (request.headers.get('X-Gmail-PubSub-Token') or request.headers.get('X-Webhook-Token') or '').strip()
+        return hmac.compare_digest(provided, shared)
+
+    audience = (current_app.config.get('GMAIL_PUBSUB_AUDIENCE') or '').strip()
+    authorization = (request.headers.get('Authorization') or '').strip()
+    if not audience or not authorization.startswith('Bearer '):
+        return False
+
+    try:
+        from google.auth.transport import requests as google_requests
+        from google.oauth2 import id_token
+        claims = id_token.verify_oauth2_token(authorization[7:].strip(), google_requests.Request(), audience=audience)
+        expected_subject = (current_app.config.get('GMAIL_PUBSUB_SERVICE_ACCOUNT') or '').strip().lower()
+        actual_subject = str(claims.get('email') or claims.get('sub') or '').strip().lower()
+        return bool(actual_subject) and (not expected_subject or hmac.compare_digest(actual_subject, expected_subject))
+    except Exception:
+        return False
+
+
 def _verify_twilio_signature(data):
     auth_token = (current_app.config.get('TWILIO_AUTH_TOKEN') or '').strip()
     if not auth_token:
@@ -709,6 +732,32 @@ def email_webhook():
     if error:
         return jsonify({'success': False, 'error': error[0]}), error[1]
     return jsonify(payload)
+
+
+@channels_bp.route('/api/channels/email/gmail/pubsub', methods=['POST'])
+def gmail_pubsub_webhook():
+    """Receive Gmail API watch notifications delivered by Cloud Pub/Sub."""
+    if not current_app.config.get('GMAIL_ENABLED', False):
+        return jsonify({'success': False, 'error': 'Gmail intake is not enabled'}), 503
+    if not _verify_gmail_pubsub_push():
+        return jsonify({'success': False, 'error': 'invalid Gmail Pub/Sub authentication'}), 401
+
+    from ..services.gmail_gateway import GmailTransientError, decode_pubsub_message, process_notification
+    try:
+        notification = decode_pubsub_message(request.get_json(silent=True) or {})
+        result = process_notification(notification, _ingest_text_request)
+        return jsonify(success=True, channel='Gmail', **result)
+    except GmailTransientError:
+        current_app.logger.warning('Gmail intake temporarily unavailable; asking Pub/Sub to retry')
+        return jsonify(success=False, error='Gmail intake temporarily unavailable; retry requested'), 503
+    except ValueError as error:
+        return jsonify(success=False, error=str(error)), 400
+
+
+@channels_bp.route('/api/channels/email/gmail/health', methods=['GET'])
+def gmail_health():
+    from ..services.gmail_gateway import status
+    return jsonify(success=True, channel='Gmail', **status())
 
 
 @channels_bp.route('/api/channels/ivr/webhook', methods=['POST'])

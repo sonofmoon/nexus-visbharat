@@ -501,6 +501,8 @@ def init_db():
     migrate_assistant(db)
     from .services.telegram_gateway import migrate as migrate_telegram
     migrate_telegram(db)
+    from .services.gmail_gateway import migrate as migrate_gmail
+    migrate_gmail(db)
     from .services.provider_evidence import migrate as migrate_provider_evidence
     migrate_provider_evidence(db)
     ensure_channel_sessions_table()

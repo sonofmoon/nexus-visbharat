@@ -80,12 +80,22 @@ def index():
     stats['districts_covered'] = max(int(stats.get('districts_covered') or 0), 97)
     stats['states_covered'] = max(int(stats.get('states_covered') or 0), 3)
 
+    # Homepage badges reflect activation gates, while demo channels remain explicitly simulated.
+    channel_statuses = {
+        'telegram': 'live' if current_app.config.get('TELEGRAM_BOT_TOKEN') and current_app.config.get('TELEGRAM_WEBHOOK_SECRET') else 'preparing',
+        'gmail': 'live' if current_app.config.get('GMAIL_ENABLED') else 'preparing',
+    }
+    live_channel_count = 2 + sum(status == 'live' for status in channel_statuses.values())
+
     return render_template(
         'index.html',
         stats=stats,
         languages=current_app.config['LANGUAGES'],
         categories=current_app.config['CATEGORIES'],
         demo_showcase=showcase,
+        channel_statuses=channel_statuses,
+        live_channel_count=live_channel_count,
+        demo_channel_count=3,
     )
 
 
