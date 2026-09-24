@@ -44,10 +44,20 @@ def migrate(db):
             processed_at TEXT
         )"""
     )
-    try:
+    if getattr(db, 'backend', 'sqlite') == 'postgres':
+        cols = {
+            row['column_name']
+            for row in db.execute(
+                "SELECT column_name FROM information_schema.columns WHERE table_name = 'telegram_inbound_events'"
+            ).fetchall()
+        }
+    else:
+        cols = {
+            row['name']
+            for row in db.execute("PRAGMA table_info(telegram_inbound_events)").fetchall()
+        }
+    if 'lease_until_epoch' not in cols:
         db.execute("ALTER TABLE telegram_inbound_events ADD COLUMN lease_until_epoch INTEGER")
-    except Exception:
-        pass
     db.execute(
         """CREATE TABLE IF NOT EXISTS telegram_outbox (
             message_key TEXT PRIMARY KEY,
