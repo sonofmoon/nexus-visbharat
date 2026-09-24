@@ -246,32 +246,68 @@ class GmailClient:
 
 
 def migrate(db):
-    db.execute(
-        """CREATE TABLE IF NOT EXISTS gmail_watch_state (
-            mailbox TEXT PRIMARY KEY,
-            history_id TEXT NOT NULL,
-            expiration_epoch INTEGER,
-            updated_at TEXT NOT NULL
-        )"""
-    )
-    db.execute(
-        """CREATE TABLE IF NOT EXISTS gmail_inbound_events (
-            message_id TEXT PRIMARY KEY,
-            mailbox TEXT NOT NULL,
-            history_id TEXT,
-            thread_id TEXT,
-            sender TEXT,
-            subject TEXT,
-            payload_hash TEXT NOT NULL,
-            status TEXT NOT NULL,
-            request_id TEXT,
-            last_error TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-        )"""
-    )
-    db.execute("CREATE INDEX IF NOT EXISTS idx_gmail_events_status ON gmail_inbound_events(status, updated_at)")
-    db.commit()
+    is_postgres = getattr(db, 'backend', 'sqlite') == 'postgres'
+    watch_exists = False
+    events_exists = False
+
+    if is_postgres:
+        try:
+            row = db.execute("SELECT to_regclass('public.gmail_watch_state') AS tbl").fetchone()
+            watch_exists = bool(row and row['tbl'])
+        except Exception:
+            db.rollback()
+            watch_exists = False
+
+    if not watch_exists:
+        try:
+            db.execute(
+                """CREATE TABLE IF NOT EXISTS gmail_watch_state (
+                    mailbox TEXT PRIMARY KEY,
+                    history_id TEXT NOT NULL,
+                    expiration_epoch INTEGER,
+                    updated_at TEXT NOT NULL
+                )"""
+            )
+            db.commit()
+        except Exception:
+            db.rollback()
+
+    if is_postgres:
+        try:
+            row = db.execute("SELECT to_regclass('public.gmail_inbound_events') AS tbl").fetchone()
+            events_exists = bool(row and row['tbl'])
+        except Exception:
+            db.rollback()
+            events_exists = False
+
+    if not events_exists:
+        try:
+            db.execute(
+                """CREATE TABLE IF NOT EXISTS gmail_inbound_events (
+                    message_id TEXT PRIMARY KEY,
+                    mailbox TEXT NOT NULL,
+                    history_id TEXT,
+                    thread_id TEXT,
+                    sender TEXT,
+                    subject TEXT,
+                    payload_hash TEXT NOT NULL,
+                    status TEXT NOT NULL,
+                    request_id TEXT,
+                    last_error TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                )"""
+            )
+            db.commit()
+        except Exception:
+            db.rollback()
+
+    try:
+        db.execute("CREATE INDEX IF NOT EXISTS idx_gmail_events_status ON gmail_inbound_events(status, updated_at)")
+        db.commit()
+    except Exception:
+        db.rollback()
+
 
 
 def _state():
