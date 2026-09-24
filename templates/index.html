@@ -40,7 +40,7 @@
   <section class="public-metrics-section" aria-label="Platform metrics">
     <div class="public-metrics-heading"><span class="public-eyebrow">A SHARED PICTURE OF LOCAL NEEDS</span><a href="/dashboard" class="public-text-link">Explore the dashboard <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div>
     <div class="public-metrics">
-      <div><span class="public-metric-icon"><i class="bi bi-chat-square-text" aria-hidden="true"></i></span><strong class="public-metric-value" id="stat-complaints">{{ stats.total_complaints }}</strong><span>Citizen requests</span></div>
+      <div><span class="public-metric-icon"><i class="bi bi-chat-square-text" aria-hidden="true"></i></span><strong class="public-metric-value" id="stat-complaints">{{ '{:,}'.format(stats.total_complaints) }}</strong><span>Citizen requests</span></div>
       <div><span class="public-metric-icon"><i class="bi bi-geo-alt" aria-hidden="true"></i></span><strong class="public-metric-value">{{ stats.districts_covered }}</strong><span>Districts represented</span></div>
       <div><span class="public-metric-icon"><i class="bi bi-translate" aria-hidden="true"></i></span><strong class="public-metric-value">{{ stats.languages_supported }}</strong><span>Languages supported</span></div>
       <div><span class="public-metric-icon"><i class="bi bi-map" aria-hidden="true"></i></span><strong class="public-metric-value">{{ stats.states_covered }}</strong><span>States represented</span></div>
@@ -56,10 +56,10 @@
     <div class="public-section-heading"><div><span class="public-eyebrow">PARTICIPATION, WITHOUT THE BARRIERS</span><h2 id="channels-title">One platform. More ways to be heard.</h2></div><p>Choose the channel that works for you.<br>Voice-first, across Tamil, Telugu, and English.</p></div>
     <div class="public-channel-grid"><article class="public-channel-card public-channel-featured"><div class="public-row"><span class="public-circle "><i class="bi bi-mic" aria-hidden="true"></i></span><span class="public-channel-tag">Recommended</span></div><h3>Voice & web</h3><p>Speak in Tamil, Telugu, or English. Add a photo or describe your request in your own words.</p><div class="public-channel-actions"><a href="/submit" class="public-button public-button-primary">Start a request <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></article>
 <article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-telephone" aria-hidden="true"></i></span><span class="public-channel-tag">1800-103-8472</span></div><h3>Voice IVR</h3><p>A voice-first route for basic phones. Explore the missed-call and callback flow.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openIvrModal()">Explore IVR demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
-<article class="public-channel-card "><div class="public-row"><span class="public-circle public-circle-green"><i class="bi bi-whatsapp" aria-hidden="true"></i></span><span class="public-channel-tag">Messaging</span></div><h3>WhatsApp</h3><p>Use a familiar conversation to share your community’s infrastructure needs.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openWhatsAppModal()">Try WhatsApp demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button><a href="https://wa.me/918807437931" target="_blank" rel="noopener noreferrer" class="public-text-link">Open WhatsApp channel <i class="bi bi-arrow-up-right" aria-hidden="true"></i><span class="public-sr-only">(opens in a new tab)</span></a></div></article>
+<article class="public-channel-card "><div class="public-row"><span class="public-circle public-circle-green"><i class="bi bi-whatsapp" aria-hidden="true"></i></span><span class="public-channel-tag">Messaging</span></div><h3>WhatsApp</h3><p>Use a familiar conversation to share your community’s infrastructure needs.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openWhatsAppModal()">Try WhatsApp demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
 <article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-telegram" aria-hidden="true"></i></span><span class="public-channel-tag">Messaging</span></div><h3>Telegram</h3><p>Send your request directly to @NexusVisBharatBot on Telegram.</p><div class="public-channel-actions"><a href="https://t.me/NexusVisBharatBot" target="_blank" rel="noopener noreferrer" class="public-button">Open Telegram bot <i class="bi bi-arrow-up-right" aria-hidden="true"></i><span class="public-sr-only">(opens in a new tab)</span></a></div></article>
 <article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-chat-left-text" aria-hidden="true"></i></span><span class="public-channel-tag">NVB to 56161</span></div><h3>SMS</h3><p>No mobile data? Explore SMS intake using NVB followed by your request text.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openSmsModal()">Explore SMS demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>
-<article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-envelope" aria-hidden="true"></i></span><span class="public-channel-tag">Connected services</span></div><h3>Email & API</h3><p>Connect via email or authenticated REST webhooks for automated intake.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openEmailModal()">Try email & API demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button><a href="mailto:demand@visbharat.gov.in" class="public-text-link">demand@visbharat.gov.in <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div></article></div>
+ <article class="public-channel-card "><div class="public-row"><span class="public-circle "><i class="bi bi-envelope" aria-hidden="true"></i></span><span class="public-channel-tag">Email</span></div><h3>Email</h3><p>Send a request by email for automated intake.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openEmailModal()">Try email demo <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article></div>
   </section>
   <section class="public-section public-how" aria-labelledby="how-title">
     <div class="public-section-heading"><div><span class="public-eyebrow">VOICE → DATA → DECISION</span><h2 id="how-title">Local knowledge. Better-informed decisions.</h2></div><a href="/dashboard" class="public-text-link">See policy intelligence <i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div>
@@ -163,28 +163,7 @@
  <div style="margin-bottom:1.25rem;">
  <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">TARGET DISTRICT</label>
  <select id="ivrDistrictSelect" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box;">
- <optgroup label="Tamil Nadu (38 Districts)">
- <option value="Chennai" selected>Chennai</option>
- <option value="Karur">Karur</option>
- <option value="Madurai">Madurai</option>
- <option value="Coimbatore">Coimbatore</option>
- <option value="Tiruchirappalli">Tiruchirappalli</option>
- <option value="Vellore">Vellore</option>
- <option value="Salem">Salem</option>
- </optgroup>
- <optgroup label="Andhra Pradesh (26 Districts)">
- <option value="Tirupati">Tirupati</option>
- <option value="Visakhapatnam">Visakhapatnam</option>
- <option value="NTR">NTR (Vijayawada)</option>
- <option value="Guntur">Guntur</option>
- <option value="Chittoor">Chittoor</option>
- </optgroup>
- <optgroup label="Telangana (33 Districts)">
- <option value="Hyderabad">Hyderabad</option>
- <option value="Warangal">Warangal</option>
- <option value="Karimnagar">Karimnagar</option>
- <option value="Ranga Reddy">Ranga Reddy</option>
- </optgroup>
+ <option value="Chennai" selected>Loading districts...</option>
  </select>
  </div>
 
@@ -225,17 +204,17 @@
  </div>
  </div>
 
- <!-- Email/Open API Simulation Modal -->
+ <!-- Email Simulation Modal -->
  <div id="emailModalOverlay" class="ivr-modal-backdrop" onclick="if(event.target===this) closeEmailModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;">
  <div style="width:min(560px, 96vw); background:#ffffff; border-radius:20px; border:1px solid #bae6fd; overflow:hidden; box-shadow:0 24px 50px rgba(15,23,42,0.35);">
  <div style="background:linear-gradient(135deg,#0ea5e9,#0284c7); color:white; padding:1rem 1.1rem; position:relative;">
- <h3 style="margin:0; font-size:1.1rem; font-weight:700;">Email/Open API Intake Demo</h3>
+ <h3 style="margin:0; font-size:1.1rem; font-weight:700;">Email Intake Demo</h3>
  <button type="button" onclick="closeEmailModal()" style="position:absolute; top:14px; right:14px; background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; font-size:1.1rem; cursor:pointer;">&times;</button>
  </div>
  <div style="padding:1rem 1.1rem;">
- <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">EMAIL SUBJECT / API TEXT</label>
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">EMAIL SUBJECT / MESSAGE</label>
  <textarea id="emailTextInput" rows="4" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; resize:vertical;">Need water pipeline extension in peri-urban zone near Ward 8.</textarea>
- <button type="button" id="sendEmailSimBtn" onclick="runEmailSim()" style="width:100%; margin-top:12px; padding:12px; border-radius:10px; background:#0284c7; color:white; border:none; font-size:0.95rem; font-weight:700; cursor:pointer;">Submit Email/API Request</button>
+ <button type="button" id="sendEmailSimBtn" onclick="runEmailSim()" style="width:100%; margin-top:12px; padding:12px; border-radius:10px; background:#0284c7; color:white; border:none; font-size:0.95rem; font-weight:700; cursor:pointer;">Submit Email Request</button>
  <div id="emailStatusBox" style="display:none; margin-top:10px; padding:10px 12px; border:1px solid #bae6fd; background:#f0f9ff; color:#0c4a6e; border-radius:10px; font-size:0.85rem;"></div>
  </div>
  </div>
@@ -317,8 +296,62 @@
  </style>
 
  <script>
+ let ivrDistrictsPromise = null;
+
+ async function loadIvrDistricts() {
+ const select = document.getElementById('ivrDistrictSelect');
+ if (!select || select.dataset.loaded === 'true') return;
+ if (ivrDistrictsPromise) return ivrDistrictsPromise;
+
+ ivrDistrictsPromise = (async () => {
+ select.disabled = true;
+ select.innerHTML = '<option value="">Loading districts...</option>';
+ const selectedDistrict = select.dataset.selected || 'Chennai';
+ try {
+ const statesResponse = await fetch('/api/states');
+ if (!statesResponse.ok) throw new Error(`State list request failed (${statesResponse.status})`);
+ const statesPayload = await statesResponse.json();
+ const states = Array.isArray(statesPayload) ? statesPayload : (statesPayload.states || []);
+ const groups = await Promise.all(states.map(async state => {
+ const response = await fetch(`/api/districts?state=${encodeURIComponent(state)}`);
+ if (!response.ok) throw new Error(`District list request failed (${response.status})`);
+ const payload = await response.json();
+ const districts = Array.isArray(payload) ? payload : (payload.districts || []);
+ return {
+ state,
+ districts: districts.map(item => typeof item === 'string' ? item : (item.district || item.name || '')).filter(Boolean)
+ };
+ }));
+
+ select.replaceChildren();
+ groups.filter(group => group.districts.length).forEach(group => {
+ const optgroup = document.createElement('optgroup');
+ optgroup.label = `${group.state} (${group.districts.length} District${group.districts.length === 1 ? '' : 's'})`;
+ group.districts.forEach(district => optgroup.appendChild(new Option(district, district)));
+ select.appendChild(optgroup);
+ });
+ if (!select.options.length) throw new Error('No districts were returned');
+ select.value = [...select.options].some(option => option.value === selectedDistrict)
+ ? selectedDistrict
+ : select.options[0].value;
+ select.dataset.loaded = 'true';
+ } catch (error) {
+ console.error('Unable to load IVR target districts', error);
+ select.innerHTML = '<option value="">District list unavailable — retry</option>';
+ } finally {
+ select.disabled = false;
+ ivrDistrictsPromise = null;
+ }
+ })();
+
+ return ivrDistrictsPromise;
+ }
+
  function openIvrModal() {
  document.getElementById('ivrModalOverlay').style.display = 'flex';
+ const select = document.getElementById('ivrDistrictSelect');
+ if (select && !select.dataset.selected) select.dataset.selected = select.value || 'Chennai';
+ loadIvrDistricts();
  }
  function closeIvrModal() {
  document.getElementById('ivrModalOverlay').style.display = 'none';
@@ -441,14 +474,14 @@
  btn.disabled = true;
  btn.style.opacity = '0.7';
  status.style.display = 'block';
- status.innerHTML = 'Submitting Email/Open API request...';
+ status.innerHTML = 'Submitting Email request...';
 
  try {
  const resp = await fetch('/api/submit', {
  method: 'POST',
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({
- source: 'Email/Open API',
+ source: 'Email',
  sender: 'citizen@example.com',
  text: text,
  district: 'Chennai',
@@ -457,9 +490,9 @@
  });
  const res = await resp.json();
  const reqId = res.request_id || ('NVB-EMAIL-' + Math.floor(Math.random() * 899999 + 100000));
- status.innerHTML = `<strong>Email/API request ingested.</strong><br>Ticket: <strong>${reqId}</strong><br>Source: Email/Open API`;
+ status.innerHTML = `<strong>Email request ingested.</strong><br>Ticket: <strong>${reqId}</strong><br>Source: Email`;
  } catch (e) {
- status.innerHTML = '<strong>Email/Open API intake saved in demo mode.</strong>';
+ status.innerHTML = '<strong>Email intake saved in demo mode.</strong>';
  }
 
  btn.disabled = false;
@@ -492,8 +525,8 @@
 
  setTimeout(async () => {
  icon.innerHTML = '<i class="bi bi-check-circle-fill" style="color:#16a34a"></i>';
- title.textContent = 'Missed Call Logged & Callback Scheduled!';
- desc.textContent = 'Telephony server logged caller number: ' + phone;
+ title.textContent = 'Demo IVR Intake Saved';
+ desc.textContent = 'Demo intake recorded for caller: ' + phone;
 
  try {
  const resp = await fetch('/api/submit', {
@@ -508,20 +541,24 @@
  })
  });
  const res = await resp.json();
- const reqId = res.request_id || ('NVB-IVR-' + Math.floor(Math.random()*899999+100000));
+ if (!resp.ok || !res.success || !res.request_id) {
+ throw new Error(res.error || `Demo IVR intake failed (HTTP ${resp.status})`);
+ }
+ const reqId = res.request_id;
 
  details.style.display = 'block';
  details.innerHTML = `
- <strong><i class="bi bi-shield-check"></i> Outbound IVR Callback Queued:</strong><br>
+ <strong><i class="bi bi-database-check"></i> Demo IVR Intake Saved to Database:</strong><br>
  | <strong>Ticket ID:</strong> ${reqId}<br>
+ | <strong>Channel:</strong> Voice IVR (demo intake)<br>
  | <strong>Target Phone:</strong> ${phone}<br>
  | <strong>Language:</strong> ${language.toUpperCase()}<br>
  | <strong>Target District:</strong> ${district}<br>
- | <strong>Scheduled Callback:</strong> Google Dialogflow CX voice bot will dial caller within 15 seconds.
+ | <strong>Callback:</strong> Not dialled by this browser demo. Production callbacks use the signed IVR webhook and callback queue.
  `;
  } catch (e) {
  details.style.display = 'block';
- details.innerHTML = '<strong>Callback Queued:</strong> Outbound IVR agent will call ' + phone + ' shortly.';
+ details.innerHTML = '<strong>Demo intake could not be confirmed:</strong> no ticket was returned. Please retry.';
  }
 
  btn.disabled = false;
@@ -646,6 +683,19 @@
  if (input) input.value = id;
  trackTicketProgress();
  }
+
+ document.addEventListener('DOMContentLoaded', function() {
+   fetch('/api/stats')
+     .then(function(r) { return r.json(); })
+     .then(function(d) {
+       var count = d && d.stats && d.stats.total_complaints ? d.stats.total_complaints : (d ? d.total_complaints : null);
+       var el = document.getElementById('stat-complaints');
+       if (count != null && el) {
+         el.textContent = Number(count).toLocaleString();
+       }
+     })
+     .catch(function() {});
+ });
  </script>
 
  {% include '_citizen_assistant.html' %}

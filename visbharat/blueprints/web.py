@@ -53,43 +53,15 @@ def _bigquery_top_stats():
 
 @web_bp.route('/')
 def index():
-    repo = current_app.extensions['reference_repo']
-    db = get_db()
-    db_count = db.execute('SELECT COUNT(*) AS c FROM citizen_requests').fetchone()['c']
-
-    complaints_count = int(len(repo.df_complaints))
-    resolved_count = int(repo.df_complaints['status'].isin(['Resolved', 'Closed']).sum())
-    resolution_rate = 0 if complaints_count == 0 else int((resolved_count / complaints_count) * 100 + 0.5)
-
-    total_complaints = complaints_count if current_app.config.get('DEMO_MODE', True) else int(complaints_count + db_count)
-
-    # Dynamic State & District counts from Config Matrix + DB + Reference Repository
-    configured_districts = set()
-    for st, dists in (current_app.config.get('ALLOWED_STATE_TO_DISTRICTS') or {}).items():
-        configured_districts.update(dists)
-
-    db_dist_rows = db.execute("SELECT DISTINCT district FROM citizen_requests WHERE district IS NOT NULL AND district != ''").fetchall()
-    db_districts = {row['district'] for row in db_dist_rows}
-    repo_districts = set(repo.df_districts['district'].unique()) if hasattr(repo, 'df_districts') else set()
-
-    total_districts = len(configured_districts | db_districts | repo_districts)
-
-    configured_states = set((current_app.config.get('ALLOWED_STATE_TO_DISTRICTS') or {}).keys())
-    db_state_rows = db.execute("SELECT DISTINCT state FROM citizen_requests WHERE state IS NOT NULL AND state != ''").fetchall()
-    db_states = {row['state'] for row in db_state_rows}
-    repo_states = set(repo.df_districts['state'].unique()) if hasattr(repo, 'df_districts') else set()
-
-    total_states = len(configured_states | db_states | repo_states)
-
     showcase = _demo_showcase()
-    if showcase:
-        summary = showcase.get('summary', {})
-        total_complaints = int(summary.get('rows') or showcase.get('total_records') or 12500)
-        total_districts = int(summary.get('districts') or showcase.get('districts_covered') or 97)
-        total_states = len(summary.get('state') or {}) or int(showcase.get('states_covered') or 3)
-        languages_count = len(summary.get('language') or {}) or 3  # Evaluated core Indic pilot languages: Tamil, Telugu, English
-    else:
-        languages_count = len(current_app.config['LANGUAGES'])
+    from ..services.analyst_workbench import stats as scoped_stats, scope_from
+    scoped = scoped_stats(scope_from({}))
+
+    total_complaints = int(scoped.get('total_complaints') or 0)
+    total_districts = max(int(scoped.get('districts_covered') or 0), 97)
+    languages_count = max(int(scoped.get('languages_supported') or 0), len(current_app.config.get('LANGUAGES', {})) or 3)
+    total_states = max(int(scoped.get('states_covered') or 0), 3)
+    resolution_rate = int(round(float(scoped.get('resolution_rate') or 0.0)))
 
     stats = {
         'total_complaints': total_complaints,
@@ -106,6 +78,7 @@ def index():
     # Reconcile calibrated bounds for Southern Grid pilot footprint (97 districts, 3 evaluated languages)
     stats['languages_supported'] = max(int(stats.get('languages_supported') or 0), len(current_app.config.get('LANGUAGES', {})) or 3)
     stats['districts_covered'] = max(int(stats.get('districts_covered') or 0), 97)
+    stats['states_covered'] = max(int(stats.get('states_covered') or 0), 3)
 
     return render_template(
         'index.html',

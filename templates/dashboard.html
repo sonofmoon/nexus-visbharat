@@ -36,16 +36,16 @@
  <a href="#liveFeedPanel"><i class="bi bi-activity" aria-hidden="true"></i><span class="rail-label">Live operations</span></a>
  <a href="#aiRuntimePanel"><i class="bi bi-cpu" aria-hidden="true"></i><span class="rail-label">AI runtime</span></a>
  </nav>
- <div class="sidebar-footer"><span class="rail-label">CONNECTED GOVERNANCE</span><a href="/pilot/submit"><i class="bi bi-plus-circle" aria-hidden="true"></i><span class="rail-label">Pilot submission</span></a><a href="/pilot"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i><span class="rail-label">Pilot portal</span></a></div>
+ <div class="sidebar-footer"><span class="rail-label">CONNECTED GOVERNANCE</span><a href="/"><i class="bi bi-house-door" aria-hidden="true"></i><span class="rail-label">Main portal</span></a><a href="/pilot"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i><span class="rail-label">Pilot portal</span></a></div>
  </aside>
  <header class="console-topbar">
  <button class="icon-button" id="railToggle" type="button" aria-label="Toggle navigation" aria-controls="consoleSidebar" aria-expanded="true"><i class="bi bi-list" aria-hidden="true"></i></button>
- <span class="console-breadcrumb">Workspace <span aria-hidden="true">/</span> {% if pilot_scoped %}<strong>Pilot scope: Velloreâ€“Tirupati Water</strong>{% else %}<strong>Policy dashboard</strong>{% endif %}</span>
+ <span class="console-breadcrumb">Workspace <span aria-hidden="true">/</span> {% if pilot_scoped %}<strong>Pilot scope: Vellore–Tirupati Water</strong>{% else %}<strong>Policy dashboard</strong>{% endif %}</span>
  <form class="console-search" role="search" id="sectionSearchForm">
  <i class="bi bi-search" aria-hidden="true"></i><input id="sectionSearch" type="search" placeholder="Find a dashboard section" aria-label="Find a dashboard section" list="dashboardSections" autocomplete="off"><datalist id="dashboardSections"></datalist>
  </form>
  <button class="icon-button" id="themeSwitch" type="button" aria-label="Switch to dark theme" aria-pressed="false"><i class="bi bi-moon" aria-hidden="true"></i></button>
- <details class="console-popover" id="notificationsPopover"><summary class="icon-button" aria-label="Runtime notifications"><i class="bi bi-bell" aria-hidden="true"></i></summary><div class="popover-content"><strong>Runtime status</strong><p id="runtimeNotification">Checking connected servicesâ€¦</p><a href="#aiRuntimePanel">View service health</a></div></details>
+ <details class="console-popover" id="notificationsPopover"><summary class="icon-button" aria-label="Runtime notifications"><i class="bi bi-bell" aria-hidden="true"></i></summary><div class="popover-content"><strong>Runtime status</strong><p id="runtimeNotification">Checking connected services...</p><a href="#aiRuntimePanel">View service health</a></div></details>
  <div class="role-selector-container">
 <select id="userRoleSelector" class="role-select-dropdown" aria-label="Select User Role">
  <option value="analyst" selected>Analyst</option>
@@ -176,7 +176,7 @@
  <span class="panel-badge">Geospatial view</span>
  </div>
  </div>
- <div class="map-stage"><div id="hotspotMap" class="map-container" aria-label="District demand map"></div><div class="map-overlay" aria-live="polite"><span id="mapLayerLabel">Demand layer</span><span id="mapDataStatus">Loading district signalsâ€¦</span></div></div>
+ <div class="map-stage"><div id="hotspotMap" class="map-container" aria-label="District demand map"></div><div class="map-overlay" aria-live="polite"><span id="mapLayerLabel">Demand layer</span><span id="mapDataStatus">Loading district signals...</span></div></div>
  <div class="map-legend" id="mapLegend">
  <div class="legend-item">
  <span class="legend-dot" style="background:#ef4444"></span>
@@ -648,7 +648,7 @@
  <h4><i class="bi bi-graph-up" aria-hidden="true"></i> Request Volume & Ingestion Velocity</h4>
  <p class="ga4-card-meta">Daily aggregated citizen grievances across all ingestion channels</p>
  </div>
- <div class="ga4-card-metric-badge" id="ga4DailyAvg">Loadingâ€¦</div>
+ <div class="ga4-card-metric-badge" id="ga4DailyAvg">Loading...</div>
  </div>
  <div class="chart-wrapper">
  <canvas id="trendChart"></canvas>
@@ -666,7 +666,7 @@
  <div class="chart-wrapper doughnut-wrapper">
  <canvas id="categoryChart"></canvas>
  <div class="doughnut-center-stat">
- <span class="center-number" id="ga4CatTotal">â€”</span>
+ <span class="center-number" id="ga4CatTotal">&mdash;</span>
  <span class="center-label">Total</span>
  </div>
  </div>

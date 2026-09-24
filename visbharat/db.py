@@ -1,4 +1,5 @@
 import os
+import json
 import sqlite3
 from datetime import datetime, timezone
 from urllib.parse import urlparse, unquote
@@ -498,6 +499,8 @@ def init_db():
     create_default()
     from .services.citizen_assistant import migrate as migrate_assistant
     migrate_assistant(db)
+    from .services.telegram_gateway import migrate as migrate_telegram
+    migrate_telegram(db)
     from .services.provider_evidence import migrate as migrate_provider_evidence
     migrate_provider_evidence(db)
     ensure_channel_sessions_table()

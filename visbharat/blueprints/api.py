@@ -777,12 +777,15 @@ def _extract_audio_payload(payload):
 
     audio_b64 = (payload or {}).get('audio_base64')
     if audio_b64:
+        if not isinstance(audio_b64, str):
+            raise ValueError('audio_base64 must be a string')
+        audio_b64 = audio_b64.strip()
         if ',' in audio_b64 and audio_b64.startswith('data:'):
             header, audio_b64 = audio_b64.split(',', 1)
             mime_type = header.split(';')[0].replace('data:', '')
         else:
             mime_type = (payload or {}).get('audio_mime_type', 'audio/wav')
-        return base64.b64decode(audio_b64), mime_type
+        return base64.b64decode(audio_b64, validate=True), mime_type
 
     return None, None
 

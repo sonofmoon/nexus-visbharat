@@ -1,6 +1,20 @@
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
+  const micButton = $('dfcxMicBtn');
+  if (micButton && !$('dfcxMicLabel')) {
+    const label = document.createElement('span');
+    label.id = 'dfcxMicLabel';
+    label.textContent = 'Record voice';
+    micButton.append(label);
+  }
+  if ($('dfcxAssistantWindow') && !$('dfcxMicHint')) {
+    const hint = document.createElement('p');
+    hint.id = 'dfcxMicHint';
+    hint.className = 'nvb-assistant-mic-hint';
+    hint.textContent = 'Tap Record voice to start. Tap Stop recording when finished.';
+    $('dfcxAssistantWindow').insertBefore(hint, $('dfcxInputForm').nextSibling);
+  }
   let strings = {}, config, language = 'en', current, sessionId = '', token = '', busy = false, opened = false;
   let pending = null, muted = false, lastReply = '', audio = null, audioEpoch = 0, audioAbort = null;
   let recorder = null, media = null, recognition = null, recordingEpoch = 0, recordingTimer = null, inputMode = 'text';
@@ -24,6 +38,10 @@
     $('dfcxDistrict').setAttribute('aria-label',t('district'));
     $('dfcxMute').textContent = t(muted ? 'unmute' : 'mute');
     $('dfcxMute').setAttribute('aria-pressed',String(muted));
+    const micLabel = $('dfcxMicLabel');
+    if (micLabel) micLabel.textContent = $('dfcxMicBtn').getAttribute('aria-pressed') === 'true' ? t('stop') : t('record');
+    const micHint = $('dfcxMicHint');
+    if (micHint) micHint.textContent = t('record_hint') === 'record_hint' ? 'Tap Record voice to start. Tap Stop recording when finished.' : t('record_hint');
     const selected = $('dfcxDistrict').value;
     $('dfcxDistrict').replaceChildren(new Option(t('select'), ''));
     Object.entries(config?.districts || {}).forEach(([state,districts]) => {
@@ -44,6 +62,16 @@
     for (const name of ['dfcxSend','dfcxMicBtn','dfcxLanguage','dfcxNew','dfcxTrack','dfcxCancel','dfcxUseLocation','dfcxConfirm','dfcxEditIssue','dfcxEditLocation','dfcxRetry']) $(name).disabled = value;
     $('dfcxInputForm').setAttribute('aria-busy', String(value));
   }
+  function setMicState(recording) {
+    const button = $('dfcxMicBtn');
+    const label = $('dfcxMicLabel');
+    button.setAttribute('aria-pressed', String(recording));
+    button.setAttribute('aria-label', t(recording ? 'stop' : 'record'));
+    button.title = t(recording ? 'stop' : 'record');
+    if (label) label.textContent = t(recording ? 'stop' : 'record');
+  }
+  function setStatusText(message) { $('dfcxStatus').textContent = message; }
+  function explainError(data, fallback) { return String(data?.error || data?.message || fallback || t('network')); }
   function saveSession() {
     try { sessionStorage.setItem('nvb_assistant_session', JSON.stringify({sessionId,token,language})); } catch {}
   }
@@ -92,6 +120,7 @@
     }
     if (!pending) return;
     setBusy(true);status('processing');$('dfcxRetry').hidden=true;
+    if (action === 'confirm') $('dfcxConfirm').textContent = 'Submitting request...';
     const abort = new AbortController();const timer = setTimeout(() => abort.abort(),45000);
     try {
       const res = await fetch('/api/dialogflow/session',{method:'POST',headers:{'Content-Type':'application/json','X-NVB-Assistant-Token':token},body:JSON.stringify(pending),signal:abort.signal});
@@ -103,16 +132,22 @@
         if (data.code === 'stale_session') {
           pending={action:'resume',language,session_id:sessionId,turn_id:id()};
         }
-        throw Error(data.error || t('network'));
+        const message = explainError(data, t('network'));
+        append(message, 'bot');
+        setStatusText(message);
+        throw Error(message);
       }
       sessionId=data.session.session_id;token=data.session_token || token;saveSession();
       render(data.session);append(data.session.next_prompt);lastReply=data.session.next_prompt;
       pending=null;status('ready');
       if (opened && !muted) speak(lastReply);
     } catch (err) {
-      status('network');$('dfcxRetry').hidden=false;
+      const message = String(err?.message || '');
+      if (!message || message === t('network')) status('network'); else setStatusText(message);
+      $('dfcxRetry').hidden=false;
     } finally {
       clearTimeout(timer);setBusy(false);
+      if (action === 'confirm' && $('dfcxConfirm')) $('dfcxConfirm').textContent = t('confirm');
       if (opened) $('dfcxInputText').focus();
     }
   }
@@ -150,8 +185,8 @@
     clearTimeout(recordingTimer);
     if(recorder && recorder.state!=='inactive') recorder.stop();
     if(recognition) { discard ? recognition.abort() : recognition.stop();recognition=null; }
-    media?.getTracks().forEach(track => track.stop());media=null;
-    $('dfcxMicBtn').setAttribute('aria-pressed','false');$('dfcxMicBtn').setAttribute('aria-label',t('record'));
+    if (!recorder || recorder.state === 'inactive') { media?.getTracks().forEach(track => track.stop()); media=null; }
+    setMicState(false);
   }
   async function record() {
     if(busy) return;
@@ -163,35 +198,38 @@
       recognition=new Recognition();recognition.lang=locale[language];recognition.continuous=false;
       recognition.onresult=event => { if(epoch===recordingEpoch && opened) { $('dfcxInputText').value=event.results[0][0].transcript;inputMode='voice';status('transcribed'); } };
       recognition.onerror=() => { if(epoch===recordingEpoch) status('mic_error'); };
-      recognition.onend=() => { recognition=null;$('dfcxMicBtn').setAttribute('aria-pressed','false'); };
-      try { recognition.start();status('listening');$('dfcxMicBtn').setAttribute('aria-pressed','true'); } catch { recognition=null;status('mic_error'); }
+      recognition.onend=() => { recognition=null;setMicState(false); };
+      try { recognition.start();status('listening');setMicState(true); } catch { recognition=null;setMicState(false);status('mic_error'); }
       return;
     }
     try {
       media=await navigator.mediaDevices.getUserMedia({audio:true});
       if(epoch!==recordingEpoch || !opened) { media.getTracks().forEach(track => track.stop());media=null;return; }
-      const mime=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/mp4'].find(type => MediaRecorder.isTypeSupported(type));
+      const mime=['audio/webm;codecs=opus','audio/webm','audio/ogg;codecs=opus','audio/ogg'].find(type => MediaRecorder.isTypeSupported(type));
+      if (!mime) { media.getTracks().forEach(track => track.stop()); media=null; status('mic_error'); return; }
       recorder=new MediaRecorder(media,mime ? {mimeType:mime} : undefined);
       const chunks=[];let size=0;
       recorder.ondataavailable=event => { if(event.data.size) { chunks.push(event.data);size+=event.data.size;if(size>3*1024*1024) stopRecording(); } };
       recorder.onstop=async () => {
         media?.getTracks().forEach(track => track.stop());media=null;
+        const recorderMime = recorder?.mimeType || mime;
         if(epoch!==recordingEpoch || !opened) return;
         if(size>3*1024*1024 || !size) { status('asr_error');return; }
         setBusy(true);status('processing');
-        const blob=new Blob(chunks,{type:recorder.mimeType});
+        recorder=null;
+        const blob=new Blob(chunks,{type:recorderMime});
         const reader=new FileReader();
         const controller=new AbortController();const timeout=setTimeout(() => controller.abort(),30000);
         try {
           const encoded=await new Promise((resolve,reject) => { reader.onload=() => resolve(reader.result.split(',')[1]);reader.onerror=reject;reader.readAsDataURL(blob); });
           const res=await fetch('/api/transcribe-voice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio_base64:encoded,audio_mime_type:blob.type,language,assistant:true}),signal:controller.signal});
           const data=await res.json();
-          if(!res.ok || !data.success) throw Error();
+          if(!res.ok || !data.success) throw Error(explainError(data, 'Speech could not be transcribed.'));
           if(epoch===recordingEpoch && opened) { $('dfcxInputText').value=data.transcript;inputMode='voice';status('transcribed');$('dfcxInputText').focus(); }
-        } catch { if(epoch===recordingEpoch && opened) status('asr_error'); }
+        } catch (error) { if(epoch===recordingEpoch && opened) setStatusText(error.message || t('asr_error')); }
         finally {clearTimeout(timeout);setBusy(false);}
       };
-      recorder.start(250);status('listening');$('dfcxMicBtn').setAttribute('aria-pressed','true');$('dfcxMicBtn').setAttribute('aria-label',t('stop'));
+      recorder.start(250);status('listening');setMicState(true);
       recordingTimer=setTimeout(() => stopRecording(),45000);
     } catch {stopRecording(true);status('mic_error');}
   }

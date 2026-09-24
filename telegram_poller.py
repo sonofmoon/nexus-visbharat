@@ -175,7 +175,12 @@ def process_update(update):
  else: send_message(chat_id,"This report is already registered. Use /status <reference ID>, or /start for a new report.")
 
 def main():
-    delete_webhook()
+    # Webhook delivery is the production path.  Keep polling available only
+    # as an explicitly enabled local fallback; an accidental poller must not
+    # delete the production webhook or compete for the same Telegram updates.
+    if os.environ.get("TELEGRAM_ENABLE_LEGACY_POLLER", "").strip().lower() not in {"1", "true", "yes"}:
+        logging.error("Legacy Telegram polling is disabled. Use /api/channels/telegram/webhook or set TELEGRAM_ENABLE_LEGACY_POLLER=true for local fallback.")
+        return
     offset = None
     logging.info("Starting Telegram Bot Poller for @NexusVisBharatBot...")
     while True:

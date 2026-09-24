@@ -916,22 +916,28 @@ def track_request_progress(request_id):
 def transcribe_voice_endpoint():
     data = request.get_json(silent=True) or request.form.to_dict() or {}
     language = (data.get('language') or 'en').strip()
-    audio_b64 = (data.get('audio_base64') or '').strip()
-    mime_type = (data.get('audio_mime_type') or 'audio/webm').strip()
-
-    if data.get('assistant') and (language not in {'en','ta','te'} or len(audio_b64)>4*1024*1024):
-        return jsonify(success=False, error='Unsupported language or audio exceeds 3 MiB'),400
-
-    if not audio_b64:
-        return jsonify({'success': False, 'error': 'No audio data provided'}), 400
-
     try:
-        audio_bytes = base64.b64decode(audio_b64, validate=True)
+        audio_bytes, mime_type = _api_core._extract_audio_payload(data)
     except Exception:
-        return jsonify({'success': False, 'error': 'Invalid base64 audio string'}), 400
+        return jsonify(success=False, code='invalid_audio_payload', error='Audio could not be read. Please record again.'), 400
+
+    max_audio_bytes = int(current_app.config.get('VOICE_MAX_BYTES', 10 * 1024 * 1024))
+    if data.get('assistant'):
+        max_audio_bytes = min(max_audio_bytes, 3 * 1024 * 1024)
+    if language not in {'en','ta','te'}:
+        return jsonify(success=False, code='unsupported_language', error='Choose English, Tamil or Telugu before recording.'), 400
+    if not audio_bytes:
+        return jsonify(success=False, code='empty_audio', error='No audio was captured. Tap Record voice and try again.'), 400
+    if len(audio_bytes) > max_audio_bytes:
+        return jsonify(success=False, code='audio_too_large', error=f'The recording is too large. Keep it under {max_audio_bytes // (1024 * 1024)} MiB.'), 400
+
+    allowed_mime = {str(m).lower() for m in current_app.config.get('ALLOWED_AUDIO_MIME_TYPES', [])}
+    mime_base = str(mime_type or 'audio/wav').lower().split(';', 1)[0].strip()
+    if mime_base not in allowed_mime:
+        return jsonify(success=False, code='unsupported_audio_type', error=f'This browser recorded {mime_base}, which NVB cannot transcribe. Please type the request or try another browser.'), 400
 
     try:
-        stt = _run_speech_to_text(data, language, audio_bytes=audio_bytes, mime_type=mime_type)
+        stt = _run_speech_to_text(data, language, audio_bytes=audio_bytes, mime_type=mime_base)
         if data.get('assistant') and not _is_live_model_result(stt):
             return jsonify(success=False, error='Live transcription unavailable; type your message', fallback='text'),503
         transcript = (stt.get('transcript') or '').strip()
@@ -939,7 +945,8 @@ def transcribe_voice_endpoint():
         provider = stt.get('provider', 'stt')
         model = stt.get('model', 'SpeechToText')
     except Exception as err:
-        return jsonify({'success': False, 'error': f'Transcription failed: {err}'}), 400
+        current_app.logger.warning('Voice transcription failed: %s', err)
+        return jsonify({'success': False, 'code': 'transcription_failed', 'error': 'Speech service could not transcribe this recording. Please retry or type your message.'}), 502
 
     if not transcript:
         return jsonify({'success': False, 'error': 'Speech-to-text returned an empty transcript'}), 400

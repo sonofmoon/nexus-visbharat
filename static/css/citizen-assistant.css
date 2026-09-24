@@ -33,7 +33,9 @@
 .nvb-assistant-telemetry span { display:block;overflow-wrap:anywhere; }
 .nvb-assistant-input { display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--public-border,#ddd); }
 .nvb-assistant-input input { flex:1;width:0;min-width:0;font-size:13px; }
+.nvb-assistant-input #dfcxMicBtn { display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:112px; }
 .nvb-assistant-input [aria-pressed=true] { background:#b82626;color:#fff; }
+.nvb-assistant-mic-hint { margin:0;padding:0 12px 6px;font-size:11px;line-height:1.35;color:var(--public-muted,#5d6b7d); }
 .nvb-assistant-notice { font-size:10px;line-height:1.4;margin:0;padding:0 12px 10px; }
 #dfcxReceipt { border:1px solid var(--public-border,#ccd5e2);border-radius:10px;padding:10px;overflow-wrap:anywhere; }
 #dfcxReceipt a { display:block;margin-top:6px;color:var(--public-primary,#145bd7); }

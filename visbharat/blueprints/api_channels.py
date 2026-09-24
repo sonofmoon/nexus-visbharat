@@ -340,11 +340,11 @@ def _verify_replay_protection():
         return True
     except Exception:
         return False
-def _ingest_text_request(channel, text, language, district, sender='anonymous', endpoint=''):
+def _ingest_text_request(channel, text, language, district, sender='anonymous', endpoint='', idempotency_key=None):
     raw_text = str(text or '').strip()
     language = (language or 'en').strip().lower() or 'en'
     district = (district or '').strip()
-    idem_key = (request.headers.get('X-Idempotency-Key') or '').strip()
+    idem_key = ((request.headers.get('X-Idempotency-Key') if idempotency_key is None else idempotency_key) or '').strip()
 
     if idem_key and endpoint:
         existing = _get_existing_idempotent_request(endpoint, idem_key)
@@ -489,50 +489,26 @@ def telegram_webhook():
     has_custom_secret = bool((request.headers.get('X-Telegram-Bot-Api-Secret-Token') or '').strip())
     if not has_custom_secret and not _require_webhook_token():
         return jsonify({'success': False, 'error': 'invalid webhook token'}), 401
-
     data = request.get_json(silent=True) or {}
-    msg = data.get('message') or {}
-    text = msg.get('text') or data.get('text')
-    payload, error = _ingest_text_request(
-        channel='Telegram',
-        text=text,
-        language=(data.get('language') or 'en'),
-        district=(data.get('district')),
-        sender=str((msg.get('from') or {}).get('id', 'telegram-user')),
-        endpoint='/api/channels/telegram/webhook',
-    )
-    if error:
-        return jsonify({'success': False, 'error': error[0]}), error[1]
+    from ..services.telegram_gateway import dispatch_outbox, handle_update
 
-    bot_token = (current_app.config.get('TELEGRAM_BOT_TOKEN') or '').strip()
-    chat_id = (msg.get('chat') or {}).get('id') or (msg.get('from') or {}).get('id')
-    if bot_token and chat_id and payload.get('success'):
-        req_id = payload.get('request_id', '')
-        cat = (payload.get('classification') or {}).get('category', 'General')
-        urg = (payload.get('classification') or {}).get('urgency', 'Routine')
-        dept = (payload.get('routing') or {}).get('routed_department', 'Municipal Administration')
-        reply_text = (
-            f"[Registered] Citizen Request Registered\n\n"
-            f"Request ID: `{req_id}`\n"
-            f"Category: {cat}\n"
-            f"Urgency: {urg}\n"
-            f"Routed To: {dept}\n\n"
-            f"Thank you for reporting to VisBharat!"
-        )
-        try:
-            requests.post(
-                f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                json={
-                    "chat_id": chat_id,
-                    "text": reply_text,
-                    "parse_mode": "Markdown"
-                },
-                timeout=5
-            )
-        except Exception:
-            pass
+    try:
+        payload = handle_update(data, _ingest_text_request)
+        delivery = dispatch_outbox()
+        payload['delivery'] = delivery
+        return jsonify(payload)
+    except ValueError as error:
+        return jsonify({'success': False, 'error': str(error)}), 400
+    except Exception:
+        current_app.logger.exception('Telegram webhook processing failed')
+        return jsonify({'success': False, 'error': 'Telegram update could not be processed'}), 500
 
-    return jsonify(payload)
+
+@channels_bp.route('/api/channels/telegram/health', methods=['GET'])
+def telegram_health():
+    """Operational probe; secrets are represented only as booleans."""
+    from ..services.telegram_gateway import health
+    return jsonify(success=True, channel='Telegram', **health())
 
 
 @channels_bp.route('/api/channels/<channel>/session/<session_key>', methods=['GET'])
