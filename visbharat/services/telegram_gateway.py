@@ -165,7 +165,16 @@ def dispatch_outbox(limit=None):
             response = requests.post(_api_url(row["method"]), json=json.loads(row["payload_json"]), timeout=8)
             body = response.json()
             if not response.ok or not body.get("ok"):
-                raise RuntimeError(f"Telegram API rejected {row['method']} ({response.status_code})")
+                desc = str(body.get("description") or "").lower()
+                if row["method"] == "answerCallbackQuery" and ("too old" in desc or "invalid" in desc or "query id" in desc):
+                    db.execute(
+                        """UPDATE telegram_outbox SET status='sent', sent_at=?, lease_until_epoch=NULL,
+                           last_error=NULL, updated_at=? WHERE message_key=?""",
+                        (_now(), _now(), key),
+                    )
+                    db.commit()
+                    continue
+                raise RuntimeError(f"Telegram API rejected {row['method']} ({response.status_code}): {body.get('description')}")
             db.execute(
                 """UPDATE telegram_outbox SET status='sent', sent_at=?, lease_until_epoch=NULL,
                    last_error=NULL, updated_at=? WHERE message_key=?""",
@@ -270,10 +279,11 @@ def _voice_text(file_id, language):
 def _submit(chat_id, session, ingest_text):
     language = _lang(session)
     issue = str(session.get("issue") or "").strip()
-    if session.get("voice_file_id"):
+    if session.get("voice_file_id") and (not issue or issue == "Voice report"):
         try:
             issue = _voice_text(session["voice_file_id"], language)
-        except Exception:
+        except Exception as exc:
+            LOGGER.exception("Failed to transcribe Telegram voice note for chat %s: %s", chat_id, exc)
             _text(chat_id, "I could not transcribe that voice note. Please send it again or type the report; your draft is retained.")
             return
     if not issue:
@@ -352,7 +362,12 @@ def _message(update, chat_id, ingest_text):
     elif stage == "issue":
         voice_id = (message.get("voice") or {}).get("file_id")
         if voice_id:
-            session.update(issue="Voice report", voice_file_id=voice_id, stage="location")
+            try:
+                transcription = _voice_text(voice_id, _lang(session))
+                session.update(issue=transcription, voice_file_id=voice_id, stage="location")
+            except Exception as exc:
+                LOGGER.warning("Immediate voice transcription failed: %s; using placeholder", exc)
+                session.update(issue="Voice report", voice_file_id=voice_id, stage="location")
         elif text:
             session.update(issue=text, stage="location")
         else:

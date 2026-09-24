@@ -941,7 +941,13 @@ def _run_speech_to_text(payload, language, audio_bytes=None, mime_type=None):
         _record_asr_metric(provider='simulation', status='success', latency_ms=0.0)
         return simulate_speech_to_text(language)
 
-    ordered = [('google', effective_google_client)]
+    ordered = []
+    if stt_client:
+        ordered.append(('google', stt_client))
+    if google_ai_client:
+        ordered.append(('gemini', google_ai_client))
+    if not ordered and effective_google_client:
+        ordered.append(('google', effective_google_client))
 
     available = [(name, client) for name, client in ordered if client]
 

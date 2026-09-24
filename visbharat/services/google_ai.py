@@ -445,3 +445,12 @@ Language: {language_code}
             'provider': 'google_ai',
             'provider_mode': 'gemini_audio_stt_live'
         }
+
+    def transcribe_bytes(
+        self,
+        audio_bytes: bytes,
+        language_code: str,
+        mime_type: str = 'audio/webm',
+        sample_rate_hertz: int | None = None,
+    ) -> dict:
+        return self.transcribe_audio_bytes(audio_bytes=audio_bytes, language_code=language_code, mime_type=mime_type)

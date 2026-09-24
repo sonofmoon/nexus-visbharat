@@ -84,6 +84,10 @@
     $('dfcxLocationPanel').hidden = sess.session_state !== 'collect_location' || !!sess.draft?.tracking_pending;
     $('dfcxReviewPanel').hidden = sess.session_state !== 'collect_confirmation' || !!sess.draft?.tracking_pending;
     $('dfcxCancel').hidden = ['complete','cancelled'].includes(sess.session_state);
+    if (['complete','cancelled'].includes(sess.session_state)) {
+      try { sessionStorage.removeItem('nvb_assistant_session'); } catch {}
+      sessionId = ''; token = '';
+    }
     $('dfcxSummary').textContent = [sess.draft?.text,sess.draft?.district,sess.draft?.ward].filter(Boolean).join('\n');
     if (sess.draft?.district) $('dfcxDistrict').value = sess.draft.district;
     $('dfcxWard').value = sess.draft?.ward || '';
@@ -233,19 +237,58 @@
       recordingTimer=setTimeout(() => stopRecording(),45000);
     } catch {stopRecording(true);status('mic_error');}
   }
-  window.toggleDfcxAssistant=async () => {
-    opened=!opened;$('dfcxAssistantWindow').style.display=opened?'flex':'none';$('dfcxWidgetToggleBtn').style.display=opened?'none':'flex';
-    $('dfcxWidgetToggleBtn').setAttribute('aria-expanded',String(opened));
-    if(!opened) {stopAudio();stopRecording(true);$('dfcxWidgetToggleBtn').focus();return;}
+  function resetAssistant(startFresh = true) {
+    stopRecording(true);
+    stopAudio();
+    sessionId = '';
+    token = '';
+    current = null;
+    pending = null;
+    try { sessionStorage.removeItem('nvb_assistant_session'); } catch {}
+    $('dfcxConsent').checked = false;
+    $('dfcxInputText').value = '';
+    $('dfcxMessageStream').replaceChildren();
+    $('dfcxLocationPanel').hidden = true;
+    $('dfcxReviewPanel').hidden = true;
+    const card = $('dfcxReceipt');
+    card.replaceChildren();
+    card.hidden = true;
+    $('dfcxCancel').hidden = true;
+    document.querySelectorAll('#dfcxSteps li').forEach((el, idx) => {
+      if (idx === 0) el.setAttribute('aria-current', 'step');
+      else el.removeAttribute('aria-current');
+    });
+    status('ready');
+    if (startFresh) send('start');
+  }
+
+  window.toggleDfcxAssistant = async () => {
+    opened = !opened;
+    $('dfcxAssistantWindow').style.display = opened ? 'flex' : 'none';
+    $('dfcxWidgetToggleBtn').style.display = opened ? 'none' : 'flex';
+    $('dfcxWidgetToggleBtn').setAttribute('aria-expanded', String(opened));
+    if (!opened) {
+      stopAudio();
+      stopRecording(true);
+      $('dfcxWidgetToggleBtn').focus();
+      return;
+    }
     $('dfcxInputText').focus();
     try {
       await boot;
-      if(!current && !busy) {
-        try { const saved=JSON.parse(sessionStorage.getItem('nvb_assistant_session') || '{}');sessionId=saved.sessionId || '';token=saved.token || '';language=strings[saved.language]?saved.language:'en'; } catch {}
-        $('dfcxLanguage').value=language;localize();append(t('welcome'));
-        await send(sessionId?'resume':'start');
+      if (!current && !busy) {
+        resetAssistant(false);
+        try {
+          const savedLang = localStorage.getItem('nvb_assistant_lang');
+          if (savedLang && strings[savedLang]) language = savedLang;
+        } catch {}
+        $('dfcxLanguage').value = language;
+        localize();
+        await send('start');
       }
-    } catch { $('dfcxStatus').textContent='Assistant could not load. Reload the page to retry.'; }
+    } catch {
+      $('dfcxStatus').textContent = 'Assistant could not load. Reload the page to retry.';
+    }
   };
   // Keep the established global entry points for existing page integrations.
   window.sendDfcxMessage=() => send();window.toggleDfcxSpeechRecognition=record;
@@ -254,15 +297,25 @@
   $('dfcxStop').addEventListener('click',() => {stopAudio();stopRecording();status('ready');});
   $('dfcxReplay').addEventListener('click',() => speak(lastReply));
   $('dfcxMute').addEventListener('click',() => {muted=!muted;stopAudio();$('dfcxMute').textContent=t(muted?'unmute':'mute');$('dfcxMute').setAttribute('aria-pressed',String(muted));status('ready');});
-  $('dfcxLanguage').addEventListener('change',() => {stopRecording(true);stopAudio();language=$('dfcxLanguage').value;localize();saveSession();send('resume');});
-  $('dfcxUseLocation').addEventListener('click',() => send('location',{district:$('dfcxDistrict').value,ward:$('dfcxWard').value}));
-  $('dfcxConfirm').addEventListener('click',() => send('confirm'));
-  $('dfcxEditIssue').addEventListener('click',async () => {$('dfcxConsent').checked=false;const text=current?.draft?.text || '';await send('edit_issue');$('dfcxInputText').value=text;});
-  $('dfcxEditLocation').addEventListener('click',() => { $('dfcxConsent').checked=false;send('edit_location'); });
-  $('dfcxCancel').addEventListener('click',() => send('cancel'));
-  $('dfcxTrack').addEventListener('click',() => send('track'));
-  $('dfcxRetry').addEventListener('click',() => send('message',{},true));
-  $('dfcxNew').addEventListener('click',() => {stopRecording(true);stopAudio();sessionId='';token='';current=null;pending=null;saveSession();$('dfcxConsent').checked=false;$('dfcxInputText').value='';$('dfcxMessageStream').replaceChildren();send('start');});
+  $('dfcxLanguage').addEventListener('change', () => {
+    stopRecording(true);
+    stopAudio();
+    language = $('dfcxLanguage').value;
+    try { localStorage.setItem('nvb_assistant_lang', language); } catch {}
+    localize();
+    if (sessionId) {
+      saveSession();
+      send('resume');
+    }
+  });
+  $('dfcxUseLocation').addEventListener('click', () => send('location', {district: $('dfcxDistrict').value, ward: $('dfcxWard').value}));
+  $('dfcxConfirm').addEventListener('click', () => send('confirm'));
+  $('dfcxEditIssue').addEventListener('click', async () => { $('dfcxConsent').checked = false; const text = current?.draft?.text || ''; await send('edit_issue'); $('dfcxInputText').value = text; });
+  $('dfcxEditLocation').addEventListener('click', () => { $('dfcxConsent').checked = false; send('edit_location'); });
+  $('dfcxCancel').addEventListener('click', () => send('cancel'));
+  $('dfcxTrack').addEventListener('click', () => send('track'));
+  $('dfcxRetry').addEventListener('click', () => send('message', {}, true));
+  $('dfcxNew').addEventListener('click', () => resetAssistant(true));
   window.addEventListener('keydown', (e) => { if (e.key === 'Escape' && opened) window.toggleDfcxAssistant(); });
   window.addEventListener('pagehide',() => {stopAudio();stopRecording(true);});
 })();

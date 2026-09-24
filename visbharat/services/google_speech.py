@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from typing import Optional
 
@@ -34,13 +34,19 @@ class GoogleSpeechToTextClient:
         if not audio_bytes:
             raise ValueError('audio bytes are empty')
 
+        encoding = self._encoding_from_mime(mime_type)
         config_kwargs = {
             'language_code': language_code,
             'enable_automatic_punctuation': True,
             'model': 'latest_long',
-            'encoding': self._encoding_from_mime(mime_type),
+            'encoding': encoding,
         }
-        if sample_rate_hertz:
+        if encoding in (
+            self.speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
+            self.speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
+        ):
+            config_kwargs['sample_rate_hertz'] = int(sample_rate_hertz or 48000)
+        elif sample_rate_hertz:
             config_kwargs['sample_rate_hertz'] = int(sample_rate_hertz)
 
         config = self.speech.RecognitionConfig(**config_kwargs)
