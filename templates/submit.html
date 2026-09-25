@@ -17,7 +17,7 @@
   <a class="public-back" href="{{ '/pilot' if pilot_page else '/' }}"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to overview</a>
   <header class="submit-intro">
     <div><span class="public-eyebrow">YOUR VOICE. YOUR NEIGHBOURHOOD.</span><h1>Let's make a difference.</h1><p>Tell us what your community needs. Speak or type in your language — we’ll help route your request.</p></div>
-    <span class="public-pill"><i class="bi bi-stars" aria-hidden="true"></i> Assisted by Gemini</span>
+    <span class="public-pill" id="pilotAiBadge"><i class="bi bi-stars" aria-hidden="true"></i> AI assistance when available</span>
   </header>
   <div class="submit-layout">
     <div class="submit-form-wrapper">
@@ -78,7 +78,7 @@
           <input type="hidden" id="urgency" name="urgency" value="Routine"><input type="hidden" id="urgencySource" name="urgency_source" value="ai">
           <div id="translation-result" class="m3-form-group translation-box"><label for="translated-text-box">English translation <span class="public-required">(editable)</span></label><textarea id="translated-text-box" name="translated_text_box" rows="3" class="m3-textarea" placeholder="Your English translation will appear here as you type or speak."></textarea><span id="translated-text" class="hidden"></span></div>
           <div class="m3-ai-card" id="aiPreview">
-            <div class="public-row"><h3><i class="bi bi-stars" aria-hidden="true"></i> Behind the recommendation</h3><span class="public-pill">Gemini AI</span></div>
+            <div class="public-row"><h3><i class="bi bi-stars" aria-hidden="true"></i> Behind the recommendation</h3><span class="public-pill" id="pilotAiCardBadge">AI assistance</span></div>
             <div class="public-ai-metrics"><div><span>Category</span><strong id="ai-category">—</strong></div><div><span>Urgency</span><strong id="ai-urgency">—</strong></div><div><span>Sentiment</span><strong id="ai-sentiment">—</strong></div><div><span>Confidence</span><strong id="ai-confidence">—</strong><div class="public-confidence"><div id="aiConfidenceBar" style="width:0%"></div></div></div></div>
             <p id="ai-rationale">Add your request to see its AI classification and routing rationale.</p>
             <small>AI suggestions can be imperfect. Review the details before submitting.</small>
@@ -107,7 +107,7 @@
   </div>
 </main>
 {% include 'partials/public_footer.html' %}
- {% if pilot_page %}<script>window.NVBPilotPublic={{ {'locations':locations,'categories':categories,'languages':languages,'csrf':csrf,'routing':programme.config.routing}|tojson }};</script><script src="/static/js/pilot-public.js"></script><script src="/static/js/pilot-submit.js"></script>{% endif %}
+ {% if pilot_page %}<script>window.NVBPilotPublic={{ {'locations':locations,'categories':categories,'languages':languages,'csrf':csrf,'routing':programme.config.routing,'ai_preview':ai_status}|tojson }};</script><script src="/static/js/pilot-public.js"></script><script src="/static/js/pilot-submit.js"></script>{% endif %}
  <script>
  const citizenFetch=(...args)=>window.NVBPilotPublic?window.pilotCitizenFetch(...args):fetch(...args);
  async function loadStates() {

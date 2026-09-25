@@ -155,6 +155,44 @@ def create_default():
     get_db().commit()
 
 
+def launch_readiness(pid=None):
+    """Return the operator-visible launch state without opening the pilot."""
+    target = pid or current_app.config.get('PILOT_ID') or PILOT_ID
+    p = programme(target)
+    checks = rows('SELECT * FROM pilot_checks WHERE pilot_id=? ORDER BY check_key', (target,))
+    locations = rows('SELECT verification_status FROM pilot_locations WHERE pilot_id=?', (target,))
+    roles = rows('''SELECT DISTINCT u.role FROM users u JOIN pilot_identities i ON i.user_id=u.id
+        JOIN pilot_memberships m ON m.user_id=u.id WHERE m.pilot_id=? AND m.active=1''', (target,))
+    blockers = []
+    if p['data_mode'] == 'synthetic':
+        blockers.append('Synthetic rehearsal data cannot be opened as an operational pilot.')
+    pending = [c['check_key'] for c in checks if c['status'] != 'accepted']
+    if len(checks) != len(GATES) or pending:
+        blockers.append('Accepted evidence is missing for: ' + ', '.join(pending or GATES))
+    if any(location['verification_status'] != 'reviewed' for location in locations):
+        blockers.append('Every enrolled community needs reviewed official geography.')
+    if p['data_mode'] != 'synthetic':
+        missing = sorted(set(('admin', 'analyst', 'auditor')) - {role['role'] for role in roles})
+        if missing:
+            blockers.append('Named programme identities are missing: ' + ', '.join(missing))
+        if not current_app.config.get('OIDC_ISSUER'):
+            blockers.append('Approved OIDC identity configuration is missing.')
+    intake_open = p['status'] == 'active' and bool(p['config'].get('live_intake_enabled'))
+    if intake_open:
+        state, label = 'open', 'Operational intake open'
+    elif p['data_mode'] == 'synthetic':
+        state, label = 'rehearsal', 'Synthetic rehearsal'
+    else:
+        state, label = 'closed', 'Operational intake closed'
+    return {
+        'state': state, 'label': label, 'status': p['status'], 'data_mode': p['data_mode'],
+        'intake_open': intake_open,
+        'eligible_to_open': p['data_mode'] == 'operational' and not blockers,
+        'blockers': blockers,
+        'activation_path': 'pilot-open --authority-reference <approved-https-reference>',
+    }
+
+
 def settings_update(pid,data):
     get_db().execute('UPDATE auditor_chain_state SET head_seq=head_seq WHERE id=1')
     p=programme(pid)

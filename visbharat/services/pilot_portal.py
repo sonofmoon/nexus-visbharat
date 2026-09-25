@@ -137,7 +137,16 @@ def public_channels(p):
         evidence=p['config'].get('channel_tests',{}).get(key,{})
         tested=evidence.get('config_hash')==pilot.digest(c) and evidence.get('status')=='passed'
         available=c['enabled'] and (built_in or tested)
-        result.append({'id':key,'title':title,'available':available,'status':('Available' if p['data_mode']!='synthetic' else 'Rehearsal') if available else 'Awaiting connection test',
+        if available:
+            status=('Rehearsal' if p['data_mode']=='synthetic' else 'Available') + (' - receipt verified' if tested else '')
+        elif built_in:
+            status='Paused in settings'
+        else:
+            status='Awaiting signed test + receipt'
+        result.append({'id':key,'title':title,'available':available,'status':status,
+                       'connection_status':'verified_receipt' if tested else 'built_in' if built_in else 'not_verified',
+                       'verified_at':evidence.get('verified_at'),'last_test_event_id':evidence.get('event_id'),
+                       'operator_action':'No provider gateway required' if built_in else ('Provider receipt verified' if tested else 'Connect gateway, send signed test and confirm receipt'),
                        'href':('/pilot/submit' if key=='web' else '#dialogflow' if key=='dialogflow' else channel_link(key,c['address'])) if available else '',
                        'address':c['address'] if available else ''})
     return result

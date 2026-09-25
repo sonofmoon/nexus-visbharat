@@ -87,6 +87,8 @@ def index():
     }
     live_channel_count = 2 + sum(status == 'live' for status in channel_statuses.values())
 
+    gmail_mailbox = str(current_app.config.get('GMAIL_MAILBOX') or 'nexusvisbharat@gmail.com').strip()
+
     return render_template(
         'index.html',
         stats=stats,
@@ -96,6 +98,7 @@ def index():
         channel_statuses=channel_statuses,
         live_channel_count=live_channel_count,
         demo_channel_count=3,
+        gmail_mailbox=gmail_mailbox,
     )
 
 

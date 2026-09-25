@@ -414,7 +414,26 @@ def security_feed(scope,limit=50,cursor=0,severity=''):
         'notice':'No detections observed does not establish absence of threats. Global detections are excluded by report geography filters.'}
 
 
+_FORENSIC_INTEL_CACHE = {}
+_FORENSIC_INTEL_TTL = 120  # seconds
+
+
+def _forensic_cache_key(scope, project_id=None):
+    return (
+        scope.get('state') or '',
+        scope.get('district') or '',
+        scope.get('pilot_id') or '',
+        project_id or scope.get('project_id') or ''
+    )
+
+
 def forensic_audit_intelligence(scope, project_id=None):
+    cache_key = _forensic_cache_key(scope, project_id)
+    cached = _FORENSIC_INTEL_CACHE.get(cache_key)
+    now_ts = time.time()
+    if cached and (now_ts - cached['time']) < _FORENSIC_INTEL_TTL:
+        return deepcopy(cached['data'])
+
     from ..log.chain import verify_chain_integrity
     pid = project_id or scope.get('project_id')
 
@@ -622,7 +641,7 @@ Respond in strict JSON with keys:
             corrective_actions = ['Maintain continuous cryptographic chain anchoring', 'Verify contractor joint measurements on site']
 
     used_source_ids = sorted({rf.get('legal_source_ref') for rf in red_flags if rf.get('legal_source_ref')} | {fd.get('legal_source_ref') for fd in finance_discrepancies if fd.get('legal_source_ref')} | {'dpdpa2023_section6'})
-    return {
+    result = {
         'trust_health_score': health_score,
         'risk_rating': risk_rating,
         'executive_opinion': executive_opinion,
@@ -661,6 +680,8 @@ Respond in strict JSON with keys:
         'provider_mode': provider_mode,
         'llm_model': llm_model
     }
+    _FORENSIC_INTEL_CACHE[cache_key] = {'time': now_ts, 'data': deepcopy(result)}
+    return result
 
 
 def ask_auditor_copilot(query_text, scope, project_id=None):

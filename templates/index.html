@@ -60,7 +60,7 @@
     <div class="public-channel-grid"><article class="public-channel-card public-channel-featured public-channel-live-card"><div class="public-row"><span class="public-circle "><i class="bi bi-mic" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE · Recommended</span></div><h3>Voice & web</h3><p>Speak in Tamil, Telugu, or English. Add a photo or describe your request in your own words.</p><div class="public-channel-actions"><a href="/submit" class="public-button public-button-primary">Start a request <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></article>
 <article class="public-channel-card public-channel-assistant public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-robot" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE · AI Assistant</span></div><h3>NVB Citizen Assistant</h3><p>Describe your civic need by text or voice and receive guided help in English, Tamil, or Telugu.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="if(typeof toggleDfcxAssistant==='function'){toggleDfcxAssistant();}else{document.getElementById('dfcxWidgetToggleBtn')?.click();}">Talk to NVB <i class="bi bi-chat-dots-fill" aria-hidden="true"></i></button></div></article>
 {% if channel_statuses.telegram == 'live' %}<article class="public-channel-card public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-telegram" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE</span></div><h3>Telegram</h3><p>Send your request directly to @NexusVisBharatBot on Telegram.</p><div class="public-channel-actions"><a href="https://t.me/NexusVisBharatBot" target="_blank" rel="noopener noreferrer" class="public-button">Open Telegram bot <i class="bi bi-arrow-up-right" aria-hidden="true"></i><span class="public-sr-only">(opens in a new tab)</span></a></div></article>{% endif %}
-{% if channel_statuses.gmail == 'live' %}<article class="public-channel-card public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-envelope" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE</span></div><h3>Email</h3><p>Send a request by email for automated intake.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openEmailModal()">Open email intake <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>{% endif %}
+{% if channel_statuses.gmail == 'live' %}<article class="public-channel-card public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-envelope" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE · {{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}</span></div><h3>Email</h3><p>Send your civic request to <strong>{{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}</strong> for automated AI intake.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openEmailModal()"><i class="bi bi-envelope-at-fill" aria-hidden="true"></i> Open email intake <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>{% endif %}
       </div>
     </section>
     <section class="public-channel-group public-channel-group-demo" aria-labelledby="demo-channels-title">
@@ -216,21 +216,77 @@
  </div>
  </div>
 
- <!-- Email Simulation Modal -->
- <div id="emailModalOverlay" class="ivr-modal-backdrop" onclick="if(event.target===this) closeEmailModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;">
- <div style="width:min(560px, 96vw); background:#ffffff; border-radius:20px; border:1px solid #bae6fd; overflow:hidden; box-shadow:0 24px 50px rgba(15,23,42,0.35);">
- <div style="background:linear-gradient(135deg,#0ea5e9,#0284c7); color:white; padding:1rem 1.1rem; position:relative;">
- <h3 style="margin:0; font-size:1.1rem; font-weight:700;">Email Intake Demo</h3>
- <button type="button" onclick="closeEmailModal()" style="position:absolute; top:14px; right:14px; background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:50%; font-size:1.1rem; cursor:pointer;">&times;</button>
- </div>
- <div style="padding:1rem 1.1rem;">
- <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">EMAIL SUBJECT / MESSAGE</label>
- <textarea id="emailTextInput" rows="4" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; resize:vertical;">Need water pipeline extension in peri-urban zone near Ward 8.</textarea>
- <button type="button" id="sendEmailSimBtn" onclick="runEmailSim()" style="width:100%; margin-top:12px; padding:12px; border-radius:10px; background:#0284c7; color:white; border:none; font-size:0.95rem; font-weight:700; cursor:pointer;">Submit Email Request</button>
- <div id="emailStatusBox" style="display:none; margin-top:10px; padding:10px 12px; border:1px solid #bae6fd; background:#f0f9ff; color:#0c4a6e; border-radius:10px; font-size:0.85rem;"></div>
- </div>
- </div>
- </div>
+  <!-- Live Citizen Email Gateway Modal -->
+  <div id="emailModalOverlay" class="ivr-modal-backdrop" onclick="if(event.target===this) closeEmailModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;">
+    <div style="width:min(580px, 96vw); background:#ffffff; border-radius:20px; border:1px solid #bae6fd; overflow:hidden; box-shadow:0 24px 50px rgba(15,23,42,0.35); animation:modalFadeIn 0.25s ease-out;">
+      <div style="background:linear-gradient(135deg,#0284c7,#0369a1); color:white; padding:1.25rem 1.5rem; position:relative;">
+        <button type="button" onclick="closeEmailModal()" aria-label="Close modal" style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.2); border:none; color:white; width:34px; height:34px; border-radius:50%; font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">&times;</button>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:48px; height:48px; border-radius:12px; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
+            <i class="bi bi-envelope-check-fill"></i>
+          </div>
+          <div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <h3 style="margin:0; font-size:1.2rem; font-weight:700;">Citizen Email Gateway</h3>
+              <span style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem; font-weight:700; background:#22c55e; color:#ffffff; padding:2px 8px; border-radius:999px; text-transform:uppercase; letter-spacing:0.5px;">
+                <span style="width:6px; height:6px; border-radius:50%; background:#ffffff; display:inline-block; animation:pulse 1.5s infinite;"></span>
+                Live Intake
+              </span>
+            </div>
+            <p style="margin:4px 0 0 0; font-size:0.85rem; opacity:0.95;">Official 24/7 Automated Intake Inbox</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:1.5rem;">
+        <!-- Official Email Address Box -->
+        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; padding:1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:1.25rem;">
+          <div>
+            <div style="font-size:0.75rem; font-weight:700; color:#0369a1; text-transform:uppercase; letter-spacing:0.5px;">Official Ingestion Address</div>
+            <div id="officialEmailText" style="font-size:1.05rem; font-weight:700; color:#0f172a; margin-top:2px;">{{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}</div>
+          </div>
+          <button type="button" id="copyEmailBtn" onclick="copyEmailAddress(this)" style="padding:7px 14px; border-radius:8px; background:#e0f2fe; color:#0284c7; border:1px solid #7dd3fc; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s;">
+            <i class="bi bi-clipboard"></i> <span>Copy Address</span>
+          </button>
+        </div>
+
+        <!-- Direct Launch Actions -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1.25rem;">
+          <a id="openGmailWebLink" href="https://mail.google.com/mail/?view=cm&fs=1&to={{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}&su=Civic%20Grievance%20-%20Nexus%20VisBharat&body=Dear%20Nexus%20VisBharat%20Team%2C%0A%0APlease%20investigate%20the%20following%20civic%20issue%3A%0A%0AIssue%20Description%3A%20%0ALocation%20%2F%20Ward%3A%20%0ACity%20%2F%20District%3A%20%0APhone%20(optional)%3A%20" target="_blank" rel="noopener noreferrer" style="text-decoration:none; padding:12px 14px; border-radius:10px; background:#ea4335; color:#ffffff; font-weight:700; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(234,67,53,0.3); transition:all 0.2s;">
+            <i class="bi bi-google"></i> Open in Gmail
+          </a>
+          <a id="openDefaultMailLink" href="mailto:{{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}?subject=Civic%20Grievance%20-%20Nexus%20VisBharat&body=Dear%20Nexus%20VisBharat%20Team%2C%0A%0APlease%20investigate%20the%20following%20civic%20issue%3A%0A%0AIssue%20Description%3A%20%0ALocation%20%2F%20Ward%3A%20%0ACity%20%2F%20District%3A%20%0APhone%20(optional)%3A%20" style="text-decoration:none; padding:12px 14px; border-radius:10px; background:#0284c7; color:#ffffff; font-weight:700; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(2,132,199,0.3); transition:all 0.2s;">
+            <i class="bi bi-envelope-fill"></i> Open Email App
+          </a>
+        </div>
+
+        <!-- Capability Bullet Points -->
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:0.9rem 1rem; margin-bottom:1rem; font-size:0.82rem; color:#475569; line-height:1.5;">
+          <div style="font-weight:700; color:#1e293b; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+            <i class="bi bi-cpu-fill" style="color:#0284c7;"></i> Automated AI Pipeline Capabilities:
+          </div>
+          <ul style="margin:0; padding-left:1.25rem;">
+            <li><strong>24/7 Instant Intake:</strong> Gemini 3.6 Flash auto-categorizes incoming emails.</li>
+            <li><strong>Multilingual Support:</strong> Write in English, தமிழ் (Tamil), or తెలుగు (Telugu).</li>
+            <li><strong>Automated Tracking:</strong> Ingestion ticket created and indexed into public ledger.</li>
+          </ul>
+        </div>
+
+        <!-- Collapsible Simulator for Devs/Reviewers -->
+        <details style="border:1px dashed #cbd5e1; border-radius:10px; padding:0.6rem 0.9rem; font-size:0.82rem; color:#64748b;">
+          <summary style="cursor:pointer; font-weight:600; color:#475569; user-select:none;">
+            <i class="bi bi-terminal"></i> In-Browser Simulator (Quick Test Mode)
+          </summary>
+          <div style="margin-top:0.75rem; padding-top:0.5rem; border-top:1px solid #f1f5f9;">
+            <label style="display:block; font-size:0.75rem; font-weight:700; color:#334155; margin-bottom:4px;">SIMULATE INBOUND EMAIL TEXT</label>
+            <textarea id="emailTextInput" rows="3" style="width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.85rem; resize:vertical;">Need water pipeline extension in peri-urban zone near Ward 8.</textarea>
+            <button type="button" id="sendEmailSimBtn" onclick="runEmailSim()" style="width:100%; margin-top:8px; padding:9px; border-radius:8px; background:#475569; color:white; border:none; font-size:0.85rem; font-weight:600; cursor:pointer;">Send Simulated Email to /api/submit</button>
+            <div id="emailStatusBox" style="display:none; margin-top:8px; padding:8px 10px; border:1px solid #bae6fd; background:#f0f9ff; color:#0c4a6e; border-radius:8px; font-size:0.8rem;"></div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
 
  <!-- 2b. Zero-Internet SMS Keyword Helpline Modal (56161) -->
  <div id="smsModalOverlay" class="sms-modal-backdrop" onclick="if(event.target===this) closeSmsModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(4px); z-index:99999; align-items:center; justify-content:center; padding:1rem;">
@@ -391,6 +447,33 @@
  function closeEmailModal() {
  document.getElementById('emailModalOverlay').style.display = 'none';
  }
+
+  function copyEmailAddress(btn) {
+    const email = document.getElementById('officialEmailText')?.textContent?.trim() || 'nexusvisbharat@gmail.com';
+    navigator.clipboard.writeText(email).then(() => {
+      const origHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="bi bi-check-lg" style="color:#16a34a"></i> <span style="color:#16a34a">Copied!</span>';
+      btn.style.background = '#dcfce7';
+      btn.style.borderColor = '#86efac';
+      setTimeout(() => {
+        btn.innerHTML = origHtml;
+        btn.style.background = '#e0f2fe';
+        btn.style.borderColor = '#7dd3fc';
+      }, 2500);
+    }).catch(err => {
+      const ta = document.createElement('textarea');
+      ta.value = email;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.innerHTML = '<i class="bi bi-check-lg"></i> <span>Copied!</span>';
+      setTimeout(() => {
+        btn.innerHTML = '<i class="bi bi-clipboard"></i> <span>Copy Address</span>';
+      }, 2500);
+    });
+  }
+
 
  async function runSmsSim() {
  const btn = document.getElementById('sendSmsSimBtn');

@@ -45,6 +45,12 @@
     return result;
   };
   document.addEventListener('DOMContentLoaded',()=>{
+    const aiStatus=cfg.ai_preview;
+    for(const [id,text] of [['pilotAiBadge',aiStatus?.label],['pilotAiCardBadge',aiStatus?.status==='available'?'Regional Gemini':'Officer review fallback']]){
+      const badge=$(id);if(!badge||!text)continue;
+      badge.textContent=text;
+      if(aiStatus.notice)badge.title=aiStatus.notice;
+    }
     $('district').addEventListener('change',communities);
     $('state').addEventListener('change',()=>{$('pilotLocation').replaceChildren(new Option('Select your district first',''));});
     $('pilotLocation').addEventListener('change',()=>{const l=cfg.locations.find(l=>l.location_id===$('pilotLocation').value);if(l){$('ward').value=l.ward;$('wardStatus').textContent='Enrolled community mapping. Add a landmark in your description.';}});

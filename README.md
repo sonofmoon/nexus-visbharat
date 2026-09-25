@@ -263,7 +263,12 @@ limit receive HTTP `429 Too Many Requests` with a `Retry-After` header.
 | `/api/public/transparency/districts` | 60 requests/minute/IP |
 | `/api/public/transparency/categories` | 60 requests/minute/IP |
 | `/api/v1/transparency/verify-chain` | 30 requests/minute/IP |
+| `/api/v2/pilot/public-config` | 60 requests/minute/IP |
+| `/api/v2/pilot/intake` | 120 requests/minute/IP |
 | `/api/v2/pilot/track` | 20 requests/minute/IP |
+| `/api/v2/pilot/portal/{translate,classify,transcribe-voice}` | 60 requests/minute/IP per feature |
+| `/api/v2/pilot/portal/evidence` | 30 requests/minute/IP |
+| `/api/v2/pilot/channels/{channel}/webhook` | 240 requests/minute/IP after signature validation |
 
 These are application-level safeguards maintained in memory by each service
 process. They are not a replacement for distributed Cloud Run, API Gateway or

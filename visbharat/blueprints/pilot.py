@@ -32,6 +32,12 @@ def body():
     return data
 
 
+def configured_public_pilot(requested=''):
+    configured=current_app.config.get('PILOT_ID') or work.PILOT_ID
+    if requested and requested != configured: raise LookupError('Pilot programme not found')
+    return configured
+
+
 def admin_programme():
     s=work.scope()
     if s.get('state') or s.get('district'): raise PermissionError('Programme-wide administration requires programme-wide assignment')
@@ -52,7 +58,7 @@ def page():
     session.setdefault('pilot_csrf',secrets.token_urlsafe(24))
     pid=current_app.config.get('PILOT_ID') or work.PILOT_ID
     p=work.programme(pid)
-    from ..services.pilot_portal import public_channels, configuration
+    from ..services.pilot_portal import public_ai_status, public_channels, configuration
     page_name={'/pilot':'home','/pilot/submit':'submit','/pilot/dashboard':'dashboard','/pilot/settings':'settings'}[request.path]
     if page_name in ('dashboard','settings') and not current_app.config.get('DEMO_MODE'):
         from ..services.pilot_identity import session_user
@@ -75,24 +81,28 @@ def page():
         pilot_page=page_name,pilot_public=page_name in ('home','submit'),programme=p,channels=public_channels(p),locations=locations,public_counts=counts,
         languages={k:v for k,v in current_app.config['LANGUAGES'].items() if k in p['config']['languages']},
         categories=p['config'].get('categories',current_app.config['CATEGORIES']),portal_config=portal_config,
-        role_tokens=tokens,demo=current_app.config.get('DEMO_MODE'),csrf=session['pilot_csrf'],
+        ai_status=public_ai_status(),role_tokens=tokens,demo=current_app.config.get('DEMO_MODE'),csrf=session['pilot_csrf'],
         intake_view=request.path.endswith('/submit'),oidc_enabled=bool(current_app.config.get('OIDC_ISSUER')))
 
 
 @pilot_bp.route('/api/v2/pilot/public-config')
 def public_config():
-    pid=request.args.get('pilot_id') or current_app.config.get('PILOT_ID') or work.PILOT_ID
+    allowed,retry_after=allow_public_request(f"pilot-public-config:{request.remote_addr or 'unknown'}",60,60)
+    if not allowed:return jsonify(success=False,error='Configuration request rate limit reached; retry shortly.'),429,{'Retry-After':str(retry_after)}
+    pid=configured_public_pilot(request.args.get('pilot_id'))
     p=work.programme(pid)
     locations=work.rows('SELECT location_id,state,district,local_body,ward,location_kind,verification_status FROM pilot_locations WHERE pilot_id=? ORDER BY district,location_id',(pid,))
-    from ..services.pilot_portal import public_channels,configuration
+    from ..services.pilot_portal import public_ai_status,public_channels,configuration
     return jsonify(success=True,pilot_id=pid,title=p['title'],status=p['status'],data_mode=p['data_mode'],
         languages=p['config']['languages'],notice=configuration(p)['privacy']['consent_notice'],locations=locations,
-        categories=p['config'].get('categories',current_app.config['CATEGORIES']),channels=public_channels(p))
+        categories=p['config'].get('categories',current_app.config['CATEGORIES']),channels=public_channels(p),ai_preview=public_ai_status())
 
 
 @pilot_bp.route('/api/v2/pilot/intake',methods=['POST'])
 def intake():
-    data=body();pid=request.args.get('pilot_id') or current_app.config.get('PILOT_ID') or work.PILOT_ID
+    allowed,retry_after=allow_public_request(f"pilot-intake:{request.remote_addr or 'unknown'}",120,60)
+    if not allowed:return jsonify(success=False,error='Pilot intake rate limit reached; retry shortly.'),429,{'Retry-After':str(retry_after)}
+    data=body();pid=configured_public_pilot(request.args.get('pilot_id'))
     from ..services.pilot_portal import configuration
     if not configuration(work.programme(pid))['channels']['web']['enabled']:raise PermissionError('Web intake is paused by the programme administrator')
     result=work.intake(pid,data,request.headers.get('Idempotency-Key',''))
@@ -133,6 +143,7 @@ def snapshot():
     assignment=next((m for m in work.user_memberships() if m['pilot_id']==pid),{})
     return jsonify(success=True,programme=p,scope=s,assignment={k:assignment.get(k,'') for k in ('state','district')},stats=stats(s),processing=status,jobs=jobs,usage=usage,
         locations=locs,members=users,user=g.current_user,checks=work.rows('SELECT * FROM pilot_checks WHERE pilot_id=? ORDER BY check_key',(pid,)),
+        launch=work.launch_readiness(pid),
         cost={'status':'estimate_not_billing','monthly_cloud_budget_inr':p['config']['monthly_cloud_budget_inr'],
               'actual_spend_inr':None,'notice':'Provider steps and latency are measured. Tokens not returned by providers and actual cloud charges remain unavailable.'})
 

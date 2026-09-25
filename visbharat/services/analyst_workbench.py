@@ -5,11 +5,13 @@ replica. Reference files are inputs, never automatically authenticated evidence.
 """
 from __future__ import annotations
 
+import copy
 import csv
 import hashlib
 import json
 import math
 import statistics
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -265,7 +267,27 @@ def evidence_sources():
     return sources
 
 
+_EVIDENCE_GAP_CACHE = {}
+_EVIDENCE_GAP_TTL = 120  # seconds
+
+
+def _gap_cache_key(scope):
+    return (
+        scope.get('state') or '',
+        scope.get('district') or '',
+        scope.get('pilot_id') or '',
+        scope.get('date_from') or '',
+        scope.get('date_to') or ''
+    )
+
+
 def evidence_gap_intelligence(scope):
+    cache_key = _gap_cache_key(scope)
+    cached = _EVIDENCE_GAP_CACHE.get(cache_key)
+    now_ts = time.time()
+    if cached and (now_ts - cached['time']) < _EVIDENCE_GAP_TTL:
+        return copy.deepcopy(cached['data'])
+
     clause, params = where(scope)
     c_rows = query(f"SELECT c.category, COUNT(*) AS n, SUM(CASE WHEN c.urgency='Emergency' THEN 1 ELSE 0 END) AS emergencies FROM citizen_requests c WHERE {clause} GROUP BY c.category", params)
     cat_counts = {r['category']: int(r['n'] or 0) for r in c_rows}
@@ -401,7 +423,7 @@ Respond in strict JSON with keys:
     if not strategic_priorities:
         strategic_priorities = [d['recommended_action'] for d in discrepancies[:3]]
 
-    return {
+    result = {
         'executive_assessment': gemini_assessment,
         'strategic_priorities': strategic_priorities,
         'reconciliation_protocol': reconciliation_protocol,
@@ -418,6 +440,8 @@ Respond in strict JSON with keys:
             'population': pop
         }
     }
+    _EVIDENCE_GAP_CACHE[cache_key] = {'time': now_ts, 'data': copy.deepcopy(result)}
+    return result
 
 
 def ask_evidence_copilot(query_text, scope):

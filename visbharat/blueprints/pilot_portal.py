@@ -10,8 +10,29 @@ from ..auth import require_roles
 from ..db import get_db
 from ..audit import write_audit_log
 from ..services import pilot as work, pilot_portal as portal
+from ..services.public_safety import allow as allow_public_request
 
 portal_bp=Blueprint('pilot_portal',__name__)
+
+
+def public_ai_status():
+    """Expose a truthful, non-secret intake-assistance status to citizens."""
+    client = current_app.extensions.get('google_ai_client')
+    available = bool(
+        current_app.config.get('PILOT_MODEL_CALLS')
+        and current_app.config.get('EXTERNAL_SERVICES_ENABLED')
+        and client
+        and getattr(client, 'use_vertex', False)
+        and not getattr(client, 'api_key', '')
+        and getattr(client, 'vertex_openai_location', 'global') in current_app.config.get('PILOT_MODEL_REGIONS', ['asia-south1'])
+    )
+    return {
+        'status': 'available' if available else 'manual_review_fallback',
+        'label': 'Regional AI preview available' if available else 'AI preview unavailable; officer review remains available',
+        'provider': 'Gemini on regional Vertex AI' if available else 'Not live-verified',
+        'manual_review_available': True,
+        'notice': 'AI suggestions are optional and require citizen review before submission.' if available else 'Your request can still be submitted for officer review without live AI assistance.',
+    }
 
 
 @portal_bp.errorhandler(ValueError)
@@ -58,6 +79,9 @@ def ward():
 @portal_bp.post('/api/v2/pilot/portal/<feature>')
 def preview(feature):
     if feature not in ('translate','classify','transcribe-voice'):raise LookupError('Unknown citizen feature')
+    allowed, retry_after = allow_public_request(f"pilot-preview:{feature}:{request.remote_addr or 'unknown'}", 60, 60)
+    if not allowed:
+        return jsonify(success=False,error='AI preview rate limit reached; submit for officer review or retry shortly.'),429,{'Retry-After':str(retry_after)}
     data=body()
     if not session.get('pilot_csrf') or not hmac.compare_digest(str(data.get('csrf','')),session['pilot_csrf']):raise PermissionError('Refresh the citizen page before requesting analysis')
     if data.get('consent_granted') is not True:raise ValueError('Choose processing consent before requesting AI assistance')
@@ -91,6 +115,9 @@ def preview(feature):
 
 @portal_bp.post('/api/v2/pilot/portal/evidence')
 def evidence_upload():
+    allowed, retry_after = allow_public_request(f"pilot-evidence:{request.remote_addr or 'unknown'}", 30, 60)
+    if not allowed:
+        return jsonify(success=False,error='Evidence upload rate limit reached; retry shortly.'),429,{'Retry-After':str(retry_after)}
     data=body();rid=data.get('request_id');work.tracking(rid,data.get('tracking_secret'))
     portal.save_evidence(rid,data.get('evidence',[]));get_db().commit()
     return jsonify(success=True,validated=True,items=portal.evidence_manifest(rid))
@@ -166,6 +193,9 @@ def channel_webhook(channel):
     except ValueError:fresh=False
     expected=hmac.new(str(secret).encode(),stamp.encode()+b'.'+request.get_data(),hashlib.sha256).hexdigest()
     if not secret or not fresh or not hmac.compare_digest(expected,signature):raise PermissionError('Invalid or expired channel signature')
+    allowed, retry_after = allow_public_request(f"pilot-webhook:{channel}:{request.remote_addr or 'unknown'}", 240, 60)
+    if not allowed:
+        return jsonify(success=False,error='Channel webhook rate limit reached; retry shortly.'),429,{'Retry-After':str(retry_after)}
     p=work.programme(pid());settings=portal.configuration(p)['channels'][channel]
     if not settings['enabled']:raise PermissionError('Channel is disabled in Settings')
     data=body();event=work.text(data.get('event_id'),'provider event ID',1,120)

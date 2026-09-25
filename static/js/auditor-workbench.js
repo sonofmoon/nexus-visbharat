@@ -15,7 +15,7 @@
   const button=(action,label,id='')=>`<button type="button" class="aw-button" data-aw-action="${action}" data-id="${esc(id)}">${esc(label)}</button>`;
   const kv=obj=>`<dl class="aw-kv">${Object.entries(obj||{}).map(([k,v])=>`<dt>${esc(human(k))}</dt><dd>${esc(v===null||v===undefined?'Not recorded':typeof v==='object'?JSON.stringify(v):v)}</dd>`).join('')}</dl>`;
   const table=(headers,rows)=>`<div class="aw-table-wrap" tabindex="0" role="region" aria-label="Scrollable data table"><table class="aw-table"><thead><tr>${headers.map(h=>`<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${headers.length}">No records in this scope.</td></tr>`}</tbody></table></div>`;
-  let tab='evidence',serial=0,controller=null,reviewers=[],initialized=false,eventSnapshot='',eventCursor='',consentCursor='',securityCursor='',caseCache={},projectCache={},lastSummaryKey='',lastSummaryAt=0;
+  let tab='evidence',serial=0,controller=null,reviewers=[],initialized=false,eventSnapshot='',eventCursor='',consentCursor='',securityCursor='',caseCache={},projectCache={},lastSummaryKey='',lastSummaryAt=0,cachedIntel=null;
   let eventSearch='',eventActor='',eventAction='',securitySeverity='',pendingView=null,optionSerial=0;
   let activeIdentity='';
   const identity=()=>JSON.stringify([getActiveRole(),getActiveToken()]);
@@ -312,18 +312,16 @@
     `;
   }
 
-  async function render(signal){
+  async function render(intel, signal){
     const pid=scope().project_id;
-    let intel=null;
-    try{intel=await api('/intelligence',{},signal);}catch(e){}
     if(tab==='evidence'){
-      const [cases,evaluations]=await Promise.all([api('/cases',{},signal, {limit:10}),api('/evaluations',{},signal)]);
       let mainHtml = '';
       if(!pid){
-        const data=await api('/projects',{},signal,{search:$('awProjectSearch').value,limit:50});
+        const [cases,evaluations,data]=await Promise.all([api('/cases',{},signal, {limit:10}),api('/evaluations',{},signal),api('/projects',{},signal,{search:$('awProjectSearch').value,limit:50})]);
         mainHtml = `<section class="aw-card"><h3>Choose a proposal to audit</h3><p>${num(data.total)} project groups match this scope. Showing up to 50; search to narrow the list.</p>${table(['Project','Reports','Open evidence'],data.items.map(p=>[`${esc(p.title)}<br><code>${esc(p.project_id)}</code>`,num(p.reports),button('project','Inspect project',p.project_id)]))}</section>${casesView(cases)}${evalView(evaluations)}`;
       } else {
-        const d=await api('/projects/'+encodeURIComponent(pid),{},signal);d.evidence.forEach(e=>projectCache[e.evidence_id]=e);
+        const [cases,evaluations,d]=await Promise.all([api('/cases',{},signal, {limit:10}),api('/evaluations',{},signal),api('/projects/'+encodeURIComponent(pid),{},signal)]);
+        d.evidence.forEach(e=>projectCache[e.evidence_id]=e);
         const sources=d.detail.evidence.sources;
         mainHtml = `<section class="aw-card"><h3>${esc(d.project.title)}</h3><code>${esc(pid)}</code><div class="aw-flow"><span>${num(d.detail.total_requests)} citizen reports</span><span>→ Proposal</span><span>→ ${num(d.decisions.length)} decision records</span><span>→ ${num(d.evidence.length)} attached observations</span></div>
           <div>${Object.entries(d.readiness).map(([k,v])=>badge(human(k)+': '+(v?'recorded':'missing'),v?'good':'warn')).join('')}</div><div class="aw-actions">${button('export-project','Export redacted evidence pack',pid)}</div>
@@ -376,32 +374,42 @@
   async function refresh(force=false){
     if(!visible())return;
     const currentIdentity=identity();
-    if(activeIdentity!==currentIdentity){activeIdentity=currentIdentity;reviewers=[];caseCache={};projectCache={};lastSummaryKey='';optionSerial++;resetPages();}
+    if(activeIdentity!==currentIdentity){activeIdentity=currentIdentity;reviewers=[];caseCache={};projectCache={};lastSummaryKey='';cachedIntel=null;optionSerial++;resetPages();}
     if(!force&&$('awContent')?.contains(document.activeElement)&&document.activeElement.matches('input,textarea,select'))return;
     const viewKey=JSON.stringify([currentIdentity,scope(),tab,eventCursor,consentCursor,securityCursor]);
     if(!force&&pendingView===viewKey)return;
     pendingView=viewKey;
     const turn=++serial;controller?.abort();controller=new AbortController();const signal=controller.signal;
     if(lastSummaryKey!==summaryKey())$('awMetrics').innerHTML='';
-    $('awContent').innerHTML='<div class="aw-loading" role="status">Loading this view…</div>';$('awInspector').hidden=true;
+    if(!$('awContent').innerHTML.trim())$('awContent').innerHTML='<div class="aw-loading" role="status">Loading this view…</div>';
+    $('awInspector').hidden=true;
     try{
-      if(!reviewers.length)reviewers=(await api('/reviewers',{},signal)).items;
       const key=summaryKey();
-      if(force||lastSummaryKey!==key||Date.now()-lastSummaryAt>15000){
-        const [data, intel]=await Promise.all([
-          api('/snapshot',{},signal),
-          api('/intelligence',{},signal).catch(()=>null)
-        ]);
-        if(turn!==serial||currentIdentity!==identity())return;
-        let metricItems = data.metrics;
-        if(intel && intel.trust_health_score != null){
-          metricItems = [{name:'Trust & Integrity Health', value:intel.trust_health_score, unit:'percent', status:'GFR & DPDPA Verified', denominator:null}, ...metricItems];
-        }
-        $('awMetrics').innerHTML=metricItems.map(m=>`<div class="aw-metric"><span>${esc(m.name)}</span><strong>${num(m.value)}${m.unit==='percent'?'%':''}</strong><small>${esc(m.denominator!==null?`${num(m.numerator)} / ${num(m.denominator)}`:m.status)}</small></div>`).join('');
-        $('awStatus').classList.remove('aw-error');$('awStatus').textContent=`${human(data.metadata.data_mode)} data · ${scope().district||scope().state||'All pilot geographies'} · as of ${new Date(data.metadata.as_of).toLocaleString()} · ${scope().project_id||'All projects'}`;
-        lastSummaryKey=key;lastSummaryAt=Date.now();
+      const needsSummary = force||lastSummaryKey!==key||Date.now()-lastSummaryAt>15000;
+      let intel = cachedIntel;
+      const tasks = [];
+      if(!reviewers.length) tasks.push(api('/reviewers',{},signal).then(r => { reviewers = r.items; }));
+      if(needsSummary) {
+        tasks.push(api('/snapshot',{},signal));
+        tasks.push(api('/intelligence',{},signal).catch(()=>null));
       }
-      const html=await render(signal);if(turn!==serial||currentIdentity!==identity())return;$('awContent').innerHTML=html;
+      if(tasks.length) {
+        const res = await Promise.all(tasks);
+        if(turn!==serial||currentIdentity!==identity())return;
+        if(needsSummary) {
+          const data = res[res.length - 2];
+          intel = res[res.length - 1] || intel;
+          if(intel) cachedIntel = intel;
+          let metricItems = data.metrics;
+          if(intel && intel.trust_health_score != null){
+            metricItems = [{name:'Trust & Integrity Health', value:intel.trust_health_score, unit:'percent', status:'GFR & DPDPA Verified', denominator:null}, ...metricItems];
+          }
+          $('awMetrics').innerHTML=metricItems.map(m=>`<div class="aw-metric"><span>${esc(m.name)}</span><strong>${num(m.value)}${m.unit==='percent'?'%':''}</strong><small>${esc(m.denominator!==null?`${num(m.numerator)} / ${num(m.denominator)}`:m.status)}</small></div>`).join('');
+          $('awStatus').classList.remove('aw-error');$('awStatus').textContent=`${human(data.metadata.data_mode)} data · ${scope().district||scope().state||'All pilot geographies'} · as of ${new Date(data.metadata.as_of).toLocaleString()} · ${scope().project_id||'All projects'}`;
+          lastSummaryKey=key;lastSummaryAt=Date.now();
+        }
+      }
+      const html=await render(intel, signal);if(turn!==serial||currentIdentity!==identity())return;$('awContent').innerHTML=html;
       $('awContent').setAttribute('aria-labelledby',document.querySelector('[data-aw-tab][aria-selected=true]')?.id||'awTabEvidence');
     }catch(error){if(error.name==='AbortError')return;if(turn!==serial)return;$('awContent').innerHTML=empty(error.message);$('awMetrics').innerHTML='';lastSummaryKey='';$('awStatus').textContent='This view is unavailable. Refresh or adjust the scope.';$('awStatus').classList.add('aw-error');}
     finally{if(turn===serial)pendingView=null;}
