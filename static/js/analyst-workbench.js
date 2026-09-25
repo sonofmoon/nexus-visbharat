@@ -339,12 +339,14 @@
   // Replace independent legacy fetches with one atomic Analyst snapshot.
   const legacyRefresh=refreshAll;
   refreshAll=function(){if(getActiveRole()==='analyst'){refresh();loadAiRuntimeStatus();loadComplaintFeed();loadHotspots();}else legacyRefresh();};
-  const legacyStats=loadStats,legacyCharts=loadCharts,legacyProjects=loadPriorityProjects;
+  const legacyStats=loadStats,legacyCharts=loadCharts,legacyProjects=loadPriorityProjects,legacyPrediction=loadPrediction;
   loadStats=function(){if(getActiveRole()==='analyst')return loading;return legacyStats();};
   loadCharts=function(){if(getActiveRole()==='analyst')return renderCharts();return legacyCharts();};
   loadPrediction=function(){
-    if (payload?.inclusion && window.NVBDemandScreening) {
+    if(getActiveRole()==='analyst' && payload?.inclusion && window.NVBDemandScreening){
       window.NVBDemandScreening.render(payload.inclusion, payload.stats);
+    } else if(typeof legacyPrediction==='function'){
+      return legacyPrediction();
     }
   };
   document.addEventListener('DOMContentLoaded',()=>{

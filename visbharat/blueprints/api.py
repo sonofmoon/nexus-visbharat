@@ -327,6 +327,7 @@ def _bq_filters_sql(
     status: str = '',
     ward: str = '',
     ticket: str = '',
+    include_system: bool = True,
 ):
     where = []
     params = []
@@ -369,6 +370,12 @@ def _bq_filters_sql(
             # citizen-submitted free text is never queried as a public search surface.
             where.append(f"CAST({bq.col_id} AS STRING) LIKE @ticket")
             params.append(('ticket', 'STRING', f"%{ticket}%"))
+        if not include_system:
+            where.append(
+                f"(LOWER(COALESCE({bq.col_source}, '')) NOT IN ('email', 'gmail') "
+                f"OR (LOWER(COALESCE(original_text, '')) NOT LIKE '%your nvb request has been received%' "
+                f"AND LOWER(COALESCE(translated_text, '')) NOT LIKE '%your nvb request has been received%'))"
+            )
     clause = (' WHERE ' + ' AND '.join(where)) if where else ''
     return clause, params
 
@@ -391,6 +398,7 @@ def _bq_complaints(
     status: str = '',
     ward: str = '',
     ticket: str = '',
+    include_system: bool = False,
 ):
     bq = _bq_client()
     if not bq:
@@ -409,6 +417,7 @@ def _bq_complaints(
         status=status,
         ward=ward,
         ticket=ticket,
+        include_system=include_system,
     )
     pairs.append(('limit', 'INT64', safe_limit))
     params = _bq_params(bq, pairs)

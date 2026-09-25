@@ -3783,7 +3783,7 @@ async function loadAiRuntimeStatus(forceProbe = false) {
   }
 
   try {
-    const url = '/api/ai/status?probe=true';
+    const url = forceProbe ? '/api/ai/status?probe=true' : '/api/ai/status';
     const res = await fetch(url, { cache: 'no-store' });
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.error || ('HTTP ' + res.status));

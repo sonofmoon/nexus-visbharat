@@ -1138,7 +1138,7 @@ def _feed_args():
     }
 
 
-def _db_feed_items(filters, limit=200, *, since_at='', since_id='', ascending=False):
+def _db_feed_items(filters, limit=200, *, since_at='', since_id='', ascending=False, include_system=False):
     db = get_db()
     sql = '''
         SELECT request_id, district, state, input_language, original_text, translated_text,
@@ -1223,14 +1223,16 @@ def list_complaints_public():
     source = 'db'
     raw_items = None
     if not filters.get('pilot_id'):
-        raw_items = _bq_complaints(limit=min(limit * 4, 500), **{key: filters[key] for key in (
+        raw_items = _bq_complaints(limit=min(limit * 4, 500), include_system=include_system, **{key: filters[key] for key in (
             'district', 'state', 'category', 'urgency', 'date_from', 'date_to', 'language',
             'channel', 'status', 'ward', 'ticket',
         )})
-        if raw_items is not None:
+        if raw_items:
             source = 'bigquery'
+        else:
+            raw_items = None
     if raw_items is None:
-        raw_items = _db_feed_items(filters, limit=min(limit * 4, 1000), ascending=(sort_order == 'oldest'))
+        raw_items = _db_feed_items(filters, limit=min(limit * 4, 1000), ascending=(sort_order == 'oldest'), include_system=include_system)
 
     complaints, duplicate_count, suppressed_count = _visible_feed_items(raw_items, include_system=include_system)
     complaints = [_public_feed_item(item) for item in complaints]
