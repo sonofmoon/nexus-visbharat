@@ -287,23 +287,91 @@ rate limiting, abuse detection and monitoring.
 
 ## Run locally
 
-Use Python 3.11. Dependencies are defined in `requirements.txt` and resolved in `requirements.lock`.
+This section is for a safe, local demonstration. It uses synthetic data, SQLite and manual/offline fallbacks. It does not create a municipal pilot and it does not require Google Cloud credentials.
 
-```sh
-python -m venv .venv
-# Activate .venv for your shell
-pip install -r requirements.txt
+If you only want to explore NVB, use the [hosted showcase](https://nexus-visbharath-510474645723.asia-south1.run.app/). Use the local instructions when you want to run the application on your own computer.
+
+### Before you start
+
+- Windows 10/11, macOS or Linux.
+- Python 3.11. Newer Python versions may not be supported by every dependency.
+- At least 4 GB of available memory and approximately 2 GB of free disk space.
+- Internet access for the first dependency installation.
+- A terminal window. No Google Cloud account or API key is needed for the offline demo.
+
+Download Python 3.11 from [python.org](https://www.python.org/downloads/), and during Windows installation select **Add Python to PATH**.
+
+### Windows PowerShell
+
+Open PowerShell in the folder containing the repository and run:
+
+```powershell
+py -3.11 -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+$env:NVB_DISABLE_EXTERNAL_SERVICES="1"
+$env:DEMO_MODE="true"
 python -m flask --app app run --host 127.0.0.1 --port 5000 --no-reload
 ```
 
-For an isolated offline demonstration:
+Keep this PowerShell window open while using NVB. The environment variables apply to this window only.
 
-```sh
-NVB_DISABLE_EXTERNAL_SERVICES=1
-DEMO_MODE=true
+### Windows Command Prompt
+
+```bat
+py -3.11 -m venv .venv
+.venv\Scripts\activate.bat
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+set NVB_DISABLE_EXTERNAL_SERVICES=1
+set DEMO_MODE=true
+python -m flask --app app run --host 127.0.0.1 --port 5000 --no-reload
 ```
 
-Set the variables in your shell or local environment before starting the application. Do not commit `.env` files, credentials or service-account keys.
+### macOS or Linux
+
+```sh
+python3.11 -m venv .venv
+. .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+export NVB_DISABLE_EXTERNAL_SERVICES=1
+export DEMO_MODE=true
+python -m flask --app app run --host 127.0.0.1 --port 5000 --no-reload
+```
+
+### Open the local application
+
+After the server starts, open:
+
+- [NVB home](http://127.0.0.1:5000/)
+- [Pilot Portal](http://127.0.0.1:5000/pilot)
+- [Public submission](http://127.0.0.1:5000/submit)
+
+Demo mode seeds demonstration roles and synthetic records. Use the role selector where available to inspect the Admin, Analyst and Auditor experiences. Do not enter real citizen information into a synthetic demonstration.
+
+AI and external channel features may show an unavailable or manual-review state in this mode. That is expected: the local demo deliberately does not call external providers. A request can still be inspected through the deterministic/manual workflow.
+
+To stop the server, press `Ctrl+C`. To leave the virtual environment, run `deactivate`.
+
+### Common problems
+
+| Problem | What to do |
+|---|---|
+| `python` or `py` is not recognised | Reinstall Python 3.11 and enable **Add Python to PATH**, then open a new terminal. |
+| PowerShell refuses activation | Run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` in the current PowerShell window and activate again. |
+| Port 5000 is already in use | Start with `--port 5001` and open `http://127.0.0.1:5001/`. |
+| Dependency installation fails | Confirm that Python 3.11 is active with `python --version`, then recreate `.venv` and retry. |
+| AI says unavailable | This is normal when `NVB_DISABLE_EXTERNAL_SERVICES=1`; manual review remains available. |
+| The page does not load | Confirm the terminal still shows the Flask server running and use `http://127.0.0.1:5000/`, not the Cloud Run URL. |
+
+Do not commit `.env` files, credentials, API keys or service-account keys. The demo does not need any of them.
+
+### Real pilot deployment
+
+The local demo is not an operational installation. A real pilot requires a trained deployment operator, external PostgreSQL/Cloud SQL, Secret Manager, OIDC identity, IAM configuration, approved provider settings, reviewed official geography and authority evidence. Follow the [Ministry Pilot Deployment Runbook](docs/MINISTRY_PILOT_DEPLOYMENT_RUNBOOK.md). Do not attempt to open a real pilot by setting `DEMO_MODE=false` on a laptop.
 
 ## Persistence and deployment
 

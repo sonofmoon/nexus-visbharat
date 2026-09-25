@@ -219,21 +219,21 @@
   <!-- Live Citizen Email Gateway Modal -->
   <div id="emailModalOverlay" class="ivr-modal-backdrop" onclick="if(event.target===this) closeEmailModal()" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:1rem; box-sizing:border-box;">
     <div style="width:min(580px, 96vw); background:#ffffff; border-radius:20px; border:1px solid #bae6fd; overflow:hidden; box-shadow:0 24px 50px rgba(15,23,42,0.35); animation:modalFadeIn 0.25s ease-out;">
-      <div style="background:linear-gradient(135deg,#0284c7,#0369a1); color:white; padding:1.25rem 1.5rem; position:relative;">
-        <button type="button" onclick="closeEmailModal()" aria-label="Close modal" style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.2); border:none; color:white; width:34px; height:34px; border-radius:50%; font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">&times;</button>
+      <div style="background:linear-gradient(135deg,#e0f2fe,#bae6fd); color:#0f172a; padding:1.25rem 1.5rem; position:relative; border-bottom:1px solid #7dd3fc;">
+        <button type="button" onclick="closeEmailModal()" aria-label="Close modal" style="position:absolute; top:16px; right:16px; background:rgba(0,0,0,0.06); border:none; color:#1e293b; width:34px; height:34px; border-radius:50%; font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.2s;">&times;</button>
         <div style="display:flex; align-items:center; gap:12px;">
-          <div style="width:48px; height:48px; border-radius:12px; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
+          <div style="width:48px; height:48px; border-radius:12px; background:#0284c7; color:white; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
             <i class="bi bi-envelope-check-fill"></i>
           </div>
           <div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <h3 style="margin:0; font-size:1.2rem; font-weight:700;">Citizen Email Gateway</h3>
-              <span style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem; font-weight:700; background:#22c55e; color:#ffffff; padding:2px 8px; border-radius:999px; text-transform:uppercase; letter-spacing:0.5px;">
+              <h3 style="margin:0; font-size:1.2rem; font-weight:700; color:#0f172a;">Citizen Email Gateway</h3>
+              <span style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem; font-weight:700; background:#16a34a; color:#ffffff; padding:2px 8px; border-radius:999px; text-transform:uppercase; letter-spacing:0.5px;">
                 <span style="width:6px; height:6px; border-radius:50%; background:#ffffff; display:inline-block; animation:pulse 1.5s infinite;"></span>
                 Live Intake
               </span>
             </div>
-            <p style="margin:4px 0 0 0; font-size:0.85rem; opacity:0.95;">Official 24/7 Automated Intake Inbox</p>
+            <p style="margin:4px 0 0 0; font-size:0.85rem; color:#000000; font-weight:600;">Official 24/7 Automated Intake Inbox</p>
           </div>
         </div>
       </div>
@@ -272,18 +272,6 @@
           </ul>
         </div>
 
-        <!-- Collapsible Simulator for Devs/Reviewers -->
-        <details style="border:1px dashed #cbd5e1; border-radius:10px; padding:0.6rem 0.9rem; font-size:0.82rem; color:#64748b;">
-          <summary style="cursor:pointer; font-weight:600; color:#475569; user-select:none;">
-            <i class="bi bi-terminal"></i> In-Browser Simulator (Quick Test Mode)
-          </summary>
-          <div style="margin-top:0.75rem; padding-top:0.5rem; border-top:1px solid #f1f5f9;">
-            <label style="display:block; font-size:0.75rem; font-weight:700; color:#334155; margin-bottom:4px;">SIMULATE INBOUND EMAIL TEXT</label>
-            <textarea id="emailTextInput" rows="3" style="width:100%; box-sizing:border-box; padding:8px 10px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.85rem; resize:vertical;">Need water pipeline extension in peri-urban zone near Ward 8.</textarea>
-            <button type="button" id="sendEmailSimBtn" onclick="runEmailSim()" style="width:100%; margin-top:8px; padding:9px; border-radius:8px; background:#475569; color:white; border:none; font-size:0.85rem; font-weight:600; cursor:pointer;">Send Simulated Email to /api/submit</button>
-            <div id="emailStatusBox" style="display:none; margin-top:8px; padding:8px 10px; border:1px solid #bae6fd; background:#f0f9ff; color:#0c4a6e; border-radius:8px; font-size:0.8rem;"></div>
-          </div>
-        </details>
       </div>
     </div>
   </div>

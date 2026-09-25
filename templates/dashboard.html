@@ -23,6 +23,97 @@
 <link rel="stylesheet" href="/static/css/auditor-workbench.css">
 </head>
 <body class="dashboard-page{% if pilot_scoped %} pilot-scoped-theme{% endif %}">
+  <!-- Branded Console Splash Screen -->
+  <div id="nvbConsoleSplash" aria-live="polite" aria-label="Loading Console" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(248,250,252,0.96); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1), visibility 0.3s;">
+    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:24px; padding:2.5rem 3rem; box-shadow:0 20px 45px -10px rgba(15,23,42,0.15); display:flex; flex-direction:column; align-items:center; text-align:center; max-width:440px; width:90%; position:relative;">
+      <!-- Glowing Brand Symbol with Halo -->
+      <div style="position:relative; width:72px; height:72px; margin-bottom:1.25rem; display:flex; align-items:center; justify-content:center;">
+        <div style="position:absolute; inset:0; border-radius:50%; background:linear-gradient(135deg, #0284c7, #38bdf8); opacity:0.25; animation:nvbPulseRing 2s infinite;"></div>
+        <div style="width:58px; height:58px; border-radius:18px; background:linear-gradient(135deg, #0284c7, #0369a1); color:#ffffff; display:flex; align-items:center; justify-content:center; font-size:1.8rem; box-shadow:0 8px 20px rgba(2,132,199,0.35);">
+          <i class="bi bi-broadcast-pin"></i>
+        </div>
+      </div>
+
+      <!-- Title & Brand -->
+      <div style="font-size:1.35rem; font-weight:800; color:#0f172a; letter-spacing:-0.02em; margin-bottom:0.25rem;">
+        Nexus <span style="color:#0284c7;">VisBharat</span>
+      </div>
+      <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1.5rem;">
+        Policy Console
+      </div>
+
+      <!-- Smooth Spinner Halo -->
+      <div style="width:36px; height:36px; border:3px solid #e0f2fe; border-top-color:#0284c7; border-radius:50%; animation:nvbSpin 0.8s linear infinite; margin-bottom:1.25rem;"></div>
+
+      <!-- Dynamic Status Text -->
+      <div id="nvbSplashStatus" style="font-size:0.92rem; font-weight:600; color:#1e293b; line-height:1.4;">
+        Syncing Citizen Records &amp; Connected Grid Telemetry...
+      </div>
+      <div id="nvbSplashSubstatus" style="font-size:0.78rem; color:#64748b; margin-top:0.4rem;">
+        Initializing operational intelligence corridors
+      </div>
+    </div>
+  </div>
+
+  <style>
+  @keyframes nvbSpin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes nvbPulseRing {
+    0% { transform: scale(0.9); opacity: 0.3; }
+    50% { transform: scale(1.28); opacity: 0.05; }
+    100% { transform: scale(0.9); opacity: 0.3; }
+  }
+  .nvb-splash-hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+  }
+  body.dark-theme #nvbConsoleSplash {
+    background: rgba(15, 23, 42, 0.96) !important;
+  }
+  body.dark-theme #nvbConsoleSplash > div {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.5) !important;
+  }
+  body.dark-theme #nvbConsoleSplash [style*="color:#0f172a"] {
+    color: #f8fafc !important;
+  }
+  body.dark-theme #nvbConsoleSplash [style*="color:#1e293b"] {
+    color: #e2e8f0 !important;
+  }
+  body.dark-theme #nvbConsoleSplash [style*="color:#64748b"] {
+    color: #94a3b8 !important;
+  }
+  </style>
+
+  <script>
+  window.showConsoleSplash = function(statusText, substatusText) {
+    const splash = document.getElementById('nvbConsoleSplash');
+    const statusEl = document.getElementById('nvbSplashStatus');
+    const substatusEl = document.getElementById('nvbSplashSubstatus');
+    if (statusEl && statusText) statusEl.textContent = statusText;
+    if (substatusEl && substatusText !== undefined) substatusEl.textContent = substatusText;
+    if (splash) {
+      splash.classList.remove('nvb-splash-hidden');
+      splash.style.opacity = '1';
+      splash.style.visibility = 'visible';
+      splash.style.pointerEvents = 'auto';
+    }
+  };
+
+  window.hideConsoleSplash = function() {
+    const splash = document.getElementById('nvbConsoleSplash');
+    if (!splash || splash.classList.contains('nvb-splash-hidden')) return;
+    splash.style.opacity = '0';
+    splash.style.pointerEvents = 'none';
+    setTimeout(function() {
+      splash.classList.add('nvb-splash-hidden');
+    }, 300);
+  };
+  </script>
+
  <a class="skip-link" href="#mainContent">Skip to dashboard</a>
  <aside class="console-sidebar" id="consoleSidebar" aria-label="Workspace navigation">
  <a class="console-brand" href="/"><span class="brand-symbol" aria-hidden="true"><i class="bi bi-broadcast-pin"></i></span><span class="rail-label">Nexus <strong>VisBharat</strong><small>{% if pilot_scoped %}PILOT SCOPE{% else %}POLICY CONSOLE{% endif %}</small></span></a>

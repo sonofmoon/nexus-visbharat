@@ -15,24 +15,8 @@ from ..services.public_safety import allow as allow_public_request
 portal_bp=Blueprint('pilot_portal',__name__)
 
 
-def public_ai_status():
-    """Expose a truthful, non-secret intake-assistance status to citizens."""
-    client = current_app.extensions.get('google_ai_client')
-    available = bool(
-        current_app.config.get('PILOT_MODEL_CALLS')
-        and current_app.config.get('EXTERNAL_SERVICES_ENABLED')
-        and client
-        and getattr(client, 'use_vertex', False)
-        and not getattr(client, 'api_key', '')
-        and getattr(client, 'vertex_openai_location', 'global') in current_app.config.get('PILOT_MODEL_REGIONS', ['asia-south1'])
-    )
-    return {
-        'status': 'available' if available else 'manual_review_fallback',
-        'label': 'Regional AI preview available' if available else 'AI preview unavailable; officer review remains available',
-        'provider': 'Gemini on regional Vertex AI' if available else 'Not live-verified',
-        'manual_review_available': True,
-        'notice': 'AI suggestions are optional and require citizen review before submission.' if available else 'Your request can still be submitted for officer review without live AI assistance.',
-    }
+from ..services.pilot_portal import public_ai_status
+
 
 
 @portal_bp.errorhandler(ValueError)

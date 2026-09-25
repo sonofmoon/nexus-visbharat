@@ -170,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
  }
  loadStates();
  loadDistrictsForBrief();
+  setTimeout(() => { if (typeof window.hideConsoleSplash === "function") window.hideConsoleSplash(); }, 2200);
  if (window.NVB_DEMO_TICKET) {
  initAdminRequestFilters();
  document.getElementById('adminRequestStatus').value = '';
@@ -559,6 +560,7 @@ async function loadStats() {
  animateNumber('stateCount', stateCount);
  animateNumber('resolutionRate', resolutionRate, '%');
  window.NVBConsole?.setStats({ totalComplaints, districtCount, languageCount, stateCount, resolutionRate, dailyTrend: stats.daily_trend || {} });
+  if (typeof window.hideConsoleSplash === "function") window.hideConsoleSplash();
 }
 
 const metricAnimations = new Map();
@@ -2057,6 +2059,26 @@ function markSuiteFreshness(suite, sourceLabel = 'data') {
  el.textContent = `Last updated: ${_nowTimeLabel()} | Source: ${sourceLabel}`;
 }
 
+const ROLE_SPLASH_MESSAGES = {
+  analyst: {
+    status: 'Syncing Citizen Records & Connected Grid Telemetry...',
+    substatus: 'Syncing Analyst Intelligence & Evidence Models...'
+  },
+  auditor: {
+    status: 'Syncing Citizen Records & Connected Grid Telemetry...',
+    substatus: 'Verifying Audit Chains & Forensic Telemetry...'
+  },
+  admin: {
+    status: 'Syncing Citizen Records & Connected Grid Telemetry...',
+    substatus: 'Syncing Delivery Health & Operations Telemetry...'
+  },
+  public: {
+    status: 'Syncing Citizen Records & Connected Grid Telemetry...',
+    substatus: 'Syncing Public Transparency Ledger...'
+  }
+};
+let rbacSystemInitialized = false;
+
 function initRbacRoleSystem() {
  const selector = document.getElementById('userRoleSelector');
  if (!selector) return;
@@ -2082,9 +2104,22 @@ function initRbacRoleSystem() {
 
  switchRbacRoleView(savedRole);
  bindRbacControls();
+  rbacSystemInitialized = true;
 }
 
 function switchRbacRoleView(role) {
+  if (rbacSystemInitialized && typeof window.showConsoleSplash === 'function') {
+    const splashInfo = ROLE_SPLASH_MESSAGES[role] || {
+      status: 'Syncing Citizen Records & Connected Grid Telemetry...',
+      substatus: 'Loading role workspace...'
+    };
+    window.showConsoleSplash(splashInfo.status, splashInfo.substatus);
+    setTimeout(() => {
+      if (typeof window.hideConsoleSplash === 'function') {
+        window.hideConsoleSplash();
+      }
+    }, 400);
+  }
  sessionStorage.setItem('nvb_active_role', role);
  const selector = document.getElementById('userRoleSelector');
  if (selector && selector.value !== role) selector.value = role;
