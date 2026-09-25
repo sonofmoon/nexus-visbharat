@@ -4,13 +4,15 @@
 
 Nexus VisBharat connects citizen voice with the public-service teams responsible for understanding, prioritising and following through on local needs. A person can submit a report in text or speech; NVB protects the input, structures the context, routes the case and preserves the human decision trail.
 
-This repository is the Code for Communities submission for [Build with AI: Code for Communities, second edition](https://hack2skill.com/event/codeforcommunities2?utm_source=hack2skill&utm_medium=homepage&sectionid=6a7aeec965fbd7acf70c1764).
+This repository is the Code for Communities submission for [Build with AI: Code for Communities, second edition ↗](https://hack2skill.com/event/codeforcommunities2?utm_source=hack2skill&utm_medium=homepage&sectionid=6a7aeec965fbd7acf70c1764).
+
+> 💡 **Reviewer Tip:** Hold `Ctrl` (or `Cmd` on macOS) when clicking live demo links to open them in a new browser tab alongside this documentation.
 
 ## Live service and interactive showcase
 
-- **Primary Live Cloud Run Deployment:** [nexus-visbharath-510474645723.asia-south1.run.app](https://nexus-visbharath-510474645723.asia-south1.run.app/)
-- **Interactive Visual Showcase App:** [nexusaitech.in/apps/nvb/index.html](https://nexusaitech.in/apps/nvb/index.html)
-- **Source code:** [github.com/sonofmoon/nexus-visbharat](https://github.com/sonofmoon/nexus-visbharat)
+- **Primary Live Cloud Run Deployment:** [nexus-visbharath-510474645723.asia-south1.run.app ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/)
+- **Interactive Visual Showcase App:** [nexusaitech.in/apps/nvb/index.html ↗](https://nexusaitech.in/apps/nvb/index.html)
+- **Source code:** [github.com/sonofmoon/nexus-visbharat ↗](https://github.com/sonofmoon/nexus-visbharat)
 
 The live deployment is a working demonstration environment. The showcase corpus is synthetic, and the evidence notes below describe what has been measured, what is provisional and what still requires a real municipal pilot.
 
@@ -277,19 +279,21 @@ rate limiting, abuse detection and monitoring.
 
 ## Explore the live workflows
 
-- [Citizen voice intake](https://nexus-visbharath-510474645723.asia-south1.run.app/submit)
-- [Ticket journey and submission trace](https://nexus-visbharath-510474645723.asia-south1.run.app/submission)
-- [Policy Dashboard](https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard)
-- [Pilot Portal](https://nexus-visbharath-510474645723.asia-south1.run.app/pilot)
-- [Auditor workspace](https://nexus-visbharath-510474645723.asia-south1.run.app/auditor)
-- [AI operation status](https://nexus-visbharath-510474645723.asia-south1.run.app/api/ai/status)
-- [Readiness endpoint](https://nexus-visbharath-510474645723.asia-south1.run.app/readyz)
+> 💡 *Click any workflow below with `Ctrl` / `Cmd` to launch it in a new browser tab.*
+
+- [Citizen voice intake ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/submit)
+- [Ticket journey and submission trace ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/submission)
+- [Policy Dashboard ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard)
+- [Pilot Portal ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/pilot)
+- [Auditor workspace ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/auditor)
+- [AI operation status ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/api/ai/status)
+- [Readiness endpoint ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/readyz)
 
 ## Run locally
 
 This section is for a safe, local demonstration. It uses synthetic data, SQLite and manual/offline fallbacks. It does not create a municipal pilot and it does not require Google Cloud credentials.
 
-If you only want to explore NVB, use the [hosted showcase](https://nexus-visbharath-510474645723.asia-south1.run.app/). Use the local instructions when you want to run the application on your own computer.
+If you only want to explore NVB, use the [hosted showcase ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/). Use the local instructions when you want to run the application on your own computer.
 
 ### Before you start
 
