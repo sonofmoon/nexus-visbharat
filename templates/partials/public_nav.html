@@ -18,6 +18,43 @@
       {% endif %}
     </nav>
     <div class="public-nav-actions">
+            {% if pilot_page %}
+      <div class="pilot-auth-dropdown" style="position:relative;">
+        <button type="button" class="pilot-auth-badge" onclick="togglePilotAuthModal()" aria-label="Officer Access Information" style="display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:999px; background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; font-size:0.78rem; font-weight:700; cursor:pointer; transition:all 0.2s;">
+          <i class="bi bi-shield-check" style="color:#0284c7;"></i>
+          <span>Officer Access · Demo RBAC</span>
+          <i class="bi bi-chevron-down" style="font-size:0.7rem; opacity:0.7;"></i>
+        </button>
+        <div id="pilotAuthPopover" style="display:none; position:absolute; top:calc(100% + 8px); right:0; width:340px; background:#ffffff; border:1px solid #cbd5e1; border-radius:14px; box-shadow:0 12px 30px rgba(15,23,42,0.18); padding:1rem; z-index:9999; text-align:left;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;">
+            <strong style="font-size:0.85rem; color:#0f172a; display:flex; align-items:center; gap:6px;">
+              <i class="bi bi-person-badge-fill" style="color:#0284c7;"></i> Officer Identity &amp; SSO
+            </strong>
+            <button type="button" onclick="togglePilotAuthModal()" style="border:none; background:none; color:#64748b; font-size:1.1rem; cursor:pointer; line-height:1;">&times;</button>
+          </div>
+          <div style="background:#f8fafc; border-radius:8px; padding:8px 10px; margin-bottom:8px; border-left:3px solid #22c55e;">
+            <div style="font-size:0.74rem; font-weight:700; color:#15803d; text-transform:uppercase;">Current Evaluation Session</div>
+            <p style="margin:2px 0 0; font-size:0.8rem; color:#334155; line-height:1.4;">Pre-authenticated demo tokens active. Select between <strong>Analyst</strong>, <strong>Administrator</strong>, <strong>Auditor</strong>, or <strong>District Officers</strong> in the top toolbar without entering passwords.</p>
+          </div>
+          <div style="background:#f0f9ff; border-radius:8px; padding:8px 10px; border-left:3px solid #0284c7;">
+            <div style="font-size:0.74rem; font-weight:700; color:#0369a1; text-transform:uppercase;">Operational Ministry Mode (/pilot/login)</div>
+            <p style="margin:2px 0 0; font-size:0.8rem; color:#334155; line-height:1.4;">Production uses OpenID Connect (OIDC PKCE S256) Single Sign-On via <em>Jan Parichay / Google Workspace for Government</em>, binding officers strictly to their gazetted district jurisdiction.</p>
+          </div>
+        </div>
+      </div>
+      <script>
+      function togglePilotAuthModal() {
+        const pop = document.getElementById('pilotAuthPopover');
+        if (pop) pop.style.display = pop.style.display === 'none' || !pop.style.display ? 'block' : 'none';
+      }
+      document.addEventListener('click', function(e) {
+        const wrap = document.querySelector('.pilot-auth-dropdown');
+        const pop = document.getElementById('pilotAuthPopover');
+        if (wrap && pop && !wrap.contains(e.target)) pop.style.display = 'none';
+      });
+      </script>
+      {% endif %}
+
       <button class="public-icon-button" type="button" data-public-theme-toggle aria-label="Switch to dark theme"><i class="bi bi-moon" aria-hidden="true"></i></button>
       <button class="public-icon-button public-menu-button" type="button" aria-label="Open navigation" aria-expanded="false" aria-controls="public-navigation" data-public-menu><i class="bi bi-list" aria-hidden="true"></i></button>
     </div>
