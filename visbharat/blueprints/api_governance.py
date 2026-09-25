@@ -1011,7 +1011,7 @@ def public_transparency_categories():
         f'''
         SELECT c.category, COUNT(*) AS request_count,
                SUM(CASE WHEN c.urgency = 'Emergency' THEN 1 ELSE 0 END) AS emergency_count,
-               COUNT(DISTINCT c.district) AS district_coverage
+               COUNT(DISTINCT CASE WHEN c.state IS NOT NULL AND TRIM(c.state) != '' AND LOWER(c.state) != 'unknown' AND c.district IS NOT NULL AND TRIM(c.district) != '' AND LOWER(c.district) != 'unknown' THEN c.district END) AS district_coverage
         FROM citizen_requests c
         WHERE {public_clause}
         GROUP BY c.category

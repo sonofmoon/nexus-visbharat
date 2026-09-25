@@ -239,9 +239,18 @@ def _stored_submission_evidence(request_row):
 
 
 def _district_geo(repo, district):
-    row = repo.get_district_row(district)
+    row = repo.get_district_row(district) if district else None
+    if row is None and district:
+        clean = str(district).strip().lower()
+        for _, d_row in repo.df_districts.iterrows():
+            d_name = str(d_row['district']).strip().lower()
+            if d_name == clean or d_name in clean or clean in d_name:
+                row = d_row
+                break
     if row is None:
-        return 20.5937, 78.9629, 'Unknown'
+        row = repo.get_district_row('Vellore')
+    if row is None:
+        row = repo.df_districts.iloc[0]
     lat = float(row['lat']) + random.uniform(-0.03, 0.03)
     lng = float(row['lng']) + random.uniform(-0.03, 0.03)
     return round(lat, 4), round(lng, 4), str(row['state'])

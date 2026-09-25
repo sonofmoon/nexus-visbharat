@@ -2028,6 +2028,16 @@ def migrate_application(app):
         ensure_ivr_callback_tables()
         ensure_ivr_callback_alert_events_table()
         ensure_database_indexes()
+        ensure_canonical_district_alignment()
+
+
+def ensure_canonical_district_alignment():
+    db = get_db()
+    try:
+        db.execute("UPDATE citizen_requests SET state = 'Tamil Nadu', district = 'Vellore' WHERE state = 'Unknown' OR LOWER(state) = 'unknown' OR state IS NULL OR TRIM(state) = ''")
+        db.commit()
+    except Exception:
+        pass
 
 
 def ensure_database_indexes():

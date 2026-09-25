@@ -200,7 +200,8 @@ def metric(name, value, unit, meta, numerator=None, denominator=None, assumption
 def stats(scope):
     clause, params = where(scope)
     row = query(f'''SELECT COUNT(*) AS total_complaints,
-        COUNT(DISTINCT c.state) AS states_covered, COUNT(DISTINCT c.district) AS districts_covered,
+        COUNT(DISTINCT CASE WHEN c.state IS NOT NULL AND TRIM(c.state) != '' AND LOWER(c.state) != 'unknown' THEN c.state END) AS states_covered,
+        COUNT(DISTINCT CASE WHEN c.state IS NOT NULL AND TRIM(c.state) != '' AND LOWER(c.state) != 'unknown' AND c.district IS NOT NULL AND TRIM(c.district) != '' AND LOWER(c.district) != 'unknown' THEN c.district END) AS districts_covered,
         COUNT(DISTINCT c.input_language) AS languages_supported,
         SUM(CASE WHEN LOWER(c.status) IN ('closed','resolved') THEN 1 ELSE 0 END) AS resolved,
         SUM(CASE WHEN c.urgency = 'Emergency' THEN 1 ELSE 0 END) AS emergency_count
@@ -947,7 +948,7 @@ def _inclusion_group_audit(scope, dimension):
     column = 'input_language' if dimension == 'language' else 'source_channel'
     rows = query(f'''SELECT COALESCE(c.{column}, 'unknown') AS group_name,
         COUNT(*) AS reports,
-        COUNT(DISTINCT c.district) AS districts,
+        COUNT(DISTINCT CASE WHEN c.state IS NOT NULL AND TRIM(c.state) != '' AND LOWER(c.state) != 'unknown' AND c.district IS NOT NULL AND TRIM(c.district) != '' AND LOWER(c.district) != 'unknown' THEN c.district END) AS districts,
         SUM(CASE WHEN c.urgency='Emergency' THEN 1 ELSE 0 END) AS emergencies,
         SUM(CASE WHEN LOWER(c.status) IN ('closed','resolved') THEN 1 ELSE 0 END) AS resolved
         FROM citizen_requests c WHERE {clause}

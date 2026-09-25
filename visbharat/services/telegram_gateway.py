@@ -25,6 +25,27 @@ STRINGS = json.loads(
 )
 LANGUAGES = {lang: STRINGS[lang] for lang in ("en", "ta", "te")}
 
+STATE_KEYBOARD = [
+    [("Tamil Nadu", "state:Tamil Nadu"), ("Andhra Pradesh", "state:Andhra Pradesh")],
+    [("Telangana", "state:Telangana")],
+]
+
+DISTRICT_KEYBOARDS = {
+    "Tamil Nadu": [
+        [("Vellore", "dist:Vellore"), ("Ranipet", "dist:Ranipet")],
+        [("Tirupathur", "dist:Tirupathur"), ("Chennai", "dist:Chennai")],
+        [("Coimbatore", "dist:Coimbatore"), ("Salem", "dist:Salem")],
+    ],
+    "Andhra Pradesh": [
+        [("Tirupati", "dist:Tirupati"), ("Chittoor", "dist:Chittoor")],
+        [("Visakhapatnam", "dist:Visakhapatnam"), ("Guntur", "dist:Guntur")],
+    ],
+    "Telangana": [
+        [("Hyderabad", "dist:Hyderabad"), ("Warangal", "dist:Warangal")],
+        [("Medchal", "dist:Medchal-Malkajgiri"), ("Karimnagar", "dist:Karimnagar")],
+    ],
+}
+
 
 def _now():
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
@@ -289,11 +310,12 @@ def _submit(chat_id, session, ingest_text):
     if not issue:
         _text(chat_id, LANGUAGES[language]["issue"])
         return
+    district = session.get("district") or session.get("location") or "Vellore"
     payload, error = ingest_text(
         channel="Telegram",
         text=issue,
         language=language,
-        district=session.get("location", ""),
+        district=district,
         sender=str(chat_id),
         endpoint="/api/channels/telegram/conversation",
         idempotency_key=f"telegram:{chat_id}:{session.get('nonce', 'unknown')}",
@@ -320,6 +342,17 @@ def _callback(update, chat_id, ingest_text):
         session.update(language=language, stage="issue")
         _save(chat_id, session)
         _text(chat_id, LANGUAGES[language]["welcome"])
+    elif action.startswith("state:"):
+        state = action[6:]
+        session.update(state=state, stage="district")
+        _save(chat_id, session)
+        keyboard = DISTRICT_KEYBOARDS.get(state, DISTRICT_KEYBOARDS["Tamil Nadu"])
+        _text(chat_id, f"State: {state}\n\nPlease select your District:", _keyboard(keyboard))
+    elif action.startswith("dist:"):
+        district = action[5:]
+        session.update(district=district, location=district, stage="ward")
+        _save(chat_id, session)
+        _text(chat_id, f"District: {district}\n\nPlease enter your local Ward, Village or Area name (or type 'Skip'):")
     elif action == "confirm" and session.get("stage") == "review":
         session["stage"] = "privacy"
         _save(chat_id, session)
@@ -364,22 +397,35 @@ def _message(update, chat_id, ingest_text):
         if voice_id:
             try:
                 transcription = _voice_text(voice_id, _lang(session))
-                session.update(issue=transcription, voice_file_id=voice_id, stage="location")
+                session.update(issue=transcription, voice_file_id=voice_id, stage="state")
             except Exception as exc:
                 LOGGER.warning("Immediate voice transcription failed: %s; using placeholder", exc)
-                session.update(issue="Voice report", voice_file_id=voice_id, stage="location")
+                session.update(issue="Voice report", voice_file_id=voice_id, stage="state")
         elif text:
-            session.update(issue=text, stage="location")
+            session.update(issue=text, stage="state")
         else:
             _text(chat_id, LANGUAGES[_lang(session)]["issue"])
             return
         _save(chat_id, session)
-        _text(chat_id, LANGUAGES[_lang(session)]["location"])
+        _text(chat_id, "Please select your State:", _keyboard(STATE_KEYBOARD))
+    elif stage == "state":
+        _text(chat_id, "Please select your State using the buttons below:", _keyboard(STATE_KEYBOARD))
+    elif stage == "district":
+        state = session.get("state", "Tamil Nadu")
+        keyboard = DISTRICT_KEYBOARDS.get(state, DISTRICT_KEYBOARDS["Tamil Nadu"])
+        _text(chat_id, f"Please select your District ({state}) using the buttons below:", _keyboard(keyboard))
+    elif stage == "ward":
+        ward = "" if text.lower() == "skip" else text
+        session.update(ward=ward, stage="review")
+        _save(chat_id, session)
+        language = _lang(session)
+        state = session.get("state", "Tamil Nadu")
+        district = session.get("district", "Vellore")
+        loc_display = f"{district}, {state}" + (f" (Ward / Area: {ward})" if ward else "")
+        review = f"{LANGUAGES[language]['review']}\n\nIssue: {session.get('issue', '')}\nLocation: {loc_display}"
+        _text(chat_id, review, _keyboard([[('Confirm & submit', 'confirm'), ('Edit report', 'edit')], [('Cancel', 'cancel')]]))
     elif stage == "location":
-        if not text:
-            _text(chat_id, LANGUAGES[_lang(session)]["location"])
-            return
-        session.update(location=text, stage="review")
+        session.update(location=text, district="Vellore", state="Tamil Nadu", stage="review")
         _save(chat_id, session)
         language = _lang(session)
         review = f"{LANGUAGES[language]['review']}\n\nIssue: {session.get('issue', '')}\nLocation: {text}"

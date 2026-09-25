@@ -208,6 +208,28 @@
  <div style="padding:1rem 1.1rem;">
  <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">WHATSAPP NUMBER</label>
  <input type="tel" id="waPhoneInput" value="+91 90000 11223" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; margin-bottom:10px;">
+ <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+   <div>
+     <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">STATE</label>
+     <select id="waStateSelect" onchange="updateWaDistricts()" style="width:100%; padding:9px 10px; border-radius:10px; border:1px solid #cbd5e1; font-size:0.88rem; background:white;">
+       <option value="Tamil Nadu" selected>Tamil Nadu</option>
+       <option value="Andhra Pradesh">Andhra Pradesh</option>
+       <option value="Telangana">Telangana</option>
+     </select>
+   </div>
+   <div>
+     <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">DISTRICT</label>
+     <select id="waDistrictSelect" style="width:100%; padding:9px 10px; border-radius:10px; border:1px solid #cbd5e1; font-size:0.88rem; background:white;">
+       <option value="Vellore" selected>Vellore</option>
+       <option value="Chennai">Chennai</option>
+       <option value="Coimbatore">Coimbatore</option>
+       <option value="Ranipet">Ranipet</option>
+       <option value="Tirupathur">Tirupathur</option>
+       <option value="Tirupati">Tirupati</option>
+       <option value="Hyderabad">Hyderabad</option>
+     </select>
+   </div>
+ </div>
  <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">MESSAGE</label>
  <textarea id="waTextInput" rows="3" style="width:100%; padding:10px 12px; border-radius:10px; border:1px solid #cbd5e1; resize:vertical;">Streetlight not working near bus stop in Ward 21.</textarea>
  <button type="button" id="sendWaSimBtn" onclick="runWhatsAppSim()" style="width:100%; margin-top:12px; padding:12px; border-radius:10px; background:#16a34a; color:white; border:none; font-size:0.95rem; font-weight:700; cursor:pointer;">Submit WhatsApp Request</button>
@@ -240,7 +262,7 @@
 
       <div style="padding:1.5rem;">
         <!-- Official Email Address Box -->
-        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; padding:1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:1.25rem;">
+        <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; padding:1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:1.1rem;">
           <div>
             <div style="font-size:0.75rem; font-weight:700; color:#0369a1; text-transform:uppercase; letter-spacing:0.5px;">Official Ingestion Address</div>
             <div id="officialEmailText" style="font-size:1.05rem; font-weight:700; color:#0f172a; margin-top:2px;">{{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}</div>
@@ -250,12 +272,22 @@
           </button>
         </div>
 
-        <!-- Direct Launch Actions -->
+        <!-- State, District & Ward Routing Guidance Box -->
+        <div style="background:#fffbeb; border:1px solid #fde68a; border-left:4px solid #f59e0b; border-radius:10px; padding:0.85rem 1rem; margin-bottom:1.15rem;">
+          <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:#92400e; font-size:0.88rem; margin-bottom:4px;">
+            <i class="bi bi-geo-alt-fill" style="color:#d97706; font-size:1rem;"></i> Location Guidance for Fast-Track Routing
+          </div>
+          <p style="margin:0; font-size:0.82rem; color:#78350f; line-height:1.45;">
+            When sending your email, please mention your <strong>State</strong> (<em>Tamil Nadu, Andhra Pradesh, or Telangana</em>), <strong>District</strong> (<em>e.g. Vellore, Tirupati</em>), and local <strong>Ward / Village / Area</strong> in your subject or message body. Our automated AI parser uses these details to route your grievance directly to the responsible municipal department without triage delays.
+          </p>
+        </div>
+
+        <!-- Direct Launch Actions with Pre-filled State, District & Ward Template -->
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1.25rem;">
-          <a id="openGmailWebLink" href="https://mail.google.com/mail/?view=cm&fs=1&to={{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}&su=Civic%20Grievance%20-%20Nexus%20VisBharat&body=Dear%20Nexus%20VisBharat%20Team%2C%0A%0APlease%20investigate%20the%20following%20civic%20issue%3A%0A%0AIssue%20Description%3A%20%0ALocation%20%2F%20Ward%3A%20%0ACity%20%2F%20District%3A%20%0APhone%20(optional)%3A%20" target="_blank" rel="noopener noreferrer" style="text-decoration:none; padding:12px 14px; border-radius:10px; background:#ea4335; color:#ffffff; font-weight:700; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(234,67,53,0.3); transition:all 0.2s;">
+          <a id="openGmailWebLink" href="https://mail.google.com/mail/?view=cm&fs=1&to={{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}&su=Civic%20Grievance%20-%20Nexus%20VisBharat&body=Dear%20Nexus%20VisBharat%20Team%2C%0A%0APlease%20investigate%20the%20following%20civic%20grievance%3A%0A%0AIssue%20Description%3A%20%0AState%3A%20%5BTamil%20Nadu%20%2F%20Andhra%20Pradesh%20%2F%20Telangana%5D%0ADistrict%3A%20%5Be.g.%20Vellore%20%2F%20Tirupati%5D%0AWard%20%2F%20Village%20%2F%20Area%3A%20%0AContact%20Mobile%20(optional)%3A%20" target="_blank" rel="noopener noreferrer" style="text-decoration:none; padding:12px 14px; border-radius:10px; background:#ea4335; color:#ffffff; font-weight:700; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(234,67,53,0.3); transition:all 0.2s;">
             <i class="bi bi-google"></i> Open in Gmail
           </a>
-          <a id="openDefaultMailLink" href="mailto:{{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}?subject=Civic%20Grievance%20-%20Nexus%20VisBharat&body=Dear%20Nexus%20VisBharat%20Team%2C%0A%0APlease%20investigate%20the%20following%20civic%20issue%3A%0A%0AIssue%20Description%3A%20%0ALocation%20%2F%20Ward%3A%20%0ACity%20%2F%20District%3A%20%0APhone%20(optional)%3A%20" style="text-decoration:none; padding:12px 14px; border-radius:10px; background:#0284c7; color:#ffffff; font-weight:700; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(2,132,199,0.3); transition:all 0.2s;">
+          <a id="openDefaultMailLink" href="mailto:{{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}?subject=Civic%20Grievance%20-%20Nexus%20VisBharat&body=Dear%20Nexus%20VisBharat%20Team%2C%0A%0APlease%20investigate%20the%20following%20civic%20grievance%3A%0A%0AIssue%20Description%3A%20%0AState%3A%20%5BTamil%20Nadu%20%2F%20Andhra%20Pradesh%20%2F%20Telangana%5D%0ADistrict%3A%20%5Be.g.%20Vellore%20%2F%20Tirupati%5D%0AWard%20%2F%20Village%20%2F%20Area%3A%20%0AContact%20Mobile%20(optional)%3A%20" style="text-decoration:none; padding:12px 14px; border-radius:10px; background:#0284c7; color:#ffffff; font-weight:700; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(2,132,199,0.3); transition:all 0.2s;">
             <i class="bi bi-envelope-fill"></i> Open Email App
           </a>
         </div>
@@ -518,40 +550,55 @@
  btn.disabled = false;
  btn.style.opacity = '1';
  }
+  function updateWaDistricts() {
+    const state = document.getElementById('waStateSelect')?.value || 'Tamil Nadu';
+    const distSelect = document.getElementById('waDistrictSelect');
+    if (!distSelect) return;
+    const distMap = {
+      'Tamil Nadu': ['Vellore', 'Chennai', 'Coimbatore', 'Madurai', 'Ranipet', 'Tirupathur', 'Salem', 'Tiruchirappalli', 'Erode', 'Tirunelveli', 'Thanjavur', 'Dindigul', 'Kanchipuram'],
+      'Andhra Pradesh': ['Tirupati', 'Chittoor', 'Visakhapatnam', 'Guntur', 'Krishna', 'NTR', 'Sri Potti Sriramulu Nellore', 'Kurnool', 'Ananthapuramu', 'YSR Kadapa', 'East Godavari'],
+      'Telangana': ['Hyderabad', 'Warangal', 'Medchal-Malkajgiri', 'Karimnagar', 'Nizamabad', 'Khammam', 'Ranga Reddy', 'Nalgonda', 'Siddipet', 'Bhadradri Kothagudem']
+    };
+    const list = distMap[state] || distMap['Tamil Nadu'];
+    distSelect.innerHTML = list.map(d => `<option value="${d}">${d}</option>`).join('');
+  }
 
- async function runWhatsAppSim() {
- const btn = document.getElementById('sendWaSimBtn');
- const status = document.getElementById('waStatusBox');
- const phone = (document.getElementById('waPhoneInput').value || '+91 90000 11223').trim();
- const text = (document.getElementById('waTextInput').value || '').trim();
+  async function runWhatsAppSim() {
+  const btn = document.getElementById('sendWaSimBtn');
+  const status = document.getElementById('waStatusBox');
+  const phone = (document.getElementById('waPhoneInput').value || '+91 90000 11223').trim();
+  const text = (document.getElementById('waTextInput').value || '').trim();
+  const state = (document.getElementById('waStateSelect')?.value || 'Tamil Nadu').trim();
+  const district = (document.getElementById('waDistrictSelect')?.value || 'Vellore').trim();
 
- btn.disabled = true;
- btn.style.opacity = '0.7';
- status.style.display = 'block';
- status.innerHTML = 'Submitting WhatsApp request...';
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  status.style.display = 'block';
+  status.innerHTML = 'Submitting WhatsApp request...';
 
- try {
- const resp = await fetch('/api/submit', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({
- source: 'WhatsApp',
- phone: phone,
- text: text,
- district: 'Chennai',
- language: 'en'
- })
- });
- const res = await resp.json();
- const reqId = res.request_id || ('NVB-WA-' + Math.floor(Math.random() * 899999 + 100000));
- status.innerHTML = `<strong>WhatsApp request ingested.</strong><br>Ticket: <strong>${reqId}</strong><br>Source: WhatsApp`;
- } catch (e) {
- status.innerHTML = '<strong>WhatsApp intake saved in demo mode.</strong>';
- }
+  try {
+  const resp = await fetch('/api/submit', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+  source: 'WhatsApp',
+  phone: phone,
+  text: text,
+  state: state,
+  district: district,
+  language: 'en'
+  })
+  });
+  const res = await resp.json();
+  const reqId = res.request_id || ('NVB-WA-' + Math.floor(Math.random() * 899999 + 100000));
+  status.innerHTML = `<strong>WhatsApp request ingested.</strong><br>Ticket: <strong>${reqId}</strong><br>District: <strong>${district} (${state})</strong><br>Source: WhatsApp`;
+  } catch (e) {
+  status.innerHTML = '<strong>WhatsApp intake saved in demo mode.</strong>';
+  }
 
- btn.disabled = false;
- btn.style.opacity = '1';
- }
+  btn.disabled = false;
+  btn.style.opacity = '1';
+  }
 
  async function runEmailSim() {
  const btn = document.getElementById('sendEmailSimBtn');
