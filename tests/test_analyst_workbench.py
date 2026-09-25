@@ -106,6 +106,20 @@ class AnalystWorkbenchTest(unittest.TestCase):
     def test_access_never_invents_reporting_propensity(self):
         d=self.call();self.assertTrue(all(r['voice_access_index'] is None and r['latent_requests'] is None for r in d['inclusion']['items']))
 
+    def test_inclusion_methodology_and_narrative_are_explicit(self):
+        d=self.call(); inclusion=d['inclusion']
+        self.assertEqual(inclusion['methodology']['version'],'nvb-observed-access-screen-v2')
+        self.assertEqual(inclusion['methodology']['type'],'observed_access_risk_screen')
+        self.assertIn('fairness_audit',inclusion)
+        self.assertEqual(inclusion['fairness_audit']['status'],'descriptive_screening_only')
+        self.assertTrue(all('score_components' in row and 'score_version' in row for row in inclusion['items']))
+        response=self.client.post('/api/v2/analyst/inclusion-brief',json={},headers=self.headers)
+        self.assertEqual(response.status_code,200,response.get_json())
+        body=response.get_json()
+        self.assertEqual(body['provider_mode'],'local_fallback')
+        self.assertTrue(body['fallback_used'])
+        self.assertTrue(body['narrative']['validation_actions'])
+
     def test_validation_and_auth(self):
         self.assertEqual(self.client.get('/api/v2/analyst/snapshot').status_code,401)
         for weights in ({'demand':None},{'demand':[]},[]):

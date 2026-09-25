@@ -187,7 +187,7 @@ def build_public_lens(cluster_data: dict) -> dict:
     ]
 
     return {
-        'view_name': 'Public Citizen View â€” The Receipt',
+        'view_name': 'Public Citizen View — The Receipt',
         'cluster_id': cluster_id,
         'state': state_name,
         'district': district,

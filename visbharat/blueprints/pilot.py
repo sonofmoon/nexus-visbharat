@@ -6,6 +6,7 @@ from ..auth import require_auth, require_roles
 from ..db import get_db
 from ..audit import write_audit_log
 from ..services import pilot as work
+from ..services.public_safety import allow as allow_public_request
 
 pilot_bp=Blueprint('ministry_pilot',__name__)
 
@@ -60,13 +61,20 @@ def page():
             return redirect('/pilot/login')
     locations=work.rows('SELECT location_id,state,district,local_body,ward,verification_status FROM pilot_locations WHERE pilot_id=? ORDER BY district,location_id',(pid,))
     counts=[]
-    if configuration(p)['privacy'].get('public_progress'):
+    portal_config=configuration(p)
+    if portal_config['privacy'].get('public_progress'):
+        from ..services.governance import dp_metadata, privatize_count, should_apply_dp
+        min_group=max(int(current_app.config.get('PUBLIC_TRANSPARENCY_MIN_GROUP_SIZE', 3)), 1)
         counts=work.rows('''SELECT c.district,COUNT(*) AS reports,SUM(CASE WHEN c.status IN ('Resolved','Closed') THEN 1 ELSE 0 END) AS resolved
-            FROM citizen_requests c JOIN pilot_requests r ON r.request_id=c.request_id WHERE r.pilot_id=? GROUP BY c.district''',(pid,))
+            FROM citizen_requests c JOIN pilot_requests r ON r.request_id=c.request_id WHERE r.pilot_id=? GROUP BY c.district HAVING COUNT(*)>=?''',(pid,min_group))
+        for count in counts:
+            if should_apply_dp():
+                count['reports']=max(0,privatize_count(int(count['reports']),epsilon=float(dp_metadata().get('epsilon') or 0.75)))
+                count['resolved']=max(0,privatize_count(int(count['resolved'] or 0),epsilon=float(dp_metadata().get('epsilon') or 0.75)))
     return render_template('pilot_home.html' if page_name=='home' else 'submit.html' if page_name=='submit' else 'pilot.html',pilot_id=pid,
         pilot_page=page_name,pilot_public=page_name in ('home','submit'),programme=p,channels=public_channels(p),locations=locations,public_counts=counts,
         languages={k:v for k,v in current_app.config['LANGUAGES'].items() if k in p['config']['languages']},
-        categories=p['config'].get('categories',current_app.config['CATEGORIES']),portal_config=configuration(p),
+        categories=p['config'].get('categories',current_app.config['CATEGORIES']),portal_config=portal_config,
         role_tokens=tokens,demo=current_app.config.get('DEMO_MODE'),csrf=session['pilot_csrf'],
         intake_view=request.path.endswith('/submit'),oidc_enabled=bool(current_app.config.get('OIDC_ISSUER')))
 
@@ -93,7 +101,13 @@ def intake():
 
 @pilot_bp.route('/api/v2/pilot/track',methods=['POST'])
 def track():
-    data=body();return jsonify(success=True,record=work.tracking(data.get('request_id'),data.get('tracking_secret')))
+    allowed, retry_after = allow_public_request(f"track:{request.remote_addr or 'unknown'}", 20, 60)
+    if not allowed:
+        return jsonify(success=False,error='Tracking rate limit reached; retry shortly.'), 429, {'Retry-After': str(retry_after)}
+    data=body()
+    response=jsonify(success=True,record=work.tracking(data.get('request_id'),data.get('tracking_secret')))
+    response.headers['Cache-Control']='no-store'
+    return response
 
 
 @pilot_bp.route('/api/v2/pilot/snapshot')

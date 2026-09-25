@@ -301,6 +301,54 @@ class TestChannelIngestion(unittest.TestCase):
             self.assertEqual(data2['processed'][0]['status'], 'duplicate')
             self.assertEqual(data2['processed'][0]['request_id'], ticket_id)
 
+    def test_gmail_ignores_nvb_confirmation_feedback_messages(self):
+        from unittest.mock import MagicMock, patch
+        from visbharat.services.gmail_gateway import renew_watch
+
+        self.app.config.update(
+            GMAIL_ENABLED=True,
+            GMAIL_MAILBOX='nexusvisbharat@gmail.com',
+            GMAIL_PUBSUB_SHARED_TOKEN='secret-token-loop',
+            GMAIL_PUBSUB_TOPIC='projects/test/topics/test',
+            GMAIL_SEND_CONFIRMATIONS=True,
+        )
+        mock_client = MagicMock()
+        mock_client.mailbox = 'nexusvisbharat@gmail.com'
+        mock_client.watch.return_value = {'historyId': '200', 'expiration': 1800000000000}
+        mock_client.history.return_value = ['msg_confirmation_1']
+        ticket_id = 'NVB-20260924DB67'
+        mock_client.message.return_value = {
+            'id': 'msg_confirmation_1',
+            'threadId': 'thread_confirmation',
+            'payload': {
+                'headers': [
+                    {'name': 'From', 'value': 'citizen@example.com'},
+                    {'name': 'Subject', 'value': f'Nexus VisBharat Ticket {ticket_id}'},
+                ],
+                'body': {'data': base64.urlsafe_b64encode((
+                    f'Your NVB request has been received.\n\nTicket ID: {ticket_id}\n'
+                    f'Subject: Nexus VisBharat Ticket {ticket_id}\n\n'
+                    'The request is now queued for municipal review. Please keep this Ticket ID for tracking.\n'
+                    'Do not reply with passwords, Aadhaar numbers, bank details, or other sensitive information.'
+                ).encode('utf-8')).decode('ascii')},
+            },
+        }
+
+        with self.app.app_context():
+            renew_watch(mock_client)
+
+        pubsub_data = base64.b64encode(json.dumps({'emailAddress': 'nexusvisbharat@gmail.com', 'historyId': '205'}).encode('utf-8')).decode('ascii')
+        with patch('visbharat.services.gmail_gateway.GmailClient', return_value=mock_client):
+            response = self.client.post(
+                '/api/channels/email/gmail/pubsub',
+                headers={'X-Gmail-PubSub-Token': 'secret-token-loop'},
+                json={'message': {'data': pubsub_data}},
+            )
+        self.assertEqual(response.status_code, 200)
+        payload = response.get_json()
+        self.assertEqual(payload['processed'][0]['status'], 'ignored_system_message')
+        mock_client.send_confirmation.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

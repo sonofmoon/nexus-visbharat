@@ -9,7 +9,7 @@ from ..db import _open_connection, get_db
 
 
 CLIENTS = {
-    'google_ai': ('classify_request', 'translate_text', 'generate_policy_brief', 'transcribe_audio_bytes'),
+    'google_ai': ('classify_request', 'translate_text', 'generate_policy_brief', 'generate_inclusion_narrative', 'transcribe_audio_bytes'),
     'google_stt': ('transcribe_bytes',),
     'google_tts': ('synthesize',),
     'google_dialogflow': ('detect_intent',),

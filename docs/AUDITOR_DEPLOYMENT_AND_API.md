@@ -32,7 +32,7 @@ All endpoints below require an Auditor or Admin bearer identity.
 | `GET /api/v2/auditor/integrity` | Complete protected-segment verification; legacy counts and anchoring limitations |
 | `GET, POST /api/v2/auditor/cases` | Read or create persistent review cases |
 | `GET /api/v2/auditor/cases/{id}` | Case history |
-| `POST /api/v2/auditor/cases/{id}/actions` | Assign, investigate, request evidence, independently resolve, reopen or recommend a hold |
+| `POST /api/v2/auditor/cases/{id}/actions` | Assign, investigate, request evidence, resolve, independently approve high/critical resolution requests, reopen or recommend a hold |
 | `POST /api/v2/auditor/projects/{id}/evidence` | Record a source, milestone, payment, site observation, outcome or evaluation protocol |
 | `POST /api/v2/auditor/evidence/{id}/review` | Independent human review/rejection with rationale and optimistic version |
 | `GET /api/v2/auditor/consent` | Purpose receipts with actual/latest/superseded state and cohort linkage |
@@ -41,6 +41,7 @@ All endpoints below require an Auditor or Admin bearer identity.
 | `GET, POST /api/v2/auditor/evaluations` | Read stored results or queue labelled evaluation data |
 | `POST /api/v2/auditor/exports` | Freeze an event, redacted project or evaluation pack |
 | `GET /api/v2/auditor/exports/{id}` | Download the owner's frozen JSON pack; `format=csv` for event packs |
+| `GET /api/v2/auditor/exports/{id}/verify` | Public metadata-only SHA-256 integrity check for an evidence pack |
 | `POST /api/v2/auditor/exchange/validate` | Validate pack schema/checksum without importing or approving it |
 | `GET /api/v2/auditor/readiness` | Implemented limits and outstanding external integrations |
 
@@ -48,7 +49,7 @@ Shared scope: `state`, `district`, `ward`, `category`, `urgency`, `language`, `c
 
 Event search supports `search`, exact `actor`, exact `action`, positive `limit` (maximum 100), `cursor` and the returned `snapshot` token. Carry the same scope/search/snapshot when paginating or exporting. Tokens expire after one hour and are bound to the user. The app's secret must be stable across workers/restarts. Event exports are capped at 10,000 records and require narrower filters above that limit; they never silently truncate. Large unrestricted archival exports are not implemented.
 
-Case creation accepts `kind`, `title`, `notes`, `owner`, `severity`, `data_mode`, project/ticket references and optional `due_at`/`idempotency_key`. Actions require the current integer `version`; stale actions return 409. Identity is always derived from the bearer credential. A case creator cannot close their own finding. A submitter cannot independently review their own evidence.
+Case creation accepts `kind`, `title`, `notes`, `owner`, `severity`, `data_mode`, project/ticket references and optional `due_at`/`idempotency_key`. Actions require the current integer `version`; stale actions return 409. Identity is always derived from the bearer credential. A case creator cannot close their own finding. High and critical findings first enter `awaiting_approval`; the resolution requester and case creator cannot approve, and a different Auditor must perform `approve_resolution`. A submitter cannot independently review their own evidence.
 
 Evidence records require type, title, source reference, observation time, mode and type-specific metadata. Future observations and nonfinite numbers are rejected. Source metadata includes publisher, release, redistribution terms and boundary crosswalk. Outcomes require measure, unit, catchment, before/after phase, value and sample size. A declared checksum/reference does not authenticate the document. Uploaded URLs are not automatically fetched.
 
@@ -66,7 +67,7 @@ Typed authentication/role denials feed security detections. Routine “viewed al
 
 ## Portable evidence and reproducible checks
 
-The export contract is [auditor-evidence.schema.json](release/auditor-evidence.schema.json). JSON packs include a manifest, stable scope/data head and SHA-256 digest of the canonical record. Project packs omit citizen text, receipt references, names and private document metadata; export storage is owner/role restricted. CSV cells are neutralized against spreadsheet formula execution. Schema/checksum validation does not establish provenance or administrative approval.
+The export contract is [auditor-evidence.schema.json](release/auditor-evidence.schema.json). JSON packs include a manifest, stable scope/data head, registered legal-source catalog and SHA-256 digest of the canonical record. The public `/verify` endpoint returns metadata only and confirms whether the stored digest matches the retrieved record. Project packs omit citizen text, receipt references, names and private document metadata; export storage is owner/role restricted. CSV cells are neutralized against spreadsheet formula execution. Digest verification does not establish publisher authenticity, legal compliance or administrative approval; an independent trust anchor/public-key signature remains an explicit readiness gate.
 
 ```powershell
 python -m unittest tests.test_auditor_workbench tests.test_analyst_workbench -q

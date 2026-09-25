@@ -7,6 +7,7 @@ from flask import g
 from ..db import get_db
 from ..audit import write_audit_log
 from . import auditor_workbench as work
+from .legal_sources import sources as registered_sources, PROVENANCE_NOTICE
 
 
 class Conflict(ValueError): pass
@@ -101,6 +102,17 @@ def update_case(cid,data,scope):
         if row['kind']=='rights':
             restriction=work.query('SELECT * FROM auditor_processing_restrictions WHERE request_id=?',(row['request_id'],))
             if not restriction: raise ValueError('Record the verified purpose/basis action before closing this rights case')
+        # High and critical findings require a separate approval event. The
+        # resolution requester can never be the final approver.
+        target='awaiting_approval' if row['severity'] in ('HIGH','CRITICAL') else 'resolved'
+    elif action=='approve_resolution' and old=='awaiting_approval':
+        if g.current_user.get('role')!='auditor':
+            raise PermissionError('Only an independent Auditor can approve a high or critical finding')
+        pending=work.query("SELECT actor,evidence FROM auditor_case_events WHERE case_id=? AND action='resolve' AND to_status='awaiting_approval' ORDER BY id DESC LIMIT 1",(cid,))
+        if not pending: raise ValueError('No pending resolution request exists for this finding')
+        if actor()==pending[0]['actor'] or actor()==row['created_by']:
+            raise ValueError('A different Auditor must approve the resolution request')
+        evidence=pending[0]['evidence']
         target='resolved'
     elif action=='request_hold' and old!='resolved':
         # This is a documented recommendation only. There is no bank/PFMS connector.
@@ -110,7 +122,7 @@ def update_case(cid,data,scope):
     timestamp=work.now().isoformat()
     db.execute('''UPDATE auditor_cases SET status=?,owner=?,updated_at=?,version=version+1,
         resolution=?,closure_evidence=?,closed_by=? WHERE case_id=?''',
-        (target,owner,timestamp,notes if target=='resolved' else None,evidence,actor() if target=='resolved' else None,cid))
+        (target,owner,timestamp,notes if target in ('resolved','awaiting_approval') else None,evidence,actor() if target=='resolved' else None,cid))
     db.execute('''INSERT INTO auditor_case_events(case_id,actor,action,from_status,to_status,notes,evidence,created_at)
         VALUES(?,?,?,?,?,?,?,?)''',(cid,actor(),action,old,target,notes,evidence,timestamp))
     log('auditor_case_'+action,'audit_case',cid,{'before':old,'after':target,'owner':owner,'notes':notes,'evidence_reference':evidence})
@@ -193,8 +205,31 @@ def consent_action(data,scope):
 
 
 def save_export(kind,payload,scope):
-    sid=identifier('NVB-PACK');raw=json.dumps(payload,sort_keys=True,ensure_ascii=False)
-    get_db().execute('INSERT INTO auditor_snapshots(snapshot_id,owner_id,role,kind,scope_json,payload_json,created_at) VALUES(?,?,?,?,?,?,?)',
-                    (sid,str(g.current_user['id']),g.current_user['role'],kind,json.dumps(scope),raw,work.now().isoformat()))
-    log('auditor_export_prepared','evidence_pack',sid,{'kind':kind,'sha256':work.digest(payload)})
-    get_db().commit();return {'snapshot_id':sid,'sha256':work.digest(payload),'download_url':'/api/v2/auditor/exports/'+sid}
+    sid=identifier('NVB-PACK');created_at=work.now().isoformat();payload_sha256=work.digest(payload)
+    source_catalog=registered_sources()
+    chain=work.query('SELECT head_seq,head_hash,head_id FROM auditor_chain_state WHERE id=1')
+    checkpoint=chain[0] if chain else {'head_seq':None,'head_hash':None,'head_id':None}
+    manifest={
+        'manifest_version':'nvb-evidence-pack-v2',
+        'schema_version':work.VERSION,
+        'snapshot_id':sid,
+        'kind':kind,
+        'created_at':created_at,
+        'payload_sha256':payload_sha256,
+        'sha256':payload_sha256,
+        'external_signature':None,
+        'legal_source_ids':[item['source_id'] for item in source_catalog],
+        'legal_source_catalog_sha256':work.digest(source_catalog),
+        'legal_sources':source_catalog,
+        'audit_chain_checkpoint':checkpoint,
+        'signature_algorithm':'digest-only',
+        'signature_status':'unsigned_digest_only',
+        'verification_url':'/api/v2/auditor/exports/'+sid+'/verify',
+        'notice':'The digest proves integrity of the retrieved record. It does not establish publisher authenticity, legal compliance, or administrative approval.',
+        'provenance_notice':PROVENANCE_NOTICE
+    }
+    raw=json.dumps(payload,sort_keys=True,ensure_ascii=False)
+    get_db().execute('INSERT INTO auditor_snapshots(snapshot_id,owner_id,role,kind,scope_json,payload_json,created_at,payload_sha256,manifest_json) VALUES(?,?,?,?,?,?,?,?,?)',
+                    (sid,str(g.current_user['id']),g.current_user['role'],kind,json.dumps(scope),raw,created_at,payload_sha256,json.dumps(manifest,sort_keys=True)))
+    log('auditor_export_prepared','evidence_pack',sid,{'kind':kind,'sha256':payload_sha256,'manifest_version':manifest['manifest_version']})
+    get_db().commit();return {'snapshot_id':sid,'sha256':payload_sha256,'download_url':'/api/v2/auditor/exports/'+sid,'verification_url':manifest['verification_url'],'manifest':manifest}

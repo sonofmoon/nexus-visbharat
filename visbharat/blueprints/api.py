@@ -313,7 +313,21 @@ def _bq_client():
     return current_app.extensions.get('google_bigquery_client')
 
 
-def _bq_filters_sql(district: str = '', state: str = '', category: str = '', urgency: str = ''):
+def _bq_filters_sql(
+    district: str = '',
+    state: str = '',
+    category: str = '',
+    urgency: str = '',
+    *,
+    bq=None,
+    date_from: str = '',
+    date_to: str = '',
+    language: str = '',
+    channel: str = '',
+    status: str = '',
+    ward: str = '',
+    ticket: str = '',
+):
     where = []
     params = []
     if district:
@@ -328,6 +342,33 @@ def _bq_filters_sql(district: str = '', state: str = '', category: str = '', urg
     if urgency:
         where.append("urgency = @urgency")
         params.append(('urgency', 'STRING', urgency))
+    if bq is not None:
+        if date_from:
+            where.append(f"SUBSTR(CAST({bq.col_date} AS STRING), 1, 10) >= @date_from")
+            params.append(('date_from', 'STRING', date_from))
+        if date_to:
+            where.append(f"SUBSTR(CAST({bq.col_date} AS STRING), 1, 10) <= @date_to")
+            params.append(('date_to', 'STRING', date_to))
+        if language:
+            where.append(f"{bq.col_lang} = @language")
+            params.append(('language', 'STRING', language))
+        if channel:
+            where.append(f"{bq.col_source} = @channel")
+            params.append(('channel', 'STRING', channel))
+        if status:
+            where.append("status = @status")
+            params.append(('status', 'STRING', status))
+        if ward:
+            if 'ward' in getattr(bq, 'schema_fields', set()):
+                where.append("ward = @ward")
+                params.append(('ward', 'STRING', ward))
+            else:
+                where.append("1 = 0")
+        if ticket:
+            # Public feed search is restricted to the published ticket reference;
+            # citizen-submitted free text is never queried as a public search surface.
+            where.append(f"CAST({bq.col_id} AS STRING) LIKE @ticket")
+            params.append(('ticket', 'STRING', f"%{ticket}%"))
     clause = (' WHERE ' + ' AND '.join(where)) if where else ''
     return clause, params
 
@@ -336,12 +377,39 @@ def _bq_params(bq, items):
     return [bq.bigquery.ScalarQueryParameter(name, typ, val) for (name, typ, val) in items]
 
 
-def _bq_complaints(limit: int = 200, district: str = '', state: str = '', category: str = '', urgency: str = ''):
+def _bq_complaints(
+    limit: int = 200,
+    district: str = '',
+    state: str = '',
+    category: str = '',
+    urgency: str = '',
+    *,
+    date_from: str = '',
+    date_to: str = '',
+    language: str = '',
+    channel: str = '',
+    status: str = '',
+    ward: str = '',
+    ticket: str = '',
+):
     bq = _bq_client()
     if not bq:
         return None
     safe_limit = min(max(int(limit or 200), 1), 500)
-    where, pairs = _bq_filters_sql(district=district, state=state, category=category, urgency=urgency)
+    where, pairs = _bq_filters_sql(
+        district=district,
+        state=state,
+        category=category,
+        urgency=urgency,
+        bq=bq,
+        date_from=date_from,
+        date_to=date_to,
+        language=language,
+        channel=channel,
+        status=status,
+        ward=ward,
+        ticket=ticket,
+    )
     pairs.append(('limit', 'INT64', safe_limit))
     params = _bq_params(bq, pairs)
     fields = getattr(bq, 'schema_fields', set())
@@ -1444,12 +1512,13 @@ def ai_status():
         recent_invocations=recent_invocations,
         latest_inference=latest_evidence,
         gemini_health=gemini_health,
-        supported_features=['multilingual_translation','request_classification','policy_brief_generation',
+        supported_features=['multilingual_translation','request_classification','policy_brief_generation','inclusion_evidence_narrative',
             'voice_input_stt','dialogflow_cx_guided_conversation','bigquery_analytics','vertex_prediction'],
         feature_status={
             'multilingual_translation': translation_status,
             'request_classification': operation('google_ai','classify_request'),
             'policy_brief_generation': operation('google_ai','generate_policy_brief'),
+            'inclusion_evidence_narrative': operation('google_ai','generate_inclusion_narrative'),
             'voice_input_stt': operation('google_stt','transcribe_bytes'),
             'dialogflow_cx_guided_conversation': operation('google_dialogflow','detect_intent'),
             'bigquery_analytics': operation('google_bigquery','aggregate_requests'),

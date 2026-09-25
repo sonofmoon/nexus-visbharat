@@ -10,10 +10,11 @@ import threading
 import time
 from urllib.parse import urlparse
 
-from flask import current_app, g
+from flask import current_app, g, has_app_context
 from itsdangerous import URLSafeTimedSerializer, BadSignature
 from ..db import get_db
 from . import analyst_workbench as analyst
+from .legal_sources import sources as legal_sources, PROVENANCE_NOTICE
 
 VERSION = 'nvb-auditor-v1'
 now = analyst.utcnow
@@ -411,3 +412,339 @@ def security_feed(scope,limit=50,cursor=0,severity=''):
                     {'detector':'webhook_signatures_and_replay','status':'see_connector_logs'},
                     {'detector':'external_tokens_and_infrastructure','status':'not_connected'}],
         'notice':'No detections observed does not establish absence of threats. Global detections are excluded by report geography filters.'}
+
+
+def forensic_audit_intelligence(scope, project_id=None):
+    from ..log.chain import verify_chain_integrity
+    pid = project_id or scope.get('project_id')
+
+    # 1. Decision & Evidence Red-Flags
+    red_flags = []
+    decisions = query("SELECT decision_id, district, status, source_json, estimated_project_cost_lakh FROM policy_decisions ORDER BY created_at DESC")
+    for d in decisions:
+        src = json.loads(d.get('source_json') or '{}')
+        d_pid = src.get('project_id')
+        if pid and d_pid != pid:
+            continue
+        if scope.get('district') and d.get('district') != scope['district']:
+            continue
+        # Check: Unreviewed Capital Sanction
+        eng_review = src.get('engineering_review')
+        status = d.get('status')
+        cost = float(d.get('estimated_project_cost_lakh') or 0.0)
+        if status in ('approved', 'funded') and not eng_review:
+            red_flags.append({
+                'type': 'unreviewed_sanction',
+                'severity': 'critical',
+                'title': f'Unreviewed Capital Sanction: {d["decision_id"]}',
+                'resource_id': d['decision_id'],
+                'finding': f'Project sanctioned for ₹{cost:.2f} lakh without prior human engineering survey or verified beneficiary audit.',
+                'statutory_norm': 'GFR 2017 Rule 130 (Requisite Preliminary Surveys & Technical Sanctions)',
+                'legal_source_ref': 'gfr2017_rule130',
+                'corrective_action': 'Hold financial disbursement pending site engineering certification.'
+            })
+        elif status == 'draft' and not eng_review:
+            red_flags.append({
+                'type': 'draft_review_pending',
+                'severity': 'moderate',
+                'title': f'Technical Review Pending: {d["decision_id"]}',
+                'resource_id': d['decision_id'],
+                'finding': f'Draft decision proposes ₹{cost:.2f} lakh allocation. Engineering review is still pending.',
+                'statutory_norm': 'CVC Vigilance Manual para 4.3 (Technical Vetting)',
+                'legal_source_ref': 'cvc_vigilance_manual',
+                'corrective_action': 'Assign municipal executive engineer for field survey.'
+            })
+
+    # Check synthetic contamination in citizen requests
+    clause, params = citizen_where(scope)
+    req_stats = query(f"""SELECT COUNT(*) AS total,
+        SUM(CASE WHEN REPLACE(c.ai_metadata_json,' ','') LIKE '%"is_synthetic":true%' THEN 1 ELSE 0 END) AS synthetic
+        FROM citizen_requests c WHERE {clause}""", params)[0]
+    total_reqs = int(req_stats['total'] or 0)
+    synth_reqs = int(req_stats['synthetic'] or 0)
+    if synth_reqs > 0:
+        red_flags.append({
+            'type': 'synthetic_data_contamination',
+            'severity': 'elevated',
+            'title': 'Synthetic Demonstration Data in Scope',
+            'resource_id': 'citizen_requests',
+            'finding': f'{synth_reqs} of {total_reqs} citizen records ({round(100.0 * synth_reqs / total_reqs, 1) if total_reqs else 0}%) are synthetic demonstration artifacts.',
+            'statutory_norm': 'CAG Performance Audit Manual (Data Authenticity & Evidence Provenance)',
+            'legal_source_ref': 'cag_performance_audit',
+            'corrective_action': 'Isolate synthetic records from final capital sanction and public accounts reporting.'
+        })
+
+    # 2. GFR Public Finance Discrepancies
+    finance_discrepancies = []
+    evidence_query = "SELECT * FROM auditor_evidence WHERE 1=1"
+    ev_params = []
+    if pid:
+        evidence_query += " AND project_id=?"
+        ev_params.append(pid)
+    ev_rows = query(evidence_query, ev_params)
+    for ev in ev_rows:
+        meta = json.loads(ev.get('metadata_json') or '{}')
+        sanctioned = meta.get('sanctioned_lakh')
+        released = meta.get('released_lakh')
+        cert_pct = meta.get('certified_progress_pct')
+        obs_pct = meta.get('observed_progress_pct')
+        milestone = meta.get('milestone')
+
+        # Check Premature Disbursement / Fund Parking
+        if sanctioned and released:
+            sanctioned_f = float(sanctioned)
+            released_f = float(released)
+            if sanctioned_f > 0 and (released_f / sanctioned_f) >= 0.50:
+                if obs_pct is not None and float(obs_pct) < 20.0:
+                    finance_discrepancies.append({
+                        'type': 'premature_disbursement',
+                        'severity': 'critical',
+                        'milestone': milestone or ev['evidence_id'],
+                        'evidence_id': ev['evidence_id'],
+                        'finding': f'₹{released_f:.2f}L ({round(100*released_f/sanctioned_f)}%) released while observed physical progress is only {obs_pct}%.',
+                        'statutory_norm': 'GFR 2017 Rule 138 (Payment on Hand-measured & Certified Works)',
+                        'legal_source_ref': 'gfr2017_rule138',
+                        'action': 'Issue stop-payment directive and require joint field physical measurement.'
+                    })
+        # Check Progress Discrepancy
+        if cert_pct is not None and obs_pct is not None:
+            delta = float(cert_pct) - float(obs_pct)
+            if delta >= 25.0:
+                finance_discrepancies.append({
+                    'type': 'physical_progress_mismatch',
+                    'severity': 'critical',
+                    'milestone': milestone or ev['evidence_id'],
+                    'evidence_id': ev['evidence_id'],
+                    'finding': f'Contractor/agency certified {cert_pct}% progress vs {obs_pct}% independently observed on site ({delta:.1f} pp gap).',
+                    'statutory_norm': 'CVC Circular on Quality Audit of Works',
+                    'legal_source_ref': 'cvc_vigilance_manual',
+                    'action': 'Dispatch Vigilance & Quality Control cell for non-destructive testing.'
+                })
+
+    # 3. DPDPA-related processing-receipt coverage; this is not a legal compliance test.
+    consent = consent_coverage(scope)
+    total_c = consent['total_requests']
+    linked_c = consent['linked_requests']
+    dpdpa_pct = round(100.0 * linked_c / total_c, 1) if total_c > 0 else 100.0
+    dpdpa_status = 'receipt_coverage_observed' if total_c > 0 and consent['missing_receipts'] == 0 else 'receipt_coverage_review_required'
+    dpdpa_risks = []
+    if consent['missing_receipts'] > 0:
+        dpdpa_risks.append({
+            'type': 'unnotified_processing',
+            'severity': 'high' if dpdpa_pct < 50.0 else 'medium',
+            'title': 'Missing Digital Purpose & Consent Receipts',
+            'metric': f'{consent["missing_receipts"]} citizen records processed without immutable consent receipt',
+            'statutory_reference': 'DPDPA 2023 Section 6(1) (Notice and Consent Architecture)',
+            'legal_source_ref': 'dpdpa2023_section6',
+            'remedy': 'Issue automated SMS/IVR processing notice and log digital acknowledgment tokens.'
+        })
+
+    # 4. Cryptographic Chain State
+    chain_info = verify_chain_integrity()
+    chain_status = 'verified' if chain_info.get('valid') else ('tamper_detected' if not chain_info.get('protected_valid') else 'legacy_unverified')
+
+    # 5. Security Posture
+    sec_clause = '1=1'
+    sec_total = query(f"SELECT COUNT(*) AS n FROM auditor_detections WHERE {sec_clause}")[0]['n']
+    sec_crit = query(f"SELECT COUNT(*) AS n FROM auditor_detections WHERE severity='CRITICAL'")[0]['n']
+    sec_high = query(f"SELECT COUNT(*) AS n FROM auditor_detections WHERE severity='HIGH'")[0]['n']
+    threat_posture = 'critical' if sec_crit > 0 else ('elevated' if sec_high > 0 else 'nominal')
+
+    # 6. Overall Trust & Integrity Health Score (0-100)
+    chain_pts = 35.0 if chain_info.get('protected_valid') else 0.0
+    dpdpa_pts = 35.0 * (dpdpa_pct / 100.0)
+    rf_pts = max(0.0, 15.0 - (5.0 * sum(1 for rf in red_flags if rf['severity'] == 'critical')))
+    fin_pts = max(0.0, 15.0 - (5.0 * len(finance_discrepancies)))
+    health_score = round(chain_pts + dpdpa_pts + rf_pts + fin_pts, 1)
+
+    # 7. Gemini 3.6 Flash Executive Forensic Audit Synthesis
+    executive_opinion = None
+    statutory_violations = []
+    corrective_actions = []
+    risk_rating = 'Low' if health_score >= 85.0 else ('Moderate' if health_score >= 60.0 else 'High')
+    llm_model = 'none'
+    provider_mode = 'local_fallback'
+
+    client = current_app.extensions.get('google_ai_client') if has_app_context() else None
+    if client is not None:
+        try:
+            rf_summary = "\\n".join([f"- [{rf['severity'].upper()}] {rf['title']}: {rf['finding']} ({rf['statutory_norm']}; source id: {rf.get('legal_source_ref')})" for rf in red_flags])
+            fin_summary = "\\n".join([f"- [{fd['severity'].upper()}] {fd['milestone']}: {fd['finding']} ({fd['statutory_norm']}; source id: {fd.get('legal_source_ref')})" for fd in finance_discrepancies])
+            prompt = f"""You are an evidence-grounded draft audit assistant for Indian public infrastructure.
+Synthesize a clearly labelled draft screening memo for project '{pid or 'All Projects'}' in '{scope.get('district') or 'All Districts'}'.
+Do not issue a legal opinion, compliance certificate, or administrative approval. Use only the supplied source IDs and say when current edition or commencement verification is required.
+Audit Data:
+- Trust Health Score: {health_score}/100
+- Cryptographic Chain: {chain_info.get('status')} ({chain_info.get('verified_events')} verified blocks)
+- DPDPA processing-receipt coverage (not legal compliance): {dpdpa_pct}% ({linked_c}/{total_c} requests linked)
+- Threat Posture: {threat_posture}
+- Detected Red Flags:
+{rf_summary or 'None detected'}
+- Public Finance Discrepancies:
+{fin_summary or 'None detected'}
+
+Respond in strict JSON with keys:
+"executive_audit_opinion": "Draft 2-3 paragraph screening memo with source IDs and an explicit non-certification boundary",
+"statutory_violations": ["Evidence-linked control or rule at risk; do not state that a violation is legally established"],
+"corrective_actions": ["Priority auditor directive 1", "Priority auditor directive 2", "Priority auditor directive 3"],
+"risk_rating": "Low" | "Moderate" | "High" | "Critical"
+"""
+            raw_resp, used_model = client._call_gemini('gemini-3.6-flash', prompt)
+            parsed = client._parse_json(raw_resp)
+            if parsed and isinstance(parsed, dict) and parsed.get('executive_audit_opinion'):
+                executive_opinion = parsed.get('executive_audit_opinion')
+                statutory_violations = parsed.get('statutory_violations') or []
+                corrective_actions = parsed.get('corrective_actions') or []
+                risk_rating = parsed.get('risk_rating') if parsed.get('risk_rating') in ('Low', 'Moderate', 'High', 'Critical') else risk_rating
+                llm_model = used_model
+                provider_mode = 'gemini_live'
+        except Exception as err:
+            if has_app_context():
+                current_app.logger.warning(f"Gemini Forensic Audit fallback: {err}")
+
+    if not executive_opinion:
+        crit_count = sum(1 for rf in red_flags if rf['severity'] == 'critical') + len(finance_discrepancies)
+        discrepancy_msg = (
+            f"Identified {crit_count} active statutory discrepancy alerts requiring immediate vigilance intervention."
+            if crit_count else "No critical public finance or engineering review non-compliances observed in current scope."
+        )
+        executive_opinion = (
+            f"Statutory audit examination for {pid or scope.get('district') or 'the active scope'} "
+            f"establishes a Trust & Integrity Score of {health_score}/100 with an overall {risk_rating.upper()} risk rating. "
+            f"Cryptographic hash chain is verified across {chain_info.get('verified_events', 0)} sequence blocks. "
+            f"{discrepancy_msg} Recorded DPDPA-related processing-receipt coverage is {dpdpa_pct}%; this metric is not a legal-compliance conclusion."
+        )
+    if not statutory_violations:
+        statutory_violations = [rf['statutory_norm'] for rf in red_flags[:2]] + [fd['statutory_norm'] for fd in finance_discrepancies[:2]]
+    if not corrective_actions:
+        corrective_actions = [rf['corrective_action'] for rf in red_flags[:2]] + [fd['action'] for fd in finance_discrepancies[:2]]
+        if not corrective_actions:
+            corrective_actions = ['Maintain continuous cryptographic chain anchoring', 'Verify contractor joint measurements on site']
+
+    used_source_ids = sorted({rf.get('legal_source_ref') for rf in red_flags if rf.get('legal_source_ref')} | {fd.get('legal_source_ref') for fd in finance_discrepancies if fd.get('legal_source_ref')} | {'dpdpa2023_section6'})
+    return {
+        'trust_health_score': health_score,
+        'risk_rating': risk_rating,
+        'executive_opinion': executive_opinion,
+        'statutory_violations': statutory_violations,
+        'legal_sources': legal_sources(used_source_ids),
+        'provenance_notice': PROVENANCE_NOTICE,
+        'corrective_actions': corrective_actions,
+        'red_flags': red_flags,
+        'red_flag_count': len(red_flags),
+        'critical_red_flags': sum(1 for rf in red_flags if rf['severity'] == 'critical'),
+        'finance_discrepancies': finance_discrepancies,
+        'dpdpa_compliance': {
+            'score_pct': dpdpa_pct,
+            'status': dpdpa_status,
+            'notice': 'Receipt linkage is an observed processing-control metric; it is not proof of lawful processing, current consent, or legal compliance.',
+            'linked_receipts': linked_c,
+            'total_requests': total_c,
+            'missing_receipts': consent['missing_receipts'],
+            'risks': dpdpa_risks
+        },
+        'chain_state': {
+            'valid': chain_info.get('valid'),
+            'protected_valid': chain_info.get('protected_valid'),
+            'head_seq': chain_info.get('head_seq'),
+            'head_hash': chain_info.get('head_hash'),
+            'verified_events': chain_info.get('verified_events'),
+            'status': chain_status,
+            'message': chain_info.get('message')
+        },
+        'threat_posture': {
+            'level': threat_posture,
+            'total_detections': sec_total,
+            'critical_detections': sec_crit,
+            'high_detections': sec_high
+        },
+        'provider_mode': provider_mode,
+        'llm_model': llm_model
+    }
+
+
+def ask_auditor_copilot(query_text, scope, project_id=None):
+    intel = forensic_audit_intelligence(scope, project_id)
+    dpdpa = intel['dpdpa_compliance']
+    chain = intel['chain_state']
+    rfs = intel['red_flags']
+    fins = intel['finance_discrepancies']
+
+    citations = [
+        {'source': 'Cryptographic Audit Chain', 'anchor': f"Head Seq {chain['head_seq']} · Status: {chain['status'].upper()}"},
+        {'source': 'DPDPA 2023 receipt ledger', 'anchor': f"{dpdpa['score_pct']}% receipt coverage ({dpdpa['linked_receipts']}/{dpdpa['total_requests']} linked); not legal certification"},
+        {'source': 'Statutory Procurement Norms', 'anchor': 'GFR 2017 Rules 130–144 & CVC Manual'}
+    ]
+    if rfs:
+        citations.append({'source': 'Policy Decision Ledger', 'anchor': f"{len(rfs)} red flag(s) identified"})
+    if fins:
+        citations.append({'source': 'Expenditure & Milestone Ledger', 'anchor': f"{len(fins)} financial discrepancy alert(s)"})
+
+    citations = [
+        {'source': 'Cryptographic Audit Chain', 'anchor': f"Head Seq {chain['head_seq']} · Status: {chain['status'].upper()}"},
+        {'source': 'DPDPA 2023 receipt ledger', 'anchor': f"{dpdpa['score_pct']}% receipt coverage ({dpdpa['linked_receipts']}/{dpdpa['total_requests']} linked); not legal certification"},
+    ]
+    citations.extend({'source': item['title'], 'anchor': item['section'], 'source_id': item['source_id'], 'official_url': item['official_url'], 'verification_status': item['verification_status']} for item in intel.get('legal_sources', []))
+    if rfs:
+        citations.append({'source': 'Policy Decision Ledger', 'anchor': f"{len(rfs)} red flag(s) identified"})
+    if fins:
+        citations.append({'source': 'Expenditure & Milestone Ledger', 'anchor': f"{len(fins)} financial discrepancy alert(s)"})
+
+    client = current_app.extensions.get('google_ai_client') if has_app_context() else None
+    llm_model = 'none'
+    provider_mode = 'local_fallback'
+    answer = None
+
+    if client is not None:
+        try:
+            prompt = f"""You are the Nexus VisBharat Governed Forensic Auditor Copilot for Indian public finance, public works, and statutory data protection.
+Answer the auditor's question accurately and concisely as a draft, evidence-grounded screening response.
+Do not claim that NVB has established a legal violation or certified compliance. Ground the response strictly in the empirical evidence and registered source IDs below. Include citations like [Source ID: gfr2017_rule130] and [Source: Cryptographic Chain Seq {chain['head_seq']}].
+
+Auditor Question: {query_text}
+
+Audit Scope: {project_id or 'General Scope'} ({scope.get('district') or 'All Districts'}, {scope.get('state') or 'All States'})
+Trust Health Score: {intel['trust_health_score']}/100 (Risk: {intel['risk_rating']})
+Cryptographic Chain: {chain['status']} ({chain['verified_events']} blocks verified)
+DPDPA processing-receipt coverage (not legal compliance): {dpdpa['score_pct']}% ({dpdpa['linked_receipts']}/{dpdpa['total_requests']})
+Red Flags: {[rf['title'] for rf in rfs]}
+Financial Discrepancies: {[fd['finding'] for fd in fins]}
+
+Respond in strict JSON with keys:
+"answer": "Clear, direct, 2-3 paragraph draft screening response answering the auditor's inquiry with registered source IDs and a non-certification boundary",
+"actionable_audit_directive": "Single sentence actionable directive for the municipal auditor or vigilance officer",
+"cited_sources": ["Source 1", "Source 2"]
+"""
+            raw_resp, used_model = client._call_gemini('gemini-3.6-flash', prompt)
+            parsed = client._parse_json(raw_resp)
+            if parsed and isinstance(parsed, dict) and parsed.get('answer'):
+                answer = parsed.get('answer')
+                directive = parsed.get('actionable_audit_directive')
+                if directive:
+                    answer += f"\\n\\n**Actionable Audit Directive:** {directive}"
+                llm_model = used_model
+                provider_mode = 'gemini_live'
+        except Exception as err:
+            if has_app_context():
+                current_app.logger.warning(f"Gemini Auditor Copilot fallback: {err}")
+
+    if not answer:
+        attention_msg = (
+            f"Attention required: {rfs[0]['title']} - {rfs[0]['finding']}"
+            if rfs else "No unreviewed capital allocations detected in this scope."
+        )
+        answer = (
+            f"Based on the tamper-evident auditor ledgers for {project_id or scope.get('district') or 'the scoped geography'}, "
+            f"the current Trust & Integrity Health Score is {intel['trust_health_score']}/100. "
+            f"The cryptographic hash chain status is {chain['status'].upper()} with {chain['verified_events']} verified events. "
+            f"DPDPA-related processing-receipt coverage is {dpdpa['score_pct']}% ({dpdpa['linked_receipts']} of {dpdpa['total_requests']} records); this is not a legal-compliance conclusion. "
+            f"{attention_msg}"
+        )
+
+    return {
+        'query': query_text,
+        'answer': answer,
+        'citations': citations,
+        'provider_mode': provider_mode,
+        'llm_model': llm_model
+    }

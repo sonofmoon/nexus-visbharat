@@ -114,11 +114,132 @@ NVB is designed to make the important boundaries visible:
 - A source checksum establishes file integrity; it does not establish publisher authenticity.
 - Consent and access controls are engineering implementations of DPDP Act 2023 principles, not formal legal certification.
 
+## Public release and live-feed contract
+
+The Public Suite is a publication-safe view of NVB. It is intentionally
+different from the authenticated Analyst, Auditor and Admin workspaces.
+
+### Public data boundary
+
+- The public complaint feed publishes category-level summaries only.
+- Citizen-submitted text, contact details, PII and exact locations are withheld.
+- Ward values are not fabricated when they are unavailable.
+- Repeated records and automated confirmation messages are suppressed or marked.
+- Small geographic and category groups are suppressed using
+  `PUBLIC_TRANSPARENCY_MIN_GROUP_SIZE`, which defaults to `3`.
+- Differential privacy can be enabled for public aggregates with
+  `PUBLIC_TRANSPARENCY_DP_ENABLED=true`.
+- When enabled, the default public-transparency epsilon is `0.75`, configurable
+  through `PUBLIC_TRANSPARENCY_DP_EPSILON`.
+
+### Public endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `/api/complaints` | Filtered, redacted public complaint feed |
+| `/api/v1/live-feed/stream` | Server-sent live-feed updates with reconnect cursors |
+| `/api/public/transparency/summary` | Privacy-thresholded public metrics |
+| `/api/public/transparency/priority-signals` | Screening-only priority signals |
+| `/api/public/transparency/districts` | Thresholded district aggregates |
+| `/api/public/transparency/categories` | Thresholded category aggregates |
+| `/api/v1/transparency/verify-chain` | Hash-linked audit-chain verification |
+| `/api/v2/pilot/track` | Private ticket tracking using a citizen receipt code |
+
+Priority signals are planning-screening outputs. They are not funded projects,
+budget approvals, delivery-progress claims or causal impact evidence. Engineering
+review, administrative approval and field evidence are required before any
+implementation claim.
+
+### Live-feed behavior
+
+The live feed supports state, district, category, urgency, language, channel,
+date, stage, ticket-reference search and sort filters. It uses deduplication,
+server-sent events, reconnect cursors and polling fallback.
+
+Anonymous browser clicks cannot create verified public support. Verified support
+requires a valid citizen receipt token.
+
+## Authenticated suites and decision controls
+
+NVB separates public transparency from authenticated operational workspaces.
+Analyst, Auditor and Admin views expose progressively stronger controls and
+never treat an AI output, imported document or checksum as automatic proof.
+
+### Analyst Suite
+
+The Analyst Suite supports human-led planning through:
+
+- Demand and Inclusion screening using observed request patterns, deprivation
+  context, service gaps, emergency pressure and evidence-gap indicators.
+- Project Priorities that produce ranked planning candidates labelled as
+  screening outputs when reference evidence is incomplete or unverified.
+- Budget Scenarios with explicit weights, capacity limits, district constraints,
+  cost sensitivity and operating-cost assumptions.
+- Delivery and Responsiveness views derived from recorded events, SLA timing,
+  ageing, feedback and decisions.
+- Outcomes and Evaluation views using comparable before/after observations while
+  avoiding unsupported causal-impact claims.
+- Source-aware policy briefs with claim-level references and governed corpus
+  citations where available.
+
+Scenario analysis is separated from approval. Scenario reads do not change active
+scoring profiles, imported documents are validated before persistence, and an
+Analyst cannot approve a project or claim that an illustrative cost represents
+actual expenditure.
+
+### Auditor Suite
+
+The Auditor Suite provides independent review and evidence controls:
+
+- Case lifecycle management for investigation, evidence requests, resolution,
+  reopening and hold recommendations.
+- Registered legal-source provenance with source title, official URL, section,
+  release information and verification status.
+- Evidence records for sources, milestones, payments, site observations,
+  outcomes and evaluation protocols.
+- Independent evidence review or rejection with reviewer identity, rationale and
+  version checks.
+- Consent and processing-purpose records that distinguish granted, declined,
+  withdrawn, missing and other-basis states.
+- Independent approval controls for high- and critical-severity resolutions.
+  The resolution requester and case creator cannot approve their own finding.
+- Portable redacted evidence packs with manifests, stable scope/data heads and
+  SHA-256 integrity verification.
+
+A checksum confirms record integrity only. It does not establish publisher
+authenticity, legal compliance, administrative approval or causal impact.
+
+### Admin Suite
+
+The Admin Suite provides controlled operational governance:
+
+- Engineering-cost and catchment evidence review before project approval.
+- A separate approval action that does not represent expenditure, physical
+  completion or verified public impact.
+- Versioned project decisions, commitment checks and duplicate-approval
+  protection.
+- Officer lifecycle updates, delivery-health review, user controls and security
+  alert visibility.
+- Access to Auditor review tools under Admin identity while preserving
+  independent-approval rules.
+- Export and verification workflows for externally inspectable evidence.
+
+Compliance-related labels are intentionally phrased as control screenings,
+processing-receipt coverage or source-linked findings. They are not legal
+opinions or formal compliance certification.
+
+Implementation details:
+
+- [Analyst deployment and API contract](docs/ANALYST_DEPLOYMENT_AND_API.md)
+- [Auditor deployment and API contract](docs/AUDITOR_DEPLOYMENT_AND_API.md)
+- [Auditor evidence schema](docs/release/auditor-evidence.schema.json)
+- [Analyst decision schema](docs/release/analyst-decision.schema.json)
+
 ## Evidence and current limits
 
 - [Multilingual evaluation](docs/evaluation/quality.json) contains 108 developer-curated challenge cases across English, Tamil and Telugu. It reports category macro-F1 of 0.9746, urgency accuracy of 86.11% and emergency recall of 33/33 (11 EN, 11 TA, 11 TE). Independent external adjudication remains pending.
 - [Baseline comparison](docs/evaluation/baseline-quality.json) records the local keyword fallback on the same challenge set.
-- [DPDP architecture](docs/DPDP_COMPLIANCE_ARCHITECTURE.md) documents consent, data-minimisation, Laplace Differential Privacy (ε = 1.0) and ingress-scrubbing design choices.
+- [DPDP architecture](docs/DPDP_COMPLIANCE_ARCHITECTURE.md) documents consent, data-minimisation, configurable public-transparency differential privacy, and ingress-scrubbing design choices. Public transparency defaults to epsilon `0.75` when differential privacy is enabled.
 - [Security threat model](docs/SECURITY_THREAT_MODEL.md) describes trust boundaries, token handling, Secret Manager rotation and RBAC controls under the STRIDE framework.
 - [External audit anchoring](docs/EXTERNAL_ANCHORING_SPEC.md) specifies Merkle root batching, RFC 3161 trusted timestamps and Sigstore Rekor public transparency log integration.
 - [Model evidence dossier](docs/evaluation/MODEL_EVIDENCE_DOSSIER.md) records proxy diagnostics, calibration telemetry and forecasting limitations.
@@ -127,6 +248,27 @@ NVB is designed to make the important boundaries visible:
 - [Pilot deployment runbook](docs/MINISTRY_PILOT_DEPLOYMENT_RUNBOOK.md) describes the Cloud SQL, recovery and identity configuration required for an operational pilot.
 
 These artifacts establish implementation evidence and documented limits. They do not establish population-level accuracy, ministry adoption, causal public-service impact or formal certification.
+
+### Public endpoint rate limits
+
+The Public Suite applies per-IP, per-process safeguards. Requests exceeding a
+limit receive HTTP `429 Too Many Requests` with a `Retry-After` header.
+
+| Endpoint | Limit |
+|---|---:|
+| `/api/complaints` | 120 requests/minute/IP |
+| `/api/v1/live-feed/stream` | 12 connections/minute/IP |
+| `/api/public/transparency/summary` | 60 requests/minute/IP |
+| `/api/public/transparency/priority-signals` | 60 requests/minute/IP |
+| `/api/public/transparency/districts` | 60 requests/minute/IP |
+| `/api/public/transparency/categories` | 60 requests/minute/IP |
+| `/api/v1/transparency/verify-chain` | 30 requests/minute/IP |
+| `/api/v2/pilot/track` | 20 requests/minute/IP |
+
+These are application-level safeguards maintained in memory by each service
+process. They are not a replacement for distributed Cloud Run, API Gateway or
+load-balancer quotas. Production deployments should also configure edge-level
+rate limiting, abuse detection and monitoring.
 
 ## Explore the live workflows
 

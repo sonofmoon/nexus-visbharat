@@ -97,7 +97,7 @@ def _body_from_part(part, plain_parts, html_parts):
     body = (part.get("body") or {}).get("data")
     if body:
         decoded = _decode_b64(body).decode("utf-8", errors="replace")
-        if mime == "text/plain":
+        if mime in {"", "text/plain"}:
             plain_parts.append(decoded)
         elif mime == "text/html":
             html_parts.append(decoded)
@@ -240,6 +240,8 @@ class GmailClient:
         message["To"] = recipient
         message["From"] = self.mailbox
         message["Subject"] = subject
+        message["X-NVB-System-Message"] = "complaint-confirmation"
+        message["Auto-Submitted"] = "auto-generated"
         message.set_content(body)
         raw = base64.urlsafe_b64encode(message.as_bytes()).decode("ascii").rstrip("=")
         return self.request("POST", "messages/send", body={"raw": raw})
@@ -361,6 +363,8 @@ def _parse_message(raw):
         "subject": subject,
         "text": f"Subject: {subject}\n\n{text}"[:12500].strip(),
         "thread_id": raw.get("threadId") or "",
+        "headers": header,
+        "label_ids": list(raw.get("labelIds") or []),
     }
 
 
@@ -374,6 +378,39 @@ def _confirmation(request_id, subject):
     )
 
 
+def _is_system_confirmation(parsed):
+    """Return True for NVB's own acknowledgement messages.
+
+    Gmail history can surface messages sent by the watched mailbox when the
+    mailbox/label configuration is broad or a confirmation is delivered back
+    to the intake address. Treating those messages as new citizen requests
+    creates an acknowledgement -> ticket -> acknowledgement loop.
+    """
+    message = parsed if isinstance(parsed, dict) else {}
+    sender = str(message.get("sender") or "").strip().lower()
+    mailbox = _mailbox().strip().lower()
+    if mailbox and sender == mailbox:
+        return True
+
+    headers = message.get("headers") if isinstance(message.get("headers"), dict) else {}
+    if str(headers.get("x-nvb-system-message") or "").strip().lower() == "complaint-confirmation":
+        return True
+
+    subject = str(message.get("subject") or "").strip()
+    text = str(message.get("text") or "")
+    ticket_subject = re.search(
+        r"(?:^|\s)(?:re:\s*)?nexus\s+visbharat\s+ticket\s+nvb-[0-9]{8}[a-z0-9]{4}(?:\s|$)",
+        subject,
+        re.IGNORECASE,
+    )
+    confirmation_markers = (
+        "Your NVB request has been received",
+        "The request is now queued for municipal review",
+        "Do not reply with passwords, Aadhaar numbers, bank details, or other sensitive information",
+    )
+    return bool(ticket_subject and all(marker.lower() in text.lower() for marker in confirmation_markers))
+
+
 def _process_message(client, message_id, history_id, ingest_text):
     db = get_db()
     prior = db.execute("SELECT * FROM gmail_inbound_events WHERE message_id=?", (message_id,)).fetchone()
@@ -382,11 +419,15 @@ def _process_message(client, message_id, history_id, ingest_text):
 
     raw = client.message(message_id)
     parsed = _parse_message(raw)
+    payload_hash = hashlib.sha256(json.dumps(raw, sort_keys=True).encode()).hexdigest()
     if not parsed["sender"] or "@" not in parsed["sender"]:
-        _save_event(message_id, history_id, parsed, hashlib.sha256(json.dumps(raw, sort_keys=True).encode()).hexdigest(), status="ignored", error="sender missing")
+        _save_event(message_id, history_id, parsed, payload_hash, status="ignored", error="sender missing")
         return {"message_id": message_id, "status": "ignored"}
 
-    payload_hash = hashlib.sha256(json.dumps(raw, sort_keys=True).encode()).hexdigest()
+    if _is_system_confirmation(parsed):
+        _save_event(message_id, history_id, parsed, payload_hash, status="ignored", error="system confirmation message")
+        return {"message_id": message_id, "status": "ignored_system_message"}
+
     request_id = prior["request_id"] if prior and prior["request_id"] else None
     _save_event(message_id, history_id, parsed, payload_hash, status="processing", request_id=request_id)
     if not request_id:

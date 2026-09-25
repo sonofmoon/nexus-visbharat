@@ -5,7 +5,7 @@
  <meta name="viewport" content="width=device-width, initial-scale=1.0">
  <title>Policy Dashboard - Nexus VisBharat</title>
  <link rel="stylesheet" href="/static/css/style.css">
- <link rel="stylesheet" href="/static/css/dashboard.css?v=2">
+ <link rel="stylesheet" href="/static/css/dashboard.css?v=3">
  <link rel="icon" href="/favicon.ico">
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -503,12 +503,12 @@
  <div>
  <h4 style="margin:0;font-weight:700;color:#202124;font-size:1.2rem;letter-spacing:-0.2px;line-height:1.3;">Public</h4>
  <div class="d-flex align-items-center gap-2 mt-1.5 flex-wrap">
- <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-patch-check-fill text-primary"></i> Google Cloud AI & Speech-to-Text Verified</span>
+ <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-stars text-primary"></i> AI-assisted intake</span>
  <span class="badge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-geo-alt-fill text-danger"></i> Tamil Nadu | Karur (Tamil)</span>
  </div>
  </div>
  </div>
- <span class="badge" style="background:#e6f4ea;color:#137333;border-radius:100px;padding:6px 14px;font-size:0.78rem;font-weight:600;"><i class="bi bi-lock-fill"></i> Zero-Trust Merkle Log</span>
+ <span class="badge" style="background:#e6f4ea;color:#137333;border-radius:100px;padding:6px 14px;font-size:0.78rem;font-weight:600;"><i class="bi bi-shield-check"></i> Hash-linked audit record</span>
  </div>
 
  <!-- Voice Trace Stepper Grid -->
@@ -551,7 +551,7 @@
  <span class="badge" style="background:#ea4335;color:#fff;font-weight:700;border-radius:12px;padding:5px 10px;font-size:0.75rem;">HOP #4</span>
  <span class="badge" style="background:#e8f0fe;color:#1a73e8;font-size:0.72rem;border-radius:10px;padding:4px 8px;">Now</span>
  </div>
- <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Capex Allocated</strong>
+ <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Planning signal recorded</strong>
  </div>
  <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Drafted PM Gati Shakti Capex</small>
  </div>
@@ -565,7 +565,7 @@
  <strong style="color:#174ea6;font-size:0.98rem;display:block;margin-bottom:4px;"><i class="bi bi-people-fill"></i> My Cluster, My Neighbors (Karur, Tamil Nadu)</strong>
  <p style="margin:0;font-size:0.88rem;color:#3c4043;line-height:1.5;">This synthetic cluster illustrates how reports can be grouped.</p>
  </div>
- <button class="btn btn-sm nvb-btn-primary nvb-btn-pill nvb-btn-md nvb-btn-nowrap" id="publicCosignBtn"><i class="bi bi-hand-thumbs-up-fill"></i> Co-Sign Demand (3 co-signed this morning)</button>
+ <button class="btn btn-sm nvb-btn-primary nvb-btn-pill nvb-btn-md nvb-btn-nowrap" id="publicCosignBtn"><i class="bi bi-shield-lock-fill"></i> Public support (receipt required)</button>
  </div>
  </div>
 
@@ -586,9 +586,9 @@
  <div style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:1rem 1.25rem;" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
  <div class="d-flex align-items-center gap-2">
  <span class="badge" style="background:#3c4043;color:#fff;font-family:monospace;font-size:0.72rem;padding:4px 8px;">SHA-256</span>
- <small style="font-family:'Roboto Mono', monospace;font-size:0.78rem;color:#5f6368;">308f87e5a7b1c44298fc1c14...</small>
+ <small style="font-family:'Roboto Mono', monospace;font-size:0.78rem;color:#5f6368;">Hash loaded from the live verification response</small>
  </div>
- <button class="btn btn-sm nvb-btn-outline-primary nvb-btn-pill-sm" id="verifyPublicChainBtn"><i class="bi bi-shield-check"></i> Verify Receipt Math (SHA-256 Chain)</button>
+ <button class="btn btn-sm nvb-btn-outline-primary nvb-btn-pill-sm" id="verifyPublicChainBtn"><i class="bi bi-shield-check"></i> Verify audit chain</button>
  </div>
  <div id="publicVerifyResult" class="mt-2 text-start" style="display:none;"></div>
  </div>
@@ -601,7 +601,7 @@
  <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 10px;font-weight:600;">Public</span>
  </div>
  <div id="publicKpiRow" class="stats-row" style="margin-top:8px;">
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Citizen Requests</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Published requests</div></div></div>
  <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Districts Covered</div></div></div>
  <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Operational closure</div></div></div>
  <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Active Projects</div></div></div>
@@ -610,11 +610,11 @@
 
  <div class="google-material-card nvb-card nvb-card-mt nvb-card-pad-md">
  <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
- <h5 style="margin:0;font-weight:700;color:#202124;font-size:1rem;"><i class="bi bi-kanban-fill" style="color:#1a73e8"></i> Project Progress (Public)</h5>
+ <h5 style="margin:0;font-weight:700;color:#202124;font-size:1rem;"><i class="bi bi-kanban-fill" style="color:#1a73e8"></i> Priority Signals (Public)</h5>
  <span class="badge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 10px;font-weight:600;">Read-only</span>
  </div>
- <div id="publicProjectProgress" role="region" aria-live="polite" aria-label="Public project progress updates">
- <p class="brief-placeholder">Loading public project progress...</p>
+ <div id="publicProjectProgress" role="region" aria-live="polite" aria-label="Public priority signals">
+ <p class="brief-placeholder">Loading privacy-thresholded priority signals...</p>
  </div>
  </div>
  </div>
@@ -704,40 +704,62 @@
  <div class="dashboard-panel panel-brief">
  <div class="panel-header">
  <h3><i class="bi bi-file-earmark-text-fill" aria-hidden="true"></i> AI Policy Brief</h3>
- <span class="panel-badge">Gemini</span>
+ <span class="panel-badge" id="policyBriefBadge"><i class="bi bi-cpu"></i> Governed RAG</span>
  </div>
  <div class="brief-controls">
  <select id="briefDistrict" class="filter-select" aria-label="District for policy brief">
  <option value="">Select District...</option>
  </select>
- <button class="btn btn-primary btn-sm" id="generateBriefBtn">Generate Brief</button>
+ <button class="btn btn-primary btn-sm" id="generateBriefBtn"><i class="bi bi-lightning-charge-fill me-1"></i> Generate Brief</button>
  </div>
  <div id="policyBrief" class="policy-brief-content" role="region" aria-live="polite" aria-label="Policy brief output">
- <p class="brief-placeholder">Select a district and click "Generate Brief" to receive an AI-generated policy recommendation.</p>
+ <p class="brief-placeholder">Select a district and click "Generate Brief" to synthesize an AI policy recommendation grounded in citizen demand and statutory corpus guidelines.</p>
  </div>
  </div>
 
  <!-- Complaint Feed -->
  <div class="dashboard-panel panel-feed" id="liveFeedPanel">
- <div class="panel-header">
+ <div class="panel-header feed-panel-header">
+ <div>
  <h3><i class="bi bi-broadcast" aria-hidden="true"></i> Live Complaint Feed</h3>
- <span class="panel-badge">Real-time</span>
+ <span class="feed-subtitle">Publication-safe category summaries; citizen text and exact locations withheld</span>
  </div>
+ <div class="feed-header-actions">
+ <span id="feedConnectionStatus" class="feed-connection-status is-connecting"><i class="bi bi-circle-fill" aria-hidden="true"></i> Connecting</span>
+ <span id="feedLastUpdated" class="refresh-hint">Last update: --</span>
+ <button class="btn btn-secondary btn-sm" id="feedPauseBtn" type="button" aria-pressed="false"><i class="bi bi-pause-fill" aria-hidden="true"></i> Pause</button>
+ <button class="btn btn-primary btn-sm" id="feedRefreshBtn" type="button"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Refresh</button>
+ </div>
+ </div>
+ <div class="feed-toolbar" aria-label="Live complaint feed filters">
+ <label class="feed-search"><i class="bi bi-search" aria-hidden="true"></i><input id="feedSearch" type="search" placeholder="Search public ticket reference" aria-label="Search public ticket reference"></label>
+ <label>State<select id="feedState" class="filter-select"><option value="">All states</option>{% for state in states %}<option value="{{ state }}">{{ state }}</option>{% endfor %}</select></label>
+ <label>District<select id="feedDistrict" class="filter-select" disabled><option value="">All districts</option></select></label>
+ <label>Category<select id="feedCategory" class="filter-select"><option value="">All categories</option>{% for category in categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select></label>
+ <label>Urgency<select id="feedUrgency" class="filter-select"><option value="">All urgency</option><option value="Routine">Routine</option><option value="Urgent">Urgent</option><option value="Emergency">Emergency</option></select></label>
+ <label>Language<select id="feedLanguage" class="filter-select"><option value="">All languages</option><option value="en">English</option><option value="ta">Tamil</option><option value="te">Telugu</option></select></label>
+ <label>Channel<select id="feedChannel" class="filter-select"><option value="">All channels</option><option value="Web Form">Web Form</option><option value="Voice IVR">Voice IVR</option><option value="WhatsApp">WhatsApp</option><option value="Telegram">Telegram</option><option value="Email">Email</option></select></label>
+ <label>From<input id="feedDateFrom" class="filter-select" type="date"></label><label>To<input id="feedDateTo" class="filter-select" type="date"></label>
+ <label>Stage<select id="feedStatus" class="filter-select"><option value="">All stages</option><option value="New">New</option><option value="Pending">Pending</option><option value="Acknowledged">Acknowledged</option><option value="Resolved">Resolved</option><option value="Closed">Closed</option></select></label>
+ <label>Order<select id="feedSort" class="filter-select"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label>
+ <button class="btn btn-secondary btn-sm" id="feedClearBtn" type="button">Clear feed filters</button>
+ </div>
+ <div id="feedNewItems" class="feed-new-items" hidden><button type="button" id="feedShowNewBtn"><i class="bi bi-arrow-up-circle" aria-hidden="true"></i> <span>New complaints available</span></button></div>
  <div class="complaint-feed" id="complaintFeed" role="region" aria-live="polite" aria-label="Live complaint updates">
  <!-- Populated by JS -->
  </div>
  </div>
 
- <!-- Prediction Panel -->
- <div class="dashboard-panel panel-prediction">
- <div class="panel-header">
- <h3><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> Demand screening</h3>
- <span class="panel-badge">Observed indicators</span>
- </div>
- <div class="prediction-content" id="predictionContent" role="region" aria-live="polite" aria-label="Prediction updates">
- <p class="brief-placeholder">Select a state to view AI-predicted infrastructure stress for the next quarter.</p>
- </div>
- </div>
+    <!-- Prediction Panel -->
+    <div class="dashboard-panel panel-prediction" id="panelDemandScreening">
+      <div class="panel-header">
+        <h3><i class="bi bi-graph-up-arrow" aria-hidden="true"></i> Demand screening</h3>
+        <span class="panel-badge">Observed indicators</span>
+      </div>
+      <div class="prediction-content" id="predictionContent" role="region" aria-live="polite" aria-label="Prediction updates">
+        <p class="brief-placeholder">Loading dynamic civic demand screening matrix…</p>
+      </div>
+    </div>
  
  <div class="dashboard-panel panel-ops">
  <div class="panel-header">
@@ -770,8 +792,9 @@
  <script>window.NVB_PILOT_CSRF={{ pilot_csrf|default('')|tojson }};</script>
  <script src="/static/js/pilot-scope.js"></script>
  <script src="/static/js/dashboard-ui.js?v=1"></script>
- <script src="/static/js/dashboard.js?v=2"></script>
- <script src="/static/js/analyst-workbench.js?v=1"></script>
+ <script src="/static/js/demand-screening.js?v=1"></script>
+ <script src="/static/js/dashboard.js?v=3"></script>
+ <script src="/static/js/analyst-workbench.js?v=2"></script>
  <script src="/static/js/auditor-workbench.js?v=2"></script>
  <script src="/static/js/dashboard-react-layer.js"></script>
 </body>

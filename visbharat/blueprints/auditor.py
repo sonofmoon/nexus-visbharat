@@ -41,6 +41,26 @@ def snapshot():
     return jsonify(success=True,**result)
 
 
+@auditor_bp.route('/api/v2/auditor/intelligence')
+@require_roles('admin', 'auditor')
+def intelligence():
+    pid = request.args.get('project_id')
+    intel = work.forensic_audit_intelligence(scope(), pid)
+    return jsonify(success=True, **intel)
+
+
+@auditor_bp.route('/api/v2/auditor/copilot/ask', methods=['POST'])
+@require_roles('admin', 'auditor')
+def ask_copilot():
+    data = body()
+    query_text = str(data.get('query') or '').strip()
+    if not query_text:
+        raise ValueError('Query is required')
+    pid = data.get('project_id') or request.args.get('project_id')
+    res = work.ask_auditor_copilot(query_text, scope(), pid)
+    return jsonify(success=True, **res)
+
+
 @auditor_bp.route('/api/v2/auditor/projects')
 @require_roles('admin','auditor','analyst')
 def projects():
@@ -128,8 +148,29 @@ def download_export(sid):
         out=io.StringIO();writer=csv.writer(out);keys=['id','created_at','actor','action','resource_type','resource_id','event_version','chain_seq']
         writer.writerow(keys)
         for record in payload['records']: writer.writerow([csv_cell(record.get(k)) for k in keys])
-        return Response(out.getvalue(),mimetype='text/csv',headers={'Content-Disposition':f'attachment; filename="{sid}.csv"','X-NVB-Manifest-SHA256':work.digest(payload)})
-    return jsonify(success=True,manifest={'schema_version':work.VERSION,'sha256':work.digest(payload),'created_at':row['created_at'],'external_signature':None},record=payload)
+        return Response(out.getvalue(),mimetype='text/csv',headers={'Content-Disposition':f'attachment; filename="{sid}.csv"','X-NVB-Manifest-SHA256':row.get('payload_sha256') or work.digest(payload)})
+    manifest = {
+        'schema_version': work.VERSION,
+        'sha256': row.get('payload_sha256') or work.digest(payload),
+        'created_at': row['created_at'],
+        'external_signature': None,
+    }
+    return jsonify(success=True, manifest=manifest, record=payload)
+
+
+@auditor_bp.route('/api/v2/auditor/exports/<sid>/verify')
+def verify_export(sid):
+    """Public digest check; returns metadata only, never the evidence payload."""
+    rows=work.query('SELECT snapshot_id,kind,created_at,payload_json,payload_sha256,manifest_json FROM auditor_snapshots WHERE snapshot_id=?',(sid,))
+    if not rows: raise LookupError('Evidence pack not found')
+    row=rows[0];current=work.digest(json.loads(row['payload_json']))
+    stored=row.get('payload_sha256')
+    manifest=json.loads(row.get('manifest_json') or '{}')
+    verified=bool(stored) and stored==current
+    return jsonify(success=True,verified=verified,status='verified' if verified else ('legacy_digest_not_stored' if not stored else 'tamper_detected'),
+                   snapshot_id=row['snapshot_id'],kind=row['kind'],created_at=row['created_at'],payload_sha256=current,
+                   stored_payload_sha256=stored,manifest=manifest,
+                   notice='Public integrity check only. It does not certify publisher authenticity, legal compliance, or administrative approval.')
 
 
 @auditor_bp.route('/api/v2/auditor/integrity')
@@ -208,8 +249,8 @@ def evaluate():
 @require_roles('admin','auditor')
 def readiness():
     return jsonify(success=True,version=work.VERSION,license='Apache-2.0',certification='Not asserted',
-        integrations={'financial_holds':'Not connected','satellite_progress':'No validated construction estimator','external_anchor':'Not connected'},
-        external_gates=['Publisher/redistribution verification','Human-reviewed representative language/audio labels','Field outcome observations','Financial authority integration'],
+        integrations={'financial_holds':'Not connected','satellite_progress':'No validated construction estimator','external_evidence_verifier':'Public digest verification endpoint','external_anchor':'No independent trust anchor or public-key signature configured'},
+        external_gates=['Publisher/redistribution verification','Human-reviewed representative language/audio labels','Field outcome observations','Financial authority integration','Independent trust anchor or public-key signature for evidence packs'],
         export_limit=10000,evaluation_sample_limit=500)
 
 

@@ -12,7 +12,7 @@ import secrets
 import os
 from urllib import request as urlrequest
 
-from flask import Blueprint, current_app, jsonify, request, g
+from flask import Blueprint, Response, current_app, g, jsonify, request, stream_with_context
 
 from ..auth import require_auth, require_roles
 from ..audit import write_audit_log
@@ -65,6 +65,7 @@ from ..services.code_mix import normalize_code_mix
 from ..services.policy_outputs import compute_demand_investment_alignment_map, generate_rag_policy_brief
 from ..services.layer4_fusion import layer4_source_status, compute_layer4_fusion
 from ..services.pii_scrubber import scrub_text, scrub_payload_fields
+from ..services.public_safety import allow as allow_public_request
 from ..services.ai_simulation import (
     simulate_gemini_intent_classification, simulate_speech_to_text,
     simulate_translation, simulate_dialogflow_cx_turn
@@ -1057,20 +1058,87 @@ def export_ivr_callback_alert_history():
     return jsonify({'success': True, 'items': enriched_items, 'meta': {'limit': limit, 'count': len(enriched_items), 'format': 'json'}})
 
 
-@channels_bp.route('/api/complaints', methods=['GET'])
-def list_complaints_public():
-    district = (request.args.get('district') or '').strip()
-    state = (request.args.get('state') or '').strip()
-    category = (request.args.get('category') or '').strip()
-    urgency = (request.args.get('urgency') or '').strip()
-    pilot_id = (request.args.get('pilot_id') or '').strip()
-    limit = min(int(request.args.get('limit', 200)), 500)
+_FEED_SYSTEM_MARKERS = (
+    'your nvb request has been received',
+    'the request is now queued for municipal review',
+    'do not reply with passwords, aadhaar numbers, bank details, or other sensitive information',
+)
 
-    if not pilot_id:
-        bq_rows = _bq_complaints(limit=limit, district=district, state=state, category=category, urgency=urgency)
-        if bq_rows is not None:
-            return jsonify({'success': True, 'count': len(bq_rows), 'complaints': bq_rows, 'source': 'bigquery'})
 
+def _is_system_generated_feed_item(item):
+    obj = item if isinstance(item, dict) else {}
+    text = ' '.join(str(obj.get(key) or '') for key in ('original_text', 'translated_text')).lower()
+    source = str(obj.get('source_channel') or obj.get('source') or '').lower()
+    return source in {'email', 'gmail'} and all(marker in text for marker in _FEED_SYSTEM_MARKERS)
+
+
+def _feed_item(item):
+    obj = dict(item)
+    obj['source'] = obj.get('source') or obj.get('source_channel')
+    obj['language'] = obj.get('language') or obj.get('input_language')
+    obj['is_system_generated'] = bool(obj.get('is_system_generated') or _is_system_generated_feed_item(obj))
+    return obj
+
+
+def _public_feed_item(item):
+    """Return a publication-safe feed record without citizen free text."""
+    obj = _feed_item(item)
+    category = str(obj.get('category') or 'civic service').strip()
+    safe = {
+        'request_id': obj.get('request_id'),
+        'district': obj.get('district'),
+        'state': obj.get('state'),
+        'input_language': obj.get('input_language'),
+        'language': obj.get('language'),
+        'category': obj.get('category'),
+        'urgency': obj.get('urgency'),
+        'status': obj.get('status'),
+        'source': obj.get('source'),
+        'source_channel': obj.get('source_channel'),
+        'ward': obj.get('ward'),
+        'created_at': obj.get('created_at'),
+        'is_system_generated': obj.get('is_system_generated', False),
+        'public_summary': f'{category} request recorded; citizen-submitted text is not published.',
+        'publication_policy': 'category_only_redacted',
+    }
+    return safe
+
+
+def _dedupe_feed_items(items):
+    unique = []
+    seen = set()
+    duplicate_count = 0
+    for raw in items or []:
+        item = _feed_item(raw)
+        key = str(item.get('request_id') or '').strip()
+        if not key:
+            key = '|'.join(str(item.get(field) or '') for field in ('created_at', 'district', 'category', 'original_text'))
+        if key in seen:
+            duplicate_count += 1
+            continue
+        seen.add(key)
+        unique.append(item)
+    return unique, duplicate_count
+
+
+def _feed_args():
+    return {
+        'district': (request.args.get('district') or '').strip(),
+        'state': (request.args.get('state') or '').strip(),
+        'category': (request.args.get('category') or '').strip(),
+        'urgency': (request.args.get('urgency') or '').strip(),
+        'date_from': (request.args.get('date_from') or '').strip(),
+        'date_to': (request.args.get('date_to') or '').strip(),
+        'language': (request.args.get('language') or '').strip(),
+        'channel': (request.args.get('channel') or '').strip(),
+        'status': (request.args.get('status') or '').strip(),
+        'ward': (request.args.get('ward') or '').strip(),
+        'ticket': (request.args.get('ticket') or '').strip(),
+        'pilot_id': (request.args.get('pilot_id') or '').strip(),
+    }
+
+
+def _db_feed_items(filters, limit=200, *, since_at='', since_id='', ascending=False):
     db = get_db()
     sql = '''
         SELECT request_id, district, state, input_language, original_text, translated_text,
@@ -1079,38 +1147,168 @@ def list_complaints_public():
         WHERE 1=1
     '''
     params = []
+    pilot_id = filters.get('pilot_id') or ''
     if pilot_id:
         sql += " AND EXISTS (SELECT 1 FROM pilot_requests pr WHERE pr.request_id = citizen_requests.request_id AND pr.pilot_id = ?)"
         params.append(pilot_id)
-    if district:
-        sql += " AND district = ?"
-        params.append(district)
-    if state:
-        sql += " AND state = ?"
-        params.append(state)
-    if category:
-        sql += " AND category = ?"
-        params.append(category)
-    if urgency:
-        sql += " AND urgency = ?"
-        params.append(urgency)
-
-    sql += " ORDER BY id DESC LIMIT ?"
-    params.append(limit)
-
+    for field in ('district', 'state', 'category', 'urgency', 'status'):
+        if filters.get(field):
+            sql += f" AND {field} = ?"
+            params.append(filters[field])
+    if filters.get('language'):
+        sql += " AND input_language = ?"
+        params.append(filters['language'])
+    if filters.get('channel'):
+        sql += " AND source_channel = ?"
+        params.append(filters['channel'])
+    if filters.get('ward'):
+        sql += " AND ward = ?"
+        params.append(filters['ward'])
+    if filters.get('date_from'):
+        sql += " AND SUBSTR(created_at, 1, 10) >= ?"
+        params.append(filters['date_from'])
+    if filters.get('date_to'):
+        sql += " AND SUBSTR(created_at, 1, 10) <= ?"
+        params.append(filters['date_to'])
+    if filters.get('ticket'):
+        sql += " AND request_id LIKE ?"
+        needle = f"%{filters['ticket']}%"
+        params.append(needle)
+    if since_at:
+        if ascending:
+            sql += " AND (created_at > ? OR (created_at = ? AND request_id > ?))"
+        else:
+            sql += " AND (created_at < ? OR (created_at = ? AND request_id < ?))"
+        params.extend([since_at, since_at, since_id or ''])
+    order = 'ASC' if ascending else 'DESC'
+    sql += f" ORDER BY created_at {order}, request_id {order} LIMIT ?"
+    params.append(min(max(int(limit or 200), 1), 1000))
     rows = db.execute(sql, params).fetchall()
-    complaints = []
-    for row in rows:
-        item = dict(row)
-        item['source'] = item.get('source_channel')
-        item['language'] = item.get('input_language')
-        if not item.get('ward'):
-            item['ward'] = f"Ward {((hash(str(item.get('request_id', ''))) % 25) + 1):02d}"
-        complaints.append(item)
+    return [_feed_item(dict(row)) for row in rows]
 
-    complaints.sort(key=lambda x: str(x.get('created_at', '') or x.get('request_id', '')), reverse=True)
+
+def _visible_feed_items(items, include_system=False):
+    unique, duplicate_count = _dedupe_feed_items(items)
+    suppressed = 0
+    if not include_system:
+        visible = []
+        for item in unique:
+            if item.get('is_system_generated'):
+                suppressed += 1
+            else:
+                visible.append(item)
+        unique = visible
+    return unique, duplicate_count, suppressed
+
+
+def _safe_feed_limit(value):
+    try:
+        return min(max(int(value or 200), 1), 500)
+    except (TypeError, ValueError):
+        return 200
+
+
+@channels_bp.route('/api/complaints', methods=['GET'])
+def list_complaints_public():
+    allowed, retry_after = allow_public_request(f"feed:{request.remote_addr or 'unknown'}", 120, 60)
+    if not allowed:
+        return jsonify({'success': False, 'error': 'Public feed rate limit reached; retry shortly.'}), 429, {'Retry-After': str(retry_after)}
+    filters = _feed_args()
+    limit = _safe_feed_limit(request.args.get('limit'))
+    include_system = str(request.args.get('include_system') or '').lower() in {'1', 'true', 'yes'}
+    sort_order = str(request.args.get('sort') or 'newest').lower()
+    if sort_order not in {'newest', 'oldest'}:
+        sort_order = 'newest'
+
+    source = 'db'
+    raw_items = None
+    if not filters.get('pilot_id'):
+        raw_items = _bq_complaints(limit=min(limit * 4, 500), **{key: filters[key] for key in (
+            'district', 'state', 'category', 'urgency', 'date_from', 'date_to', 'language',
+            'channel', 'status', 'ward', 'ticket',
+        )})
+        if raw_items is not None:
+            source = 'bigquery'
+    if raw_items is None:
+        raw_items = _db_feed_items(filters, limit=min(limit * 4, 1000), ascending=(sort_order == 'oldest'))
+
+    complaints, duplicate_count, suppressed_count = _visible_feed_items(raw_items, include_system=include_system)
+    complaints = [_public_feed_item(item) for item in complaints]
+    complaints.sort(
+        key=lambda item: (str(item.get('created_at') or ''), str(item.get('request_id') or '')),
+        reverse=sort_order != 'oldest',
+    )
     complaints = complaints[:limit]
-    return jsonify({'success': True, 'count': len(complaints), 'complaints': complaints, 'source': 'db'})
+    next_cursor = None
+    if complaints:
+        tail = complaints[-1]
+        next_cursor = {'created_at': tail.get('created_at'), 'request_id': tail.get('request_id')}
+    return jsonify({
+        'success': True,
+        'count': len(complaints),
+        'complaints': complaints,
+        'source': source,
+        'server_time': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+        'deduplicated_count': duplicate_count,
+        'suppressed_system_count': suppressed_count,
+        'filters': filters,
+        'next_cursor': next_cursor,
+        'publication_notice': 'Public feed publishes category-level summaries only. Citizen-submitted text, contact details and exact locations are withheld.',
+    })
+
+
+@channels_bp.route('/api/v1/live-feed/stream', methods=['GET'])
+def live_feed_stream():
+    """Stream newly-created, deduplicated feed items with polling fallback."""
+    allowed, retry_after = allow_public_request(f"feed-stream:{request.remote_addr or 'unknown'}", 12, 60)
+    if not allowed:
+        return jsonify({'success': False, 'error': 'Live-feed connection rate limit reached; retry shortly.'}), 429, {'Retry-After': str(retry_after)}
+    filters = _feed_args()
+    since_at = (request.args.get('since_at') or '').strip()
+    since_id = (request.args.get('since_id') or '').strip()
+    last_event_id = (request.headers.get('Last-Event-ID') or '').strip()
+    if not since_at and '|' in last_event_id:
+        since_at, since_id = last_event_id.split('|', 1)
+
+    if not since_at:
+        latest = _db_feed_items(filters, limit=1, ascending=False)
+        if latest:
+            since_at = str(latest[0].get('created_at') or '')
+            since_id = str(latest[0].get('request_id') or '')
+
+    @stream_with_context
+    def generate():
+        cursor_at, cursor_id = since_at, since_id
+        started = time.monotonic()
+        yield 'event: connected\ndata: {"status":"connected"}\n\n'
+        while time.monotonic() - started < 50:
+            rows = _db_feed_items(
+                filters,
+                limit=100,
+                since_at=cursor_at,
+                since_id=cursor_id,
+                ascending=True,
+            )
+            items, _, _ = _visible_feed_items(rows)
+            items = [_public_feed_item(item) for item in items]
+            for item in items:
+                cursor_at = str(item.get('created_at') or cursor_at)
+                cursor_id = str(item.get('request_id') or cursor_id)
+                event_id = f"{cursor_at}|{cursor_id}"
+                yield f"id: {event_id}\nevent: complaint\ndata: {json.dumps(item, ensure_ascii=False)}\n\n"
+            yield ': heartbeat\n\n'
+            time.sleep(2)
+        yield 'event: reconnect\ndata: {"status":"reconnect"}\n\n'
+
+    return Response(
+        generate(),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache, no-transform',
+            'Connection': 'keep-alive',
+            'X-Accel-Buffering': 'no',
+        },
+    )
 
 
 @channels_bp.route('/api/stats', methods=['GET'])

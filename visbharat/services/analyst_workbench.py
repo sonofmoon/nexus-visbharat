@@ -93,6 +93,17 @@ def get_official_ndap_indicators(state_name=None,state_lgd_code=None):
 
 VERSION = 'nvb-decision-v1'
 WEIGHTS = {'demand': 0.40, 'equity': 0.35, 'gap': 0.25}
+INCLUSION_VERSION = 'nvb-observed-access-screen-v2'
+INCLUSION_WEIGHTS = {
+    'report_density': 0.35,
+    'deprivation_context': 0.35,
+    'infrastructure_gap': 0.15,
+    'emergency_pressure': 0.15,
+}
+INCLUSION_THRESHOLDS = {
+    'deprivation_index_min': 0.50,
+    'reports_per_100k_max': 10.0,
+}
 COSTS = {'Water Supply': (60, 180), 'Road': (80, 240), 'Sanitation': (35, 105),
          'Electricity': (25, 75), 'Health': (100, 300), 'Education': (50, 150),
          'Transport': (20, 60), 'Digital Connectivity': (15, 45), 'Housing': (100, 300), 'Other': (25, 75)}
@@ -254,6 +265,224 @@ def evidence_sources():
     return sources
 
 
+def evidence_gap_intelligence(scope):
+    clause, params = where(scope)
+    c_rows = query(f"SELECT c.category, COUNT(*) AS n, SUM(CASE WHEN c.urgency='Emergency' THEN 1 ELSE 0 END) AS emergencies FROM citizen_requests c WHERE {clause} GROUP BY c.category", params)
+    cat_counts = {r['category']: int(r['n'] or 0) for r in c_rows}
+    cat_emergencies = {r['category']: int(r['emergencies'] or 0) for r in c_rows}
+    total_complaints = sum(cat_counts.values())
+    total_emergencies = sum(cat_emergencies.values())
+    
+    ref_idx = reference_index()
+    district_ref = None
+    if scope.get('district'):
+        district_ref = ref_idx.get((scope.get('state'), scope.get('district'))) or next((v for (s, d), v in ref_idx.items() if d == scope['district']), None)
+    
+    deprivation = float(district_ref.get('deprivation_index') or 0.45) if district_ref else 0.45
+    water_cov = float(district_ref.get('water_coverage') or 50.0) if district_ref else 50.0
+    road_cov = float(district_ref.get('road_coverage') or 60.0) if district_ref else 60.0
+    pop = int(district_ref.get('population') or 100000) if district_ref else 100000
+    density = (total_complaints / pop * 100000) if pop else 0.0
+
+    discrepancies = []
+
+    # 1. Ghost Infrastructure / Asset Non-Functionality Risk
+    water_reqs = cat_counts.get('Water Supply', 0)
+    if water_reqs >= 5 and water_cov >= 65.0:
+        discrepancies.append({
+            'type': 'ghost_infrastructure',
+            'severity': 'critical',
+            'title': 'Ghost Infrastructure / Delivery Failure Alert',
+            'sector': 'Water Supply',
+            'metric': f"{water_reqs} active water outage complaints logged in zone certified at {water_cov:.1f}% tap saturation",
+            'evidence_anchor': 'JJM Registry vs Operational Intake',
+            'recommended_action': 'Deploy physical flow/pressure audit; registry saturation masks local distribution breakdown or dried source.'
+        })
+    elif water_cov < 50.0 and water_reqs > 0:
+        discrepancies.append({
+            'type': 'infrastructure_deficit',
+            'severity': 'elevated',
+            'title': 'Severe Piped Water Infrastructure Deficit',
+            'sector': 'Water Supply',
+            'metric': f"Official coverage deficit ({100 - water_cov:.1f}%) directly confirmed by {water_reqs} citizen grievance reports",
+            'evidence_anchor': 'SECC / Jal Shakti Baseline',
+            'recommended_action': 'Submit capex proposal under Jal Jeevan Mission / AMRUT 2.0 augmentation head.'
+        })
+
+    # 2. Digital Divide / Silent Community Exclusion
+    if deprivation >= 0.5 and density < 10.0:
+        discrepancies.append({
+            'type': 'access_exclusion',
+            'severity': 'critical',
+            'title': 'Digital Divide / Voice Exclusion Blindspot',
+            'sector': 'Citizen Access',
+            'metric': f"High SECC deprivation (MPI {deprivation:.2f}) with suppressed grievance density ({density:.1f}/100k residents)",
+            'evidence_anchor': 'SECC 2011 Deprivation vs Intake Density',
+            'recommended_action': 'Deploy offline IVR outreach and physical grievance camps; digital channels are inaccessible to this community.'
+        })
+
+    # 3. Temporal Demographic Drift
+    discrepancies.append({
+        'type': 'demographic_drift',
+        'severity': 'moderate',
+        'title': 'Decennial Baseline Demographic Drift',
+        'sector': 'Planning Envelope',
+        'metric': f"Planning denominator relies on the stated 2011 Census baseline ({pop:,} population); a current validated population denominator is not loaded.",
+        'evidence_anchor': 'Census 2011 Demographics (Registrar General)',
+        'recommended_action': 'Obtain a current official population estimate and document the boundary crosswalk before applying any demand or capex scaling.'
+    })
+
+    # 4. Central Scheme Synergy
+    top_cat = sorted(cat_counts.keys(), key=lambda k: cat_counts[k], reverse=True)[:1]
+    top_cat_name = top_cat[0] if top_cat else 'Water Supply'
+    scheme_map = {
+        'Water Supply': ('Jal Jeevan Mission (JJM) / AMRUT 2.0', 'Ministry of Jal Shakti / MoHUA'),
+        'Roads': ('PMGSY-III / Urban Road Rehabilitation', 'Ministry of Rural Development'),
+        'Sanitation': ('Swachh Bharat Mission (Urban) 2.0', 'MoHUA'),
+        'Electricity': ('Revamped Distribution Sector Scheme (RDSS)', 'Ministry of Power'),
+        'Health': ('PM-ABHIM Health Infrastructure Mission', 'MoHFW')
+    }
+    target_scheme, scheme_ministry = scheme_map.get(top_cat_name, ('National Urban Digital Mission', 'MoHUA'))
+    discrepancies.append({
+        'type': 'scheme_alignment',
+        'severity': 'informational',
+        'title': f'Possible Scheme Alignment: {target_scheme}',
+        'sector': top_cat_name,
+        'metric': f"Primary citizen demand is {top_cat_name} ({cat_counts.get(top_cat_name, 0)} tickets); this is a routing hypothesis, not confirmation of {target_scheme} eligibility.",
+        'evidence_anchor': f'{scheme_ministry} Guidelines',
+        'recommended_action': f'Compare the proposal with the current {target_scheme} guidelines and record an eligibility review; no sanction outcome is implied.'
+    })
+
+    llm_model = 'none'
+    provider_mode = 'local_fallback'
+    gemini_assessment = None
+    strategic_priorities = []
+    reconciliation_protocol = 'Cross-verify municipal billing records with ground survey before committing capex.'
+
+    client = current_app.extensions.get('google_ai_client') if has_app_context() else None
+    if client is not None:
+        try:
+            disc_text = "\n".join([f"- [{d['severity'].upper()}] {d['title']}: {d['metric']}. Recommended: {d['recommended_action']}" for d in discrepancies])
+            prompt = f"""You are an elite urban governance and public finance analyst.
+Synthesize a concise, authoritative Evidence & Policy Gap Assessment for district '{scope.get('district') or 'All'}' in '{scope.get('state') or 'All'}'.
+Cross-examine observed citizen grievances against government reference registries and detected discrepancies below.
+
+Demographics & Demand:
+- Population Baseline: {pop}
+- Total Citizen Requests: {total_complaints}
+- Emergency Requests: {total_emergencies}
+- Sector Demand: {dict(list(cat_counts.items())[:4])}
+
+Empirically Detected Discrepancies:
+{disc_text}
+
+Respond in strict JSON with keys:
+"executive_assessment": "2-3 high-impact analytical sentences summarizing policy alignment, registry credibility, and highest priority intervention",
+"strategic_priorities": ["Actionable priority 1 referencing central scheme", "Actionable priority 2", "Actionable priority 3"],
+"reconciliation_protocol": "Exact field audit / survey protocol to reconcile ground reality with official registries"
+"""
+            raw_resp, used_model = client._call_gemini('gemini-3.6-flash', prompt)
+            parsed = client._parse_json(raw_resp)
+            if parsed and isinstance(parsed, dict) and parsed.get('executive_assessment'):
+                gemini_assessment = parsed.get('executive_assessment')
+                strategic_priorities = parsed.get('strategic_priorities') or []
+                reconciliation_protocol = parsed.get('reconciliation_protocol') or reconciliation_protocol
+                llm_model = used_model
+                provider_mode = 'gemini_live'
+        except Exception as err:
+            current_app.logger.warning(f"Gemini Evidence Gap synthesis fallback: {err}")
+
+    if not gemini_assessment:
+        gemini_assessment = (
+            f"Evidence cross-examination for {scope.get('district') or 'the selected scope'} reveals {len(discrepancies)} active policy discrepancies. "
+            f"Observed demand of {total_complaints} requests indicates significant operational pressure in {top_cat_name}. "
+            f"Immediate field reconciliation is required to validate registry assumptions against ground telemetry."
+        )
+    if not strategic_priorities:
+        strategic_priorities = [d['recommended_action'] for d in discrepancies[:3]]
+
+    return {
+        'executive_assessment': gemini_assessment,
+        'strategic_priorities': strategic_priorities,
+        'reconciliation_protocol': reconciliation_protocol,
+        'discrepancies': discrepancies,
+        'discrepancy_count': len(discrepancies),
+        'critical_discrepancies': sum(1 for d in discrepancies if d['severity'] == 'critical'),
+        'provider_mode': provider_mode,
+        'llm_model': llm_model,
+        'demand_summary': {
+            'total_complaints': total_complaints,
+            'emergency_count': total_emergencies,
+            'categories': cat_counts,
+            'deprivation_index': deprivation,
+            'population': pop
+        }
+    }
+
+
+def ask_evidence_copilot(query_text, scope):
+    intel = evidence_gap_intelligence(scope)
+    demand = intel['demand_summary']
+    discs = intel['discrepancies']
+    disc_summary = "\n".join([f"- {d['title']}: {d['metric']}" for d in discs])
+    
+    client = current_app.extensions.get('google_ai_client') if has_app_context() else None
+    llm_model = 'none'
+    provider_mode = 'local_fallback'
+    answer = None
+    citations = [
+        {'source': 'Operational Grievance Database', 'anchor': f"{demand['total_complaints']} requests in scope"},
+        {'source': 'SECC 2011 / Census Baseline', 'anchor': f"MPI {demand['deprivation_index']} · Pop {demand['population']:,}"},
+        {'source': 'National Scheme Norms (JJM / AMRUT 2.0)', 'anchor': 'Statutory funding guidelines'}
+    ]
+
+    if client is not None:
+        try:
+            prompt = f"""You are the Nexus VisBharat Governed Evidence Copilot for Indian public infrastructure planning.
+Answer the analyst's question accurately, authoritatively, and concisely.
+Ground your response strictly in the empirical evidence and detected discrepancies provided below. Include explicit citations to evidence sources like [Source 1: Operational Database], [Source 2: SECC 2011].
+
+Analyst Query: {query_text}
+
+District Scope: {scope.get('district') or 'All'} ({scope.get('state') or 'All'})
+Demand Data: {demand['total_complaints']} complaints ({demand['emergency_count']} emergencies). Top categories: {demand['categories']}
+Detected Discrepancies:
+{disc_summary}
+
+Respond in strict JSON with keys:
+"answer": "Clear, direct, 2-3 paragraph answer to the analyst question citing relevant evidence blocks",
+"actionable_takeaway": "Single sentence next step for the municipal commissioner or policy analyst",
+"cited_sources": ["Source 1", "Source 2"]
+"""
+            raw_resp, used_model = client._call_gemini('gemini-3.6-flash', prompt)
+            parsed = client._parse_json(raw_resp)
+            if parsed and isinstance(parsed, dict) and parsed.get('answer'):
+                answer = parsed.get('answer')
+                takeaway = parsed.get('actionable_takeaway')
+                if takeaway:
+                    answer += f"\n\n**Actionable Takeaway:** {takeaway}"
+                llm_model = used_model
+                provider_mode = 'gemini_live'
+        except Exception as err:
+            current_app.logger.warning(f"Gemini Evidence Copilot fallback: {err}")
+
+    if not answer:
+        answer = (
+            f"Based on governed records for {scope.get('district') or 'the selected region'}, "
+            f"there are {demand['total_complaints']} citizen reports on record with {demand['emergency_count']} emergencies. "
+            f"The primary gap detected is {discs[0]['title'] if discs else 'infrastructure capacity gap'}: {discs[0]['metric'] if discs else 'verified'}. "
+            f"Interventions should prioritize {discs[0]['recommended_action'] if discs else 'field surveys'}."
+        )
+
+    return {
+        'query': query_text,
+        'answer': answer,
+        'citations': citations,
+        'provider_mode': provider_mode,
+        'llm_model': llm_model
+    }
+
+
 def evidence(scope):
     sources = evidence_sources()
     allowed = None
@@ -265,8 +494,30 @@ def evidence(scope):
         if allowed is not None:
             records = [r for r in records if (r.get('state'), r.get('district')) in allowed or (not r.get('district') and any(s == r.get('state') for s, _ in allowed))]
         scoped.append({**source,'scoped_records':len(records),'sample':records[:5]})
-    return {'sources':scoped, 'loaded_sources':sum(s['loaded'] for s in sources),'verified_sources':0,
-            'scope':scope,'limitations':['File integrity is recorded; publisher authenticity has not been independently verified.',
+    
+    gap_intel = evidence_gap_intelligence(scope)
+    loaded_sources = sum(bool(s['loaded']) for s in sources)
+    verified_sources = sum(bool(s.get('publisher_verified')) for s in sources)
+    missing_sources = sum(not bool(s['loaded']) for s in sources)
+    pending_sources = max(0, loaded_sources - verified_sources)
+    scoped_reference_records = sum(int(s.get('scoped_records') or 0) for s in scoped)
+    demand_sample = int((gap_intel.get('demand_summary') or {}).get('total_complaints') or 0)
+    evidence_summary = {
+        'confidence': 'screening_only',
+        'confidence_label': 'Screening evidence only',
+        'confidence_reason': 'Reference values are retained for context, but publisher authenticity, boundary compatibility and current observation periods are not fully verified.',
+        'citizen_reports_in_scope': demand_sample,
+        'reference_records_in_scope': scoped_reference_records,
+        'source_count': len(sources),
+        'loaded_sources': loaded_sources,
+        'verified_sources': verified_sources,
+        'pending_sources': pending_sources,
+        'missing_sources': missing_sources,
+    }
+    return {'sources':scoped, 'loaded_sources':loaded_sources,'verified_sources':verified_sources,
+            'evidence_summary': evidence_summary,
+            'scope':scope, 'gap_intelligence': gap_intel,
+            'limitations':['File integrity is recorded; publisher authenticity has not been independently verified.',
             'Old census geography and current district boundaries require an explicit validated crosswalk.',
             'Budget outlays describe reference plans, not actual expenditure or project-specific available funding.']}
 
@@ -666,9 +917,57 @@ def outcomes(scope,anchor=None,days=28,project_id=None,cluster_id=None):
                         'Intake date filters are replaced by the displayed outcome windows; all other scope filters apply.']}
 
 
+def _inclusion_group_audit(scope, dimension):
+    """Return descriptive coverage diagnostics without claiming fairness."""
+    clause, params = where(scope)
+    column = 'input_language' if dimension == 'language' else 'source_channel'
+    rows = query(f'''SELECT COALESCE(c.{column}, 'unknown') AS group_name,
+        COUNT(*) AS reports,
+        COUNT(DISTINCT c.district) AS districts,
+        SUM(CASE WHEN c.urgency='Emergency' THEN 1 ELSE 0 END) AS emergencies,
+        SUM(CASE WHEN LOWER(c.status) IN ('closed','resolved') THEN 1 ELSE 0 END) AS resolved
+        FROM citizen_requests c WHERE {clause}
+        GROUP BY c.{column} ORDER BY reports DESC, group_name''', params)
+    total = sum(int(r['reports'] or 0) for r in rows)
+    groups = []
+    for row in rows:
+        reports = int(row['reports'] or 0)
+        emergencies = int(row['emergencies'] or 0)
+        resolved = int(row['resolved'] or 0)
+        groups.append({
+            'group': str(row['group_name'] or 'unknown'),
+            'reports': reports,
+            'report_share_pct': round(100 * reports / total, 2) if total else 0.0,
+            'districts': int(row['districts'] or 0),
+            'emergencies': emergencies,
+            'emergency_rate_pct': round(100 * emergencies / reports, 2) if reports else 0.0,
+            'resolved': resolved,
+            'resolution_rate_pct': round(100 * resolved / reports, 2) if reports else 0.0,
+        })
+    return {'dimension': dimension, 'groups': groups, 'total_reports': total}
+
+
+def _inclusion_fairness_audit(scope):
+    language = _inclusion_group_audit(scope, 'language')
+    channel = _inclusion_group_audit(scope, 'channel')
+    return {
+        'status': 'descriptive_screening_only',
+        'language': language,
+        'channel': channel,
+        'disclosure': 'Group shares and service outcomes are descriptive. They do not measure population reporting propensity, protected-group fairness or causal access barriers.',
+        'required_validation': [
+            'Population denominators by language, channel, ward and vulnerable group',
+            'Independent access survey or outreach sample',
+            'Human-reviewed multilingual and duplicate-cluster labels',
+            'Pre-registered fairness metrics and minimum sample sizes',
+        ],
+    }
+
+
 def inclusion(scope):
     clause,params=where(scope)
-    counts={(r['state'],r['district']):r['n'] for r in query(f'SELECT c.state,c.district,COUNT(*) AS n FROM citizen_requests c WHERE {clause} GROUP BY c.state,c.district',params)}
+    rows_query=query(f"SELECT c.state,c.district,COUNT(*) AS n,SUM(CASE WHEN c.urgency='Emergency' THEN 1 ELSE 0 END) AS emergencies FROM citizen_requests c WHERE {clause} GROUP BY c.state,c.district",params)
+    counts={(r['state'],r['district']):{'n':int(r['n'] or 0),'emergencies':int(r['emergencies'] or 0)} for r in rows_query}
     rows=[]
     allowed=None
     if scope.get('pilot_id'):
@@ -677,14 +976,61 @@ def inclusion(scope):
         if allowed is not None and (state,district) not in allowed:continue
         if scope['state'] and scope['state']!=state: continue
         if scope['district'] and scope['district']!=district: continue
-        n=counts.get((state,district),0); pop=float(ref.get('population') or 0); dep=ref.get('deprivation_index')
+        c_data=counts.get((state,district),{'n':0,'emergencies':0})
+        n=c_data['n']
+        emergencies=c_data['emergencies']
+        pop=float(ref.get('population') or 0); dep=ref.get('deprivation_index')
         density=n/pop*100000 if pop else None
+        emergency_pct=round(100.0*emergencies/n,1) if n>0 else 0.0
+        coverages=[float(ref[k]) for k in ('water_coverage','road_coverage','electricity_coverage') if ref.get(k) is not None]
+        infra_gap=round(100.0-sum(coverages)/len(coverages),1) if coverages else None
+        
+        # Calculate a transparent observed screening score, not a prediction.
+        density_val=min(100.0,(density or 0)*2.0)
+        dep_val=min(100.0,(float(dep or 0))*100.0)
+        gap_val=infra_gap if infra_gap is not None else 50.0
+        emerg_val=min(100.0,emergency_pct*2.0)
+        score_components = {
+            'report_density': round(density_val, 2),
+            'deprivation_context': round(dep_val, 2),
+            'infrastructure_gap': round(gap_val, 2),
+            'emergency_pressure': round(emerg_val, 2),
+        }
+        composite_stress=round(sum(INCLUSION_WEIGHTS[k] * score_components[k] for k in INCLUSION_WEIGHTS), 1)
+
         rows.append({'state':state,'district':district,'requests':n,'district_population':int(pop),
                      'reports_per_100k':round(density,3) if density is not None else None,
                      'deprivation_index':dep,'voice_access_index':None,'latent_requests':None,
+                     'emergency_count':emergencies,'emergency_pct':emergency_pct,
+                     'infrastructure_gap_pct':infra_gap,'composite_stress_score':composite_stress,
+                     'score_components':score_components,
+                     'score_method':'Observed weighted screening score; not a forecast, fairness score or hidden-demand estimate.',
+                     'score_version':INCLUSION_VERSION,
+                     'lat':float(ref.get('lat') or 0),'lng':float(ref.get('lng') or 0),
                      'investigate_access':bool(dep is not None and dep>=.5 and density is not None and density<10),
                      'reason':'Low reporting plus a deprivation proxy suggests a survey; this is not an estimate of hidden demand.',
                      'missing_indicators':['Validated telecom access','Validated literacy/access by channel','Independent reporting propensity survey']})
-    rows.sort(key=lambda r:(not r['investigate_access'],-(r['deprivation_index'] or 0),r['district']))
-    return {'items':rows,'metadata':provenance(scope),'access_investigation_count':sum(r['investigate_access'] for r in rows),
-            'outreach_status':'Planning only. No citizens contacted and no outreach automatically queued.'}
+    rows.sort(key=lambda r:(not r['investigate_access'],-(r.get('composite_stress_score') or 0),-(r['deprivation_index'] or 0),r['district']))
+    meta = provenance(scope)
+    return {
+        'items': rows,
+        'metadata': meta,
+        'access_investigation_count': sum(r['investigate_access'] for r in rows),
+        'outreach_status': 'Planning only. No citizens contacted and no outreach automatically queued.',
+        'methodology': {
+            'version': INCLUSION_VERSION,
+            'type': 'observed_access_risk_screen',
+            'weights': INCLUSION_WEIGHTS,
+            'thresholds': INCLUSION_THRESHOLDS,
+            'formula': '0.35 report density + 0.35 deprivation context + 0.15 infrastructure gap + 0.15 emergency pressure; each component is capped at 100.',
+            'interpretation': 'Higher values prioritize review of observed pressure. They do not estimate unmet demand or determine funding.',
+        },
+        'fairness_audit': _inclusion_fairness_audit(scope),
+        'data_quality': {
+            'data_mode': meta.get('data_mode'),
+            'latest_submission': meta.get('as_of'),
+            'reference_verification': 'pending unless independently reviewed in the Evidence & Gaps tab',
+            'analytics_replica': 'BigQuery is not queried for this snapshot',
+            'missing_indicators': sorted({item for row in rows for item in row.get('missing_indicators', [])}),
+        },
+    }

@@ -64,10 +64,74 @@ def snapshot():
     return jsonify(result)
 
 
+@analyst_bp.route('/api/v2/analyst/inclusion-brief', methods=['POST'])
+@require_roles('admin', 'analyst', 'auditor')
+def inclusion_brief():
+    """Generate a source-bound explanation, while keeping scoring deterministic."""
+    opts = options()
+    scope = work.scope_from(opts)
+    inclusion = work.inclusion(scope)
+    indicators = {
+        'access_investigation_count': inclusion['access_investigation_count'],
+        'methodology': inclusion['methodology'],
+        'data_quality': inclusion['data_quality'],
+        'fairness_audit': inclusion['fairness_audit'],
+        'items': [
+            {
+                'state': row['state'],
+                'district': row['district'],
+                'requests': row['requests'],
+                'reports_per_100k': row['reports_per_100k'],
+                'deprivation_index': row['deprivation_index'],
+                'infrastructure_gap_pct': row['infrastructure_gap_pct'],
+                'emergency_count': row['emergency_count'],
+                'composite_stress_score': row['composite_stress_score'],
+                'investigate_access': row['investigate_access'],
+            }
+            for row in inclusion['items']
+        ],
+    }
+    client = current_app.extensions.get('google_ai_client')
+    if client is not None and hasattr(client, 'generate_inclusion_narrative'):
+        narrative = client.generate_inclusion_narrative(scope=scope, indicators=indicators)
+    else:
+        narrative = {
+            'summary': f"Observed access-risk screening covers {len(inclusion['items'])} reference districts and flags {inclusion['access_investigation_count']} for human access investigation. This is not an estimate of hidden demand.",
+            'observed_findings': [inclusion['methodology']['interpretation']],
+            'validation_actions': inclusion['fairness_audit']['required_validation'][:3],
+            'limitations': [inclusion['fairness_audit']['disclosure']],
+            'model': 'local_inclusion_narrative_fallback',
+            'provider_mode': 'local_fallback',
+            'fallback_used': True,
+        }
+    write_audit_log(
+        g.current_user['name'],
+        'analyst_inclusion_narrative_viewed',
+        'analyst',
+        'inclusion-screen',
+        {'scope': scope, 'provider_mode': narrative.get('provider_mode'), 'fallback_used': bool(narrative.get('fallback_used'))},
+    )
+    return jsonify(success=True, scope=scope, methodology=inclusion['methodology'], data_quality=inclusion['data_quality'], narrative=narrative,
+                   provider_mode=narrative.get('provider_mode'), model=narrative.get('model'), fallback_used=bool(narrative.get('fallback_used')),
+                   provider_evidence=narrative.get('provider_evidence'))
+
+
 @analyst_bp.route('/api/v2/analyst/evidence')
 @require_roles('admin','analyst','auditor')
 def evidence():
     return jsonify(success=True,**work.evidence(work.scope_from(request.args)))
+
+
+@analyst_bp.route('/api/v2/analyst/evidence/ask', methods=['POST'])
+@require_roles('admin', 'analyst', 'auditor')
+def ask_evidence():
+    data = request.get_json() or {}
+    query_text = str(data.get('query') or request.args.get('query') or '').strip()
+    if not query_text:
+        return jsonify(success=False, error='Query is required'), 400
+    scope = work.scope_from(data if data else request.args)
+    result = work.ask_evidence_copilot(query_text, scope)
+    return jsonify(success=True, **result)
 
 
 @analyst_bp.route('/api/v2/analyst/delivery')

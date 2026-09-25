@@ -14,6 +14,20 @@ let currentCategory = '';
 let currentUrgency = '';
 let currentMapLayer = 'demand';
 
+const liveFeedState = {
+ initialized: false,
+ filterKey: '',
+ items: new Map(),
+ pending: new Map(),
+ paused: false,
+ eventSource: null,
+ pollTimer: null,
+ reconnectTimer: null,
+ controller: null,
+ requestVersion: 0,
+ latestCursor: { created_at: '', request_id: '' },
+};
+
 
 function renderPanelState(container, { type = 'info', message = '', icon = 'bi-info-circle' } = {}) {
  if (!container) return;
@@ -75,7 +89,7 @@ function setRoleQuickActions(role) {
  bar.innerHTML = [
  mkBtn('<i class="bi bi-arrow-clockwise"></i> Refresh Public View', 'btn-primary', 'refresh_public'),
  mkBtn('<i class="bi bi-bar-chart-line"></i> Public Snapshot', 'btn-outline-primary', 'focus_public_kpi'),
- mkBtn('<i class="bi bi-kanban"></i> Project Progress', 'btn-outline-primary', 'focus_public_projects')
+ mkBtn('<i class="bi bi-kanban"></i> Priority Signals', 'btn-outline-primary', 'focus_public_projects')
  ].join('');
  }
 
@@ -186,7 +200,11 @@ document.addEventListener('DOMContentLoaded', () => {
  currentUrgency = e.target.value;
  refreshAll();
  });
+ ['filterDateFrom', 'filterDateTo', 'filterLanguage', 'filterChannel'].forEach(id => {
+  document.getElementById(id)?.addEventListener('change', refreshAll);
+ });
  document.getElementById('refreshBtn').addEventListener('click', refreshAll);
+ bindLiveFeedControls();
  const refreshAiStatusBtn = document.getElementById('refreshAiStatusBtn');
  if (refreshAiStatusBtn) refreshAiStatusBtn.addEventListener('click', () => loadAiRuntimeStatus(true));
  document.getElementById('generateBriefBtn').addEventListener('click', generatePolicyBrief);
@@ -371,6 +389,14 @@ function buildFilterParams() {
  if (currentDistrict) params.append('district', currentDistrict);
  if (currentCategory) params.append('category', currentCategory);
  if (currentUrgency) params.append('urgency', currentUrgency);
+ const dateFrom = document.getElementById('filterDateFrom')?.value || '';
+ const dateTo = document.getElementById('filterDateTo')?.value || '';
+ const language = document.getElementById('filterLanguage')?.value || '';
+ const channel = document.getElementById('filterChannel')?.value || '';
+ if (dateFrom) params.append('date_from', dateFrom);
+ if (dateTo) params.append('date_to', dateTo);
+ if (language) params.append('language', language);
+ if (channel) params.append('channel', channel);
  return params;
 }
 
@@ -886,39 +912,290 @@ document.addEventListener('click', (e) => {
 });
 
 // ===== COMPLAINT FEED =====
-async function loadComplaintFeed() {
+function escapeFeedHtml(value) {
+ return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+}
+
+function feedRequestParams() {
  const params = buildFilterParams();
- params.append('_t', String(Date.now()));
+ const feedValue = id => document.getElementById(id)?.value || '';
+ const feedState = feedValue('feedState');
+ const feedDistrict = feedValue('feedDistrict');
+ const feedCategory = feedValue('feedCategory');
+ const feedUrgency = feedValue('feedUrgency');
+ const feedLanguage = feedValue('feedLanguage');
+ const feedChannel = feedValue('feedChannel');
+ const feedDateFrom = feedValue('feedDateFrom');
+ const feedDateTo = feedValue('feedDateTo');
+ if (feedState) params.set('state', feedState);
+ if (feedDistrict) params.set('district', feedDistrict);
+ if (feedCategory) params.set('category', feedCategory);
+ if (feedUrgency) params.set('urgency', feedUrgency);
+ if (feedLanguage) params.set('language', feedLanguage);
+ if (feedChannel) params.set('channel', feedChannel);
+ if (feedDateFrom) params.set('date_from', feedDateFrom);
+ if (feedDateTo) params.set('date_to', feedDateTo);
+ const search = feedValue('feedSearch').trim();
+ const status = feedValue('feedStatus');
+ const sort = document.getElementById('feedSort')?.value || 'newest';
+ if (search) params.set('ticket', search);
+ if (status) params.set('status', status);
+ params.set('sort', sort);
+ params.set('limit', '100');
+ params.set('_t', String(Date.now()));
+ return params;
+}
 
- const res = await fetch(`/api/complaints?${params}`);
- const payload = await res.json();
- const complaints = Array.isArray(payload) ? payload : (payload.complaints || []);
- const recent = complaints.slice(-20).reverse();
+function feedFilterKey(params) {
+ const stable = new URLSearchParams(params);
+ stable.delete('_t');
+ return stable.toString();
+}
 
+function setFeedConnectionStatus(state, label) {
+ const el = document.getElementById('feedConnectionStatus');
+ if (!el) return;
+ el.className = `feed-connection-status is-${state}`;
+ el.innerHTML = `<i class="bi bi-circle-fill" aria-hidden="true"></i> ${escapeFeedHtml(label)}`;
+}
+
+function updateFeedTimestamp() {
+ const el = document.getElementById('feedLastUpdated');
+ if (el) el.textContent = `Last update: ${new Date().toLocaleTimeString('en-GB', { hour12: false })}`;
+}
+
+function feedItemTime(value) {
+ const date = new Date(value || '');
+ if (Number.isNaN(date.getTime())) return '-';
+ const age = Math.max(0, Date.now() - date.getTime());
+ if (age < 60000) return 'just now';
+ if (age < 3600000) return `${Math.floor(age / 60000)}m ago`;
+ if (age < 86400000) return `${Math.floor(age / 3600000)}h ago`;
+ return date.toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
+function renderComplaintFeed() {
  const container = document.getElementById('complaintFeed');
- container.innerHTML = recent.map(c => {
- const icons = { 'WhatsApp': '<i class="bi bi-whatsapp" aria-hidden="true"></i>', 'Voice IVR': '<i class="bi bi-mic-fill" aria-hidden="true"></i>', 'Web Form': '<i class="bi bi-window" aria-hidden="true"></i>', 'Telegram': '<i class="bi bi-telegram" aria-hidden="true"></i>' };
- const rawFeedText = String(c.translated_text || c.original_text || '-');
- const piiAddressTokenRe = /(?:\[\s*PII\s*_\s*ADDRESS\s*_\s*REDACTED\s*\]|\[PII_ADDRESS_REDACTED\])\s*/gi;
- const piiMasked = piiAddressTokenRe.test(rawFeedText);
- const feedText = rawFeedText.replace(piiAddressTokenRe, '').replace(/\s{2,}/g, ' ').trim();
- const piiBadge = piiMasked ? '<span class="feed-pii-badge"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i> PII masked</span>' : '';
- return `
- <div class="feed-item">
- <div class="feed-icon ${String(c.source || c.source_channel || 'web').toLowerCase().replace(' ', '-')}">${icons[c.source || c.source_channel] || '<i class=\"bi bi-card-text\" aria-hidden=\"true\"></i>'}</div>
- <div class="feed-content">
- <p class="feed-text">${feedText || '-'} ${piiBadge}</p>
- <div class="feed-meta">
- <span class="feed-ward" style="background:#e8f0fe;color:#1a73e8;padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:700"><i class="bi bi-geo-alt-fill" aria-hidden="true" style="color:#ea4335"></i> ${c.ward || 'Ward 01'}</span>
- <span class="feed-district">${c.district}, ${c.state}</span>
- <span class="feed-cat">${c.category}</span>
- <span class="feed-urgency ${String(c.urgency || 'routine').toLowerCase()}">${c.urgency || '-'}</span>
- <span style="color:#94a3b8;font-size:0.7rem">${String(c.language || c.input_language || '-').toUpperCase()}</span>
- </div>
- </div>
- </div>
- `;
+ if (!container) return;
+ const sort = document.getElementById('feedSort')?.value || 'newest';
+ const items = [...liveFeedState.items.values()]
+  .filter(item => !item.is_system_generated)
+  .sort((a, b) => {
+   const left = `${a.created_at || ''}|${a.request_id || ''}`;
+   const right = `${b.created_at || ''}|${b.request_id || ''}`;
+   return sort === 'oldest' ? left.localeCompare(right) : right.localeCompare(left);
+  })
+  .slice(0, 100);
+ const icons = { WhatsApp: 'bi-whatsapp', 'Voice IVR': 'bi-mic-fill', 'IVR Missed Call': 'bi-telephone-inbound-fill', 'Web Form': 'bi-window', Telegram: 'bi-telegram', Email: 'bi-envelope-fill' };
+ if (!items.length) {
+  container.innerHTML = '<p class="brief-placeholder">No complaints match the current feed filters.</p>';
+  return;
+ }
+ container.innerHTML = items.map(c => {
+  const feedText = String(c.public_summary || 'Public category-level request summary.');
+  const source = String(c.source || c.source_channel || 'Web Form');
+  const icon = icons[source] || 'bi-card-text';
+  const urgency = String(c.urgency || 'Routine');
+  const piiBadge = '<span class="feed-pii-badge"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i> Citizen text withheld</span>';
+  return `<article class="feed-item" data-ticket="${escapeFeedHtml(c.request_id)}">
+   <div class="feed-icon ${escapeFeedHtml(source.toLowerCase().replace(/\s+/g, '-'))}"><i class="bi ${icon}" aria-hidden="true"></i></div>
+   <div class="feed-content">
+    <div class="feed-ticket-row"><span class="feed-ticket">${escapeFeedHtml(c.request_id || 'Ticket unavailable')}</span><time class="feed-time" datetime="${escapeFeedHtml(c.created_at || '')}" title="${escapeFeedHtml(c.created_at || '')}">${escapeFeedHtml(feedItemTime(c.created_at))}</time></div>
+    <p class="feed-text">${escapeFeedHtml(feedText || '-')} ${piiBadge}</p>
+    <div class="feed-meta">
+     <span class="feed-ward"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${escapeFeedHtml(c.ward || 'Ward not published')}</span>
+     <span class="feed-district">${escapeFeedHtml([c.district, c.state].filter(Boolean).join(', '))}</span>
+     <span class="feed-cat">${escapeFeedHtml(c.category || 'Other')}</span>
+     <span class="feed-urgency ${escapeFeedHtml(urgency.toLowerCase())}">${escapeFeedHtml(urgency)}</span>
+     <span class="feed-status">${escapeFeedHtml(c.status || 'New')}</span>
+     <span>${escapeFeedHtml(String(c.language || c.input_language || '-').toUpperCase())}</span>
+     <span>${escapeFeedHtml(source)}</span>
+    </div>
+   </div>
+  </article>`;
  }).join('');
+}
+
+function updateFeedNewItemsBanner() {
+ const banner = document.getElementById('feedNewItems');
+ const button = document.getElementById('feedShowNewBtn');
+ if (!banner || !button) return;
+ const count = liveFeedState.pending.size;
+ banner.hidden = !count;
+ button.querySelector('span').textContent = `${count} new complaint${count === 1 ? '' : 's'} available`;
+}
+
+function mergeFeedItems(items, { pending = false } = {}) {
+ (items || []).forEach(item => {
+  if (!item || item.is_system_generated) return;
+  const id = String(item.request_id || '').trim();
+  if (!id) return;
+  if (pending) liveFeedState.pending.set(id, item);
+  else liveFeedState.items.set(id, item);
+  if (!pending) {
+   const created = String(item.created_at || '');
+   const current = liveFeedState.latestCursor;
+   if (!current.created_at || `${created}|${id}` > `${current.created_at}|${current.request_id}`) liveFeedState.latestCursor = { created_at: created, request_id: id };
+  }
+ });
+ if (!pending) renderComplaintFeed();
+ updateFeedNewItemsBanner();
+}
+
+function closeLiveFeedConnection() {
+ if (liveFeedState.eventSource) {
+  liveFeedState.eventSource.close();
+  liveFeedState.eventSource = null;
+ }
+ clearTimeout(liveFeedState.reconnectTimer);
+ liveFeedState.reconnectTimer = null;
+}
+
+function startFeedPolling() {
+ if (liveFeedState.pollTimer) return;
+ liveFeedState.pollTimer = setInterval(() => pollLiveFeed(), 15000);
+ pollLiveFeed();
+}
+
+async function pollLiveFeed() {
+ const params = feedRequestParams();
+ params.set('limit', '100');
+ try {
+  const res = await fetch(`/api/complaints?${params}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error(`Feed request failed (${res.status})`);
+  const payload = await res.json();
+  mergeFeedItems(Array.isArray(payload) ? payload : (payload.complaints || []));
+  updateFeedTimestamp();
+ } catch (_) {
+  setFeedConnectionStatus('degraded', 'Polling unavailable');
+ }
+}
+
+function connectLiveFeed() {
+ closeLiveFeedConnection();
+ if (!window.EventSource || !liveFeedState.initialized) {
+  setFeedConnectionStatus('degraded', 'Polling fallback');
+  startFeedPolling();
+  return;
+ }
+ const params = feedRequestParams();
+ params.delete('_t');
+ params.delete('limit');
+ if (liveFeedState.latestCursor.created_at) {
+  params.set('since_at', liveFeedState.latestCursor.created_at);
+  params.set('since_id', liveFeedState.latestCursor.request_id);
+ }
+ const source = new EventSource(`/api/v1/live-feed/stream?${params}`);
+ liveFeedState.eventSource = source;
+ source.onopen = () => {
+  setFeedConnectionStatus('live', 'Live');
+  if (liveFeedState.pollTimer) {
+   clearInterval(liveFeedState.pollTimer);
+   liveFeedState.pollTimer = null;
+  }
+ };
+ source.addEventListener('complaint', event => {
+  try {
+   const item = JSON.parse(event.data || '{}');
+   if (liveFeedState.paused) mergeFeedItems([item], { pending: true });
+   else mergeFeedItems([item]);
+   updateFeedTimestamp();
+  } catch (_) {}
+ });
+ source.addEventListener('reconnect', () => {
+  closeLiveFeedConnection();
+  setFeedConnectionStatus('connecting', 'Reconnecting');
+  liveFeedState.reconnectTimer = setTimeout(connectLiveFeed, 500);
+ });
+ source.onerror = () => {
+  setFeedConnectionStatus('degraded', 'Polling fallback');
+  startFeedPolling();
+  closeLiveFeedConnection();
+  liveFeedState.reconnectTimer = setTimeout(connectLiveFeed, 10000);
+ };
+}
+
+async function refreshLiveFeed(force = false) {
+ const params = feedRequestParams();
+ const key = feedFilterKey(params);
+ if (!force && liveFeedState.initialized && liveFeedState.filterKey === key) return;
+ liveFeedState.filterKey = key;
+ liveFeedState.requestVersion += 1;
+ const version = liveFeedState.requestVersion;
+ liveFeedState.controller?.abort();
+ liveFeedState.controller = new AbortController();
+ setFeedConnectionStatus('connecting', 'Loading');
+ try {
+  const res = await fetch(`/api/complaints?${params}`, { cache: 'no-store', signal: liveFeedState.controller.signal });
+  if (!res.ok) throw new Error(`Feed request failed (${res.status})`);
+  const payload = await res.json();
+  if (version !== liveFeedState.requestVersion) return;
+  const items = Array.isArray(payload) ? payload : (payload.complaints || []);
+  liveFeedState.items.clear();
+  liveFeedState.pending.clear();
+  liveFeedState.latestCursor = { created_at: '', request_id: '' };
+  mergeFeedItems(items);
+  liveFeedState.initialized = true;
+  updateFeedTimestamp();
+  connectLiveFeed();
+ } catch (error) {
+  if (error.name === 'AbortError') return;
+  setFeedConnectionStatus('degraded', 'Polling fallback');
+  startFeedPolling();
+ }
+}
+
+async function loadComplaintFeed() {
+ return refreshLiveFeed(false);
+}
+
+function bindLiveFeedControls() {
+ const refresh = () => refreshLiveFeed(true);
+ const search = document.getElementById('feedSearch');
+ let searchTimer;
+ search?.addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(refresh, 300); });
+ document.getElementById('feedStatus')?.addEventListener('change', refresh);
+ ['feedDistrict', 'feedCategory', 'feedUrgency', 'feedLanguage', 'feedChannel', 'feedDateFrom', 'feedDateTo'].forEach(id => document.getElementById(id)?.addEventListener('change', refresh));
+ const feedState = document.getElementById('feedState');
+ const feedDistrict = document.getElementById('feedDistrict');
+ feedState?.addEventListener('change', async () => {
+  if (!feedDistrict) return;
+  feedDistrict.replaceChildren(new Option('All districts', ''));
+  feedDistrict.disabled = !feedState.value;
+  if (!feedState.value) return refresh();
+  try {
+   const response = await fetch(`/api/districts?state=${encodeURIComponent(feedState.value)}`, { cache: 'no-store' });
+   const payload = await response.json();
+   (payload.districts || []).forEach(value => feedDistrict.add(new Option(value, value)));
+  } catch (_) {}
+  refresh();
+ });
+ document.getElementById('feedSort')?.addEventListener('change', () => renderComplaintFeed());
+ document.getElementById('feedRefreshBtn')?.addEventListener('click', refresh);
+ document.getElementById('feedClearBtn')?.addEventListener('click', () => {
+ if (search) search.value = '';
+ ['feedState', 'feedDistrict', 'feedCategory', 'feedUrgency', 'feedLanguage', 'feedChannel', 'feedDateFrom', 'feedDateTo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+ if (feedDistrict) { feedDistrict.replaceChildren(new Option('All districts', '')); feedDistrict.disabled = true; }
+  const status = document.getElementById('feedStatus');
+  if (status) status.value = '';
+  const sort = document.getElementById('feedSort');
+  if (sort) sort.value = 'newest';
+  refresh();
+ });
+ document.getElementById('feedPauseBtn')?.addEventListener('click', event => {
+  liveFeedState.paused = !liveFeedState.paused;
+  const button = event.currentTarget;
+  button.setAttribute('aria-pressed', String(liveFeedState.paused));
+  button.innerHTML = liveFeedState.paused ? '<i class="bi bi-play-fill" aria-hidden="true"></i> Resume' : '<i class="bi bi-pause-fill" aria-hidden="true"></i> Pause';
+  if (!liveFeedState.paused) {
+   mergeFeedItems([...liveFeedState.pending.values()]);
+   liveFeedState.pending.clear();
+   updateFeedNewItemsBanner();
+  }
+ });
+ document.getElementById('feedShowNewBtn')?.addEventListener('click', () => {
+  if (liveFeedState.paused) document.getElementById('feedPauseBtn')?.click();
+ });
 }
 
 // ===== POLICY BRIEF =====
@@ -942,24 +1219,176 @@ async function loadDistrictsForBrief() {
  });
 }
 
+function renderPolicyBriefContent(data) {
+ function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ }
+ function num(n) {
+  if (n == null || isNaN(n)) return '0';
+  return Number(n).toLocaleString('en-IN');
+ }
+
+ const isGemini = data.provider_mode === 'gemini_live' || (data.llm_model && data.llm_model.includes('gemini'));
+ const modelName = isGemini ? (data.llm_model || 'Gemini 3.6 Flash') : 'Local Governed Retrieval';
+ const signal = data.demand_signals || {};
+ const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
+ const citations = Array.isArray(data.citations) ? data.citations : [];
+
+ // Format bracketed citation tokens like [Doc 1] as highlighted pills
+ let formattedSummary = esc(data.summary || data.brief || 'No summary available.');
+ formattedSummary = formattedSummary.replace(/\[Doc\s*(\d+)\]/gi, (match, p1) => {
+  return `<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-0 mx-1 policy-citation-pill" title="Jump to Citation ${p1}">Doc ${p1}</span>`;
+ });
+
+ return `
+  <div class="policy-brief-wrapper">
+   <!-- Observed Demand Signal Header -->
+   <div class="policy-signal-banner d-flex flex-wrap align-items-center justify-content-between p-2 mb-3 rounded border">
+    <div class="d-flex align-items-center gap-2">
+     <i class="bi bi-geo-alt-fill text-primary" style="font-size: 1.1rem;"></i>
+     <strong>${esc(data.district)}</strong>
+     <span class="text-muted small">Demand Scope</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+     <span class="badge bg-light text-dark border">
+      <i class="bi bi-inbox-fill text-muted me-1"></i> ${num(signal.total_complaints)} Reports
+     </span>
+     <span class="badge bg-light text-dark border ${signal.emergency_count > 0 ? 'border-danger-subtle text-danger' : ''}">
+      <i class="bi bi-fire text-danger me-1"></i> ${num(signal.emergency_count)} Emergencies
+     </span>
+     ${signal.top_categories && signal.top_categories.length > 0 ? `
+      <span class="badge bg-light text-dark border">
+       <i class="bi bi-tag-fill text-primary me-1"></i> ${esc(signal.top_categories[0])}
+      </span>
+     ` : ''}
+    </div>
+   </div>
+
+   <!-- Executive Policy Synthesis -->
+   <div class="policy-section mb-3">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+     <h5 class="mb-0 fs-6 fw-bold text-dark">
+      <i class="bi bi-file-text-fill text-primary me-1"></i> Executive Policy Synthesis
+     </h5>
+     <span class="badge ${isGemini ? 'bg-primary-subtle text-primary' : 'bg-secondary-subtle text-secondary'} small">
+      ${isGemini ? '<i class="bi bi-stars"></i> ' + esc(modelName) : '<i class="bi bi-shield-check"></i> Governed Fallback'}
+     </span>
+    </div>
+    <div class="policy-summary-text p-3 rounded bg-light border">
+     ${formattedSummary}
+    </div>
+   </div>
+
+   <!-- Actionable Policy Recommendations -->
+   ${recs.length > 0 ? `
+    <div class="policy-section mb-3">
+     <h5 class="mb-2 fs-6 fw-bold text-dark">
+      <i class="bi bi-check2-circle text-success me-1"></i> Recommended Policy Interventions
+     </h5>
+     <div class="d-flex flex-column gap-2">
+      ${recs.map((rec, idx) => `
+       <div class="policy-rec-card d-flex align-items-start gap-2 p-2 rounded border bg-white">
+        <span class="badge bg-primary text-white rounded-circle" style="width:22px;height:22px;line-height:16px;text-align:center;font-size:0.75rem;">${idx + 1}</span>
+        <span class="small text-dark">${esc(rec)}</span>
+       </div>
+      `).join('')}
+     </div>
+    </div>
+   ` : ''}
+
+   <!-- Governed Source Citations Drawer -->
+   ${citations.length > 0 ? `
+    <details class="policy-citations-drawer mt-3 pt-2 border-top" open>
+     <summary class="fw-semibold text-primary small py-1" style="cursor: pointer;">
+      <i class="bi bi-journal-bookmark-fill me-1"></i> Governed Corpus Citations (${citations.length} retrieved sources)
+     </summary>
+     <div class="d-flex flex-column gap-2 mt-2">
+      ${citations.map(c => `
+       <div class="policy-citation-card p-2 rounded border bg-light">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+         <strong class="small text-dark">[Doc ${c.rank || 1}] ${esc(c.title)}</strong>
+         <span class="badge bg-white text-secondary border small">${esc(c.publisher || 'Government of India')}</span>
+        </div>
+        <p class="small text-muted mb-1" style="font-style: italic;">"${esc(c.excerpt)}"</p>
+        <div class="d-flex justify-content-between align-items-center font-monospace" style="font-size: 0.72rem; color: #5f6368;">
+         <span>Source ID: ${esc(c.source_id)}</span>
+         <span>Match: ${Math.round((c.score || 0) * 100)}%</span>
+        </div>
+       </div>
+      `).join('')}
+     </div>
+    </details>
+   ` : ''}
+
+   <!-- Audit & Provenance Footer -->
+   <div class="policy-provenance-footer d-flex flex-wrap align-items-center justify-content-between mt-3 pt-2 border-top text-muted" style="font-size: 0.75rem;">
+    <span><i class="bi bi-shield-check text-success me-1"></i> Zero-Hallucination Policy Constraint Enforced</span>
+    <span>Provider: <strong>${esc(data.provider_mode)}</strong> (${esc(modelName)})</span>
+   </div>
+  </div>
+ `;
+}
+
 async function generatePolicyBrief() {
  const district = document.getElementById('briefDistrict').value;
  if (!district) {
- alert('Please select a district');
- return;
+  alert('Please select a district');
+  return;
  }
 
  const btn = document.getElementById('generateBriefBtn');
+ const briefContainer = document.getElementById('policyBrief');
+ const badge = document.getElementById('policyBriefBadge');
+
  btn.disabled = true;
- btn.textContent = 'Generating...';
+ btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Synthesizing Brief...';
 
- const res = await fetch(`/api/policy-brief/${encodeURIComponent(district)}`);
- const data = await res.json();
+ if (briefContainer) {
+  briefContainer.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted small">Retrieving governed policy corpus & synthesizing brief via Gemini...</p></div>';
+ }
 
- document.getElementById('policyBrief').innerHTML = data.brief;
+ try {
+  const res = await fetch(`/api/policy-brief/${encodeURIComponent(district)}`);
+  if (!res.ok) {
+   throw new Error(`Policy Brief API returned HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  if (!data.success) {
+   throw new Error(data.error || 'Failed to generate brief');
+  }
 
- btn.disabled = false;
- btn.textContent = 'Generate Brief';
+  // Dynamic badge update reflecting actual provider status
+  if (badge) {
+   const isGemini = data.provider_mode === 'gemini_live' || (data.llm_model && data.llm_model.includes('gemini'));
+   if (isGemini) {
+    badge.className = 'panel-badge badge-gemini-live';
+    badge.innerHTML = '<i class="bi bi-stars"></i> Gemini 3.6 Flash Live';
+   } else {
+    badge.className = 'panel-badge badge-fallback';
+    badge.innerHTML = '<i class="bi bi-shield-check"></i> Governed RAG (Local Fallback)';
+   }
+  }
+
+  if (briefContainer) {
+   briefContainer.innerHTML = renderPolicyBriefContent(data);
+  }
+ } catch (err) {
+  if (briefContainer) {
+   briefContainer.innerHTML = `
+    <div class="alert alert-danger my-3 p-3">
+     <i class="bi bi-exclamation-triangle-fill me-2"></i>
+     <strong>Unable to generate policy brief:</strong> ${err.message}
+     <div class="mt-2">
+      <button class="btn btn-outline-danger btn-sm" onclick="generatePolicyBrief()">Retry</button>
+     </div>
+    </div>
+   `;
+  }
+ } finally {
+  btn.disabled = false;
+  btn.innerHTML = '<i class="bi bi-lightning-charge-fill me-1"></i> Generate Brief';
+ }
 }
 
 // ===== PREDICTIONS =====
@@ -976,6 +1405,10 @@ async function loadPrediction() {
  throw new Error(`hotspots API ${res.status}`);
  }
  const payload = await res.json();
+ if (window.NVBDemandScreening && typeof window.NVBDemandScreening.loadFromHotspots === 'function') {
+  window.NVBDemandScreening.loadFromHotspots(payload);
+  return;
+ }
  const hotspots = Array.isArray(payload) ? payload : (payload.hotspots || payload.items || []);
 
  const predictions = hotspots
@@ -1719,7 +2152,7 @@ function switchRbacRoleView(role) {
  loadAdminSecurityAlerts('adminAlertsContainer');
  } else {
  if (titleEl) titleEl.textContent = 'Public Citizen Dashboard View';
- if (subEl) subEl.textContent = 'Southern Grid Pilot (97 Districts) - Public Zero-Trust Mode - DPDP Act 2023 Compliant';
+ if (subEl) subEl.textContent = 'Public release view - privacy-thresholded, source-labelled aggregates';
  if (pillEl) pillEl.innerHTML = '<i class="bi bi-globe"></i> Role: Public';
  if (views.public) views.public.style.display = 'block';
  applyRoleLayout('public');
@@ -1736,69 +2169,66 @@ async function loadPublicLensSummary() {
  if (!kpiRow || !projectBox) return;
 
  try {
- const params = buildFilterParams();
- params.append('_t', String(Date.now()));
-
- const [statsRes, projectsRes] = await Promise.all([
- fetch(`/api/stats?${params}`, { cache: 'no-store' }),
- fetch(`/api/priority-projects?${params}`, { cache: 'no-store' }),
+ const params = new URLSearchParams();
+ const pilotId = new URLSearchParams(window.location.search).get('pilot_id');
+ if (pilotId) params.set('pilot_id', pilotId);
+ const query = params.toString();
+ const [summaryRes, signalsRes] = await Promise.all([
+ fetch(`/api/public/transparency/summary${query ? `?${query}` : ''}`, { cache: 'no-store' }),
+ fetch(`/api/public/transparency/priority-signals${query ? `?${query}` : ''}`, { cache: 'no-store' }),
  ]);
-
- const statsPayload = await statsRes.json();
- const projectsPayload = await projectsRes.json();
- const stats = statsPayload.stats || statsPayload || {};
- const projects = Array.isArray(projectsPayload) ? projectsPayload : (projectsPayload.projects || []);
-
- const totalComplaints = Number(stats.total_complaints || 0);
- const districtCount = Number(stats.districts_covered || 0);
- const resolutionRate = Number(stats.resolution_rate || 0);
- const activeProjects = projects.filter(p => p && p.allocated !== false).length;
+ if (!summaryRes.ok || !signalsRes.ok) throw new Error('Public release data is temporarily unavailable');
+ const summaryPayload = await summaryRes.json();
+ const signalsPayload = await signalsRes.json();
+ const summary = summaryPayload.summary || {};
+ const projects = signalsPayload.items || [];
+ const totalComplaints = Number(summary.published_request_count || 0);
+ const districtCount = Number(summary.published_district_groups || 0);
+ const releaseState = summary.differential_privacy?.enabled ? 'DP protected' : 'Thresholded';
+ const signalCount = projects.length;
 
  kpiRow.innerHTML = `
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">${totalComplaints.toLocaleString()}</div><div class="stat-label">Citizen Requests</div></div></div>
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">${districtCount.toLocaleString()}</div><div class="stat-label">Districts Covered</div></div></div>
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">${resolutionRate.toLocaleString()}%</div><div class="stat-label">Resolution Rate</div></div></div>
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">${activeProjects.toLocaleString()}</div><div class="stat-label">Active Projects</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">${totalComplaints.toLocaleString()}</div><div class="stat-label">Published requests</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">${districtCount.toLocaleString()}</div><div class="stat-label">Published district groups</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">${signalCount.toLocaleString()}</div><div class="stat-label">Priority signals</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">${releaseState}</div><div class="stat-label">Publication control</div></div></div>
  `;
 
  const top = projects.slice(0, 6);
  if (!top.length) {
- projectBox.innerHTML = '<p class="brief-placeholder">No public project updates available for the selected filters.</p>';
+ projectBox.innerHTML = '<p class="brief-placeholder">No publication-safe priority signals meet the current privacy threshold.</p>';
  markSuiteFreshness('public', 'public summary');
  return;
  }
 
  projectBox.innerHTML = top.map((p) => {
- const score = Math.max(0, Math.min(100, Math.round(Number(p.priority_score || 0) * 100)));
- const status = (p.allocated !== false) ? 'Funded' : (score >= 70 ? 'Sanctioning' : 'Planned');
- const statusBg = status === 'Funded' ? '#e6f4ea' : (status === 'Sanctioning' ? '#fef7e0' : '#f1f3f4');
- const statusFg = status === 'Funded' ? '#137333' : (status === 'Sanctioning' ? '#b06000' : '#3c4043');
- const progress = status === 'Funded' ? Math.max(35, score) : (status === 'Sanctioning' ? Math.max(20, Math.round(score * 0.75)) : Math.max(10, Math.round(score * 0.5)));
+ const score = Math.max(0, Math.min(100, Math.round(Number(p.screening_score || 0))));
  return `
  <div style="border:1px solid #e8eaed;border-radius:12px;padding:10px 12px;margin-bottom:10px;background:#fff;">
  <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;">
  <div>
  <strong style="color:#202124;font-size:0.92rem;">${p.district || 'District'}, ${p.state || ''}</strong>
- <div style="font-size:0.8rem;color:#5f6368;">${p.category || 'Infrastructure'} | ${p.beneficiaries == null ? 'Beneficiary survey required' : Number(p.beneficiaries).toLocaleString() + ' surveyed beneficiaries'}</div>
+ <div style="font-size:0.8rem;color:#5f6368;">${p.category || 'Infrastructure'} | ${Number(p.published_request_count || 0).toLocaleString()} published requests</div>
  </div>
- <span class="badge" style="background:${statusBg};color:${statusFg};border-radius:100px;padding:4px 10px;font-weight:700;">${status}</span>
+ <span class="badge" style="background:#fef7e0;color:#8a5200;border-radius:100px;padding:4px 10px;font-weight:700;">Screening only</span>
  </div>
  <div style="margin-top:8px;">
  <div style="height:8px;background:#eef2f7;border-radius:999px;overflow:hidden;">
- <div style="height:8px;width:${progress}%;background:linear-gradient(90deg,#1a73e8,#34a853);"></div>
+ <div style="height:8px;width:${score}%;background:linear-gradient(90deg,#1a73e8,#fbbc04);"></div>
  </div>
  <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:#5f6368;margin-top:4px;">
- <span>Progress</span>
- <span>${progress}%</span>
+ <span>Priority screening signal</span>
+ <span>${score}%</span>
  </div>
  </div>
+ <small style="display:block;color:#6b7280;margin-top:8px;">Delivery status is not published. Engineering review and administrative approval are required.</small>
  </div>
  `;
  }).join('');
 
  markSuiteFreshness('public', 'public summary');
  } catch (err) {
- projectBox.innerHTML = `<div class="alert alert-danger py-2" style="font-size:0.85rem;">Unable to load public project progress: ${err.message}</div>`;
+ projectBox.innerHTML = `<div class="alert alert-danger py-2" style="font-size:0.85rem;">Unable to load the public release: ${err.message}</div>`;
  }
 }
 
@@ -2099,16 +2529,20 @@ function bindRbacControls() {
  try {
  const res = await fetch('/api/v1/transparency/verify-chain');
  const data = await res.json();
- if (container) {
- container.innerHTML = `
- <div class="alert alert-success py-2 mb-0" style="font-size:0.85rem">
- <i class="bi bi-shield-check" style="font-size:1.2rem;color:#059669"></i>
- <strong>Cryptographic Chain Verified "</strong><br>
- Head SHA-256 Hash: <code style="font-size:0.75rem">${(data.head_hash || '308f87e5...').substring(0, 32)}...</code><br>
- Entries Audited: <strong>${data.count || 77} blocks</strong> | Status: <strong>Zero Tampering Detected</strong>
+  if (container) {
+   const protectedValid = Boolean(data.protected_valid);
+   const statusClass = protectedValid ? 'alert-success' : 'alert-warning';
+   const statusText = protectedValid ? 'Protected chain checked' : 'Verification requires review';
+   container.innerHTML = `
+ <div class="alert ${statusClass} py-2 mb-0" style="font-size:0.85rem">
+ <i class="bi bi-${protectedValid ? 'shield-check' : 'exclamation-triangle'}" style="font-size:1.2rem"></i>
+ <strong>${statusText}</strong><br>
+ Head SHA-256 Hash: <code style="font-size:0.75rem">${(data.head_hash || 'unavailable').substring(0, 32)}${data.head_hash ? '...' : ''}</code><br>
+ Entries checked: <strong>${Number(data.count || 0).toLocaleString()}</strong> | Status: <strong>${data.status || 'unknown'}</strong><br>
+ <small>${data.message || 'Review the chain result before relying on this record.'}</small>
  </div>
  `;
- }
+  }
  markSuiteFreshness('public', 'transparency verify-chain');
  } catch (err) {
  if (container) container.innerHTML = `<div class="alert alert-danger py-2 mb-0">Verification failed: ${err.message}</div>`;
@@ -2117,59 +2551,11 @@ function bindRbacControls() {
  }
 
  if (cosignBtn) {
- cosignBtn.addEventListener('click', async () => {
+ cosignBtn.addEventListener('click', () => {
  const resultBox = document.getElementById('publicVerifyResult');
- try {
- cosignBtn.disabled = true;
- cosignBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Co-signing...';
-
- const listRes = await fetch('/api/complaints?limit=1', { cache: 'no-store' });
- const listPayload = await listRes.json();
- const complaints = Array.isArray(listPayload) ? listPayload : (listPayload.complaints || []);
- const first = complaints[0] || {};
- const requestId = first.request_id || first.id;
- if (!requestId) throw new Error('No request available for co-sign.');
-
- const statusRes = await fetch(`/api/v1/requests/${encodeURIComponent(requestId)}/cosign-status`);
- const statusPayload = await statusRes.json();
- if (!statusRes.ok || !statusPayload.success) throw new Error(statusPayload.error || 'Unable to load co-sign status');
-
- const token = (((statusPayload || {}).token || {}).value || '').trim();
- if (!token) throw new Error('Missing co-sign token');
-
- const supporterRef = `public-${Date.now()}`;
- const signRes = await fetch(`/api/v1/requests/${encodeURIComponent(requestId)}/cosign`, {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({
- token,
- supporter_ref: supporterRef,
- supporter_name: 'Public Lens User',
- channel: 'public_lens'
- })
- });
- const signPayload = await signRes.json();
- if (!signRes.ok || !signPayload.success) throw new Error(signPayload.error || 'Unable to co-sign request');
-
- const count = Number(signPayload.verified_support_count || 0);
- cosignBtn.classList.remove('btn-primary');
- cosignBtn.classList.add('btn-success');
- cosignBtn.innerHTML = `<i class="bi bi-check-circle-fill"></i> Co-Signed! (${count} verified support)`;
-
  if (resultBox) {
  resultBox.style.display = 'block';
- resultBox.innerHTML = `<div class="alert alert-success py-2 mb-0" style="font-size:0.85rem">Co-sign recorded for <code>${requestId}</code>. Verified support count: <strong>${count}</strong>.</div>`;
- }
- markSuiteFreshness('public', 'co-sign ledger');
- } catch (err) {
- cosignBtn.disabled = false;
- cosignBtn.classList.remove('btn-success');
- cosignBtn.classList.add('btn-primary');
- cosignBtn.innerHTML = '<i class="bi bi-hand-thumbs-up-fill"></i> Co-Sign Demand';
- if (resultBox) {
- resultBox.style.display = 'block';
- resultBox.innerHTML = `<div class="alert alert-danger py-2 mb-0" style="font-size:0.85rem">Co-sign failed: ${err.message}</div>`;
- }
+ resultBox.innerHTML = '<div class="alert alert-info py-2 mb-0" style="font-size:0.85rem"><i class="bi bi-shield-lock-fill"></i> Verified support requires a citizen receipt token. This public view never auto-signs requests or counts anonymous browser clicks.</div>';
  }
  });
  }
@@ -3438,12 +3824,3 @@ async function loadAiRuntimeStatus(forceProbe = false) {
     }
   }
 }
-
-
-
-
-
-
-
-
-

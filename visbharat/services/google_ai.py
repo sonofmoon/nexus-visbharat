@@ -379,6 +379,65 @@ Top categories: {top_categories}
                 'fallback_used': True,
             }
 
+    def generate_inclusion_narrative(self, scope: dict, indicators: dict) -> Dict[str, Any]:
+        """Explain governed inclusion indicators; never rank or estimate hidden demand."""
+        import json
+
+        prompt = f'''You are an evidence reviewer for an Indian civic planning system.
+Explain the supplied observed demand and access-risk screening results.
+Use ONLY the supplied metrics. Do not invent hidden demand, population denominators,
+protected-group conclusions, causal claims, funding decisions, or impact estimates.
+Clearly distinguish observed facts from validation actions.
+
+Return strict JSON with exactly these keys:
+summary: one concise paragraph
+observed_findings: an array of 2-4 concise findings
+validation_actions: an array of 2-4 concrete actions for human reviewers
+limitations: an array of concise limitations
+
+Scope:
+{json.dumps(scope, ensure_ascii=False, sort_keys=True)}
+
+Observed indicators and diagnostics:
+{json.dumps(indicators, ensure_ascii=False, sort_keys=True)}
+'''
+        try:
+            output, used_model = self._call_gemini('gemini-3.6-flash', prompt)
+            result = self._parse_json(output)
+            if not isinstance(result, dict) or not str(result.get('summary') or '').strip():
+                raise ValueError('Gemini returned an incomplete inclusion narrative')
+            for key in ('observed_findings', 'validation_actions', 'limitations'):
+                values = result.get(key)
+                if not isinstance(values, list):
+                    raise ValueError(f'Gemini returned invalid {key}')
+                result[key] = [str(value).strip() for value in values if str(value).strip()]
+            result['model'] = used_model
+            result['provider_mode'] = 'google_ai_live'
+            result['fallback_used'] = False
+            return result
+        except Exception:
+            item_count = len(indicators.get('items') or []) if isinstance(indicators, dict) else 0
+            alert_count = int((indicators or {}).get('access_investigation_count') or 0) if isinstance(indicators, dict) else 0
+            return {
+                'summary': f'Observed access-risk screening covers {item_count} reference districts and flags {alert_count} for human access investigation. This is not an estimate of hidden demand.',
+                'observed_findings': [
+                    'The score combines report density, deprivation context, infrastructure gap and emergency pressure using the published formula.',
+                    'Language and channel differences are descriptive only because population denominators and reporting propensity are unavailable.',
+                ],
+                'validation_actions': [
+                    'Conduct an independent multilingual access survey in flagged districts.',
+                    'Verify reference-source edition, geography, observation period and publisher provenance.',
+                    'Review thresholds and results with district officers before any funding decision.',
+                ],
+                'limitations': [
+                    'No hidden-demand estimate or causal fairness conclusion is produced.',
+                    'Reference indicators and cluster assignments require independent validation.',
+                ],
+                'model': 'local_inclusion_narrative_fallback',
+                'provider_mode': 'local_fallback',
+                'fallback_used': True,
+            }
+
     def embed_text(self, text: str) -> list[float]:
         url = f'https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key={self.api_key}'
         payload = {

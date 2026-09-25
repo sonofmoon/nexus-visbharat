@@ -12,7 +12,14 @@
     <h4>Observed demand and access risks</h4>
     <div id="wbDemandMetrics" class="wb-metrics"></div>
     <p>Issue assignments collapse related reports. Demo assignments are synthetic ground truth, not measured AI deduplication.</p>
+    <div class="wb-controls wb-inclusion-actions">
+      <button id="wbInclusionBriefBtn" type="button" class="btn btn-primary">Explain evidence with Gemini</button>
+      <span class="wb-muted">Gemini may explain supplied metrics; it cannot change the score, invent hidden demand or make a funding decision.</span>
+    </div>
+    <div id="wbInclusionMethod" class="wb-evidence-note"></div>
     <div id="wbInclusion"></div>
+    <div id="wbInclusionAudit"></div>
+    <div id="wbInclusionBrief" class="wb-card" aria-live="polite"><p class="wb-muted">No evidence narrative generated yet.</p></div>
   </section>
   <section id="wb-evidence" role="tabpanel" aria-labelledby="wb-tab-evidence" hidden>
     <h4>Local evidence and development indicators</h4>

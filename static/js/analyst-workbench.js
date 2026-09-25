@@ -68,19 +68,108 @@
     return esc(typeof value==='object'?JSON.stringify(value):value);
   }
   function sourceCards(data) {
-    const overview=`<div class="wb-evidence-note"><strong>${num(data.loaded_sources)} reference datasets loaded</strong><p>${num(data.verified_sources)} independently verified sources. “Verification pending” means the local values have not been checked against the publisher’s original document. A publisher name or file checksum alone does not establish that verification.</p></div>`;
-    return overview+data.sources.map(s=>{
-      const rows=Array.isArray(s.sample)?s.sample:[];
-      const keys=[...new Set(rows.flatMap(r=>Object.keys(r)))].filter(k=>!['source_publisher','source'].includes(k));
-      const fields=['district','state',...keys.filter(k=>!['district','state'].includes(k))].filter(k=>keys.includes(k));
-      const status=s.status?String(s.status).replaceAll('_',' '):(!s.loaded?'Unavailable':'Verification pending');
-      const preview=rows.length?table(fields.map(k=>sourceFields[k]?.[0]||k.replaceAll('_',' ').replace(/^./,c=>c.toUpperCase())),rows.map(r=>fields.map(k=>sourceValue(k,r[k])))):'<p>No source records match the selected state and district.</p>';
-      const href=/^https?:\/\//.test(s.url||'')?s.url:null;
-      return `<details class="wb-card wb-source-card" data-evidence-source="${esc(s.source)}"><summary><span class="wb-source-heading">${esc(s.name)}</span><span class="wb-source-status">${status}</span><span class="wb-source-byline">${esc(s.publisher||'Publisher not documented')} · ${num(s.scoped_records)} matching source records in scope</span></summary><p>${esc(sourceDescriptions[s.source]||'Reference indicators for reviewing local proposals.')}</p><p class="wb-source-context">Observation dates: ${s.observation_year?esc(s.observation_year)+' stated in the reference title; district observation dates are not documented in the file.':'Not documented in the loaded file. A year in the title identifies its stated edition, not a verified observation period.'}</p><h5>District indicators</h5><p class="wb-muted">Showing ${rows.length} of ${num(s.scoped_records)} matching records${s.scoped_records>rows.length?'. Select a district in the filters to inspect its values': ''}.</p>${preview}${href?`<p><a href="${esc(href)}" target="_blank" rel="noopener">Open publisher reference ↗</a> <span class="wb-muted">— background link; not proof of this file’s values</span></p>`:'<p>Publisher reference link not supplied.</p>'}<details class="wb-source-technical"><summary>Verification and technical details</summary><p>Resource identifier: <code>${esc(s.resource_id||s.source)}</code>. Retrieved: ${esc(s.retrieved_at||'Not recorded')}. API-reported update: ${esc(s.source_updated_at||'Not recorded')}.</p><p>Publisher verification: ${s.publisher_verified?'Recorded':'Pending — no matching publisher document/table and completed review are recorded.'}</p><p>Geography: ${esc(s.boundary_status)}.</p><p>Reuse: ${esc(s.license_status)}.</p><p>Retained content checksum (SHA-256): <code>${esc(s.sha256||'No retained content')}</code></p><p class="wb-muted">This checksum identifies retained content. It does not establish publisher authenticity, current geographic compatibility or accuracy.</p><details><summary>Raw data preview (JSON)</summary><pre>${esc(JSON.stringify(rows,null,2))}</pre></details></details></details>`;
+    let gapHtml = '';
+    const gap = data.gap_intelligence;
+    if (gap) {
+      const isLive = gap.provider_mode === 'gemini_live';
+      const badgeClass = isLive ? 'badge-gemini-live' : 'badge-fallback';
+      const badgeLabel = isLive ? '⚡ Gemini 3.6 Flash Live' : '🛡️ Governed Local Fallback';
+      
+      const discrepanciesHtml = (gap.discrepancies || []).map(d => {
+        const sevClass = `wb-sev-${d.severity || 'moderate'}`;
+        return `
+          <div class="wb-gap-card ${sevClass}">
+            <div class="wb-gap-card-header">
+              <span class="wb-gap-severity ${sevClass}">${esc(d.severity ? d.severity.toUpperCase() : 'INFO')}</span>
+              <span class="wb-gap-sector">${esc(d.sector || 'General')}</span>
+            </div>
+            <h6>${esc(d.title)}</h6>
+            <p class="wb-gap-metric"><strong>Observed vs Benchmark:</strong> ${esc(d.metric)}</p>
+            <p class="wb-gap-anchor"><strong>Evidence Anchor:</strong> <code>${esc(d.evidence_anchor)}</code></p>
+            <div class="wb-gap-action"><strong>Recommended Action:</strong> ${esc(d.recommended_action)}</div>
+          </div>
+        `;
+      }).join('');
+
+      const prioritiesHtml = (gap.strategic_priorities || []).map(p => `<li>${esc(p)}</li>`).join('');
+
+      gapHtml = `
+        <div class="wb-gap-intelligence-panel">
+          <div class="wb-gap-panel-top">
+            <div>
+              <h4>🧠 Gemini Evidence & Policy Gap Intelligence</h4>
+              <p class="wb-muted">Multi-Registry Cross-Examination & Statutory Scheme Synergy</p>
+            </div>
+            <div class="wb-gap-badges">
+              <span class="wb-tag ${badgeClass}">${badgeLabel}</span>
+              <span class="wb-tag">${esc(gap.llm_model !== 'none' ? gap.llm_model : 'Empirical Discrepancy Engine')}</span>
+              <span class="wb-tag ${gap.critical_discrepancies > 0 ? 'wb-tag-alert' : ''}">${gap.discrepancy_count} Discrepancies (${gap.critical_discrepancies} Critical)</span>
+            </div>
+          </div>
+
+          <div class="wb-gap-assessment-box">
+            <h5>Executive Gap Synthesis</h5>
+            <p class="wb-gap-narrative">${esc(gap.executive_assessment)}</p>
+            <div class="wb-gap-priorities">
+              <h6>Actionable Scheme Alignment & Field Priorities</h6>
+              <ul>${prioritiesHtml}</ul>
+            </div>
+            <p class="wb-gap-reconciliation"><strong>Ground Reconciliation Protocol:</strong> ${esc(gap.reconciliation_protocol)}</p>
+          </div>
+
+          <h5>Empirical Discrepancy Detection Matrix</h5>
+          <div class="wb-gap-grid">
+            ${discrepanciesHtml}
+          </div>
+
+          <div class="wb-copilot-container">
+            <div class="wb-copilot-header">
+              <h5>🤖 Evidence & Policy Gap Copilot</h5>
+              <span class="wb-tag ${badgeClass}">${badgeLabel}</span>
+            </div>
+            <p class="wb-muted">Ask questions about observed anomalies, JJM/AMRUT/PMGSY scheme alignment, or SECC poverty blindspots in this scope.</p>
+            <div class="wb-copilot-chips">
+              <button type="button" class="wb-copilot-chip" data-query="Why is water supply failing despite certified high tap coverage?">💧 Explain Ghost Infrastructure Risk</button>
+              <button type="button" class="wb-copilot-chip" data-query="Is there a digital divide or voice exclusion blindspot in this district?">📶 Digital Divide & Voice Blindspot</button>
+              <button type="button" class="wb-copilot-chip" data-query="Which central scheme provides the strongest funding alignment for top grievances?">🏛️ Central Scheme Synergy (JJM/AMRUT)</button>
+              <button type="button" class="wb-copilot-chip" data-query="What field survey is required before approving capex for this catchment?">📋 Field Audit & Reconciliation</button>
+            </div>
+            <div class="wb-copilot-input-row">
+              <input type="text" id="wbCopilotQuery" class="form-control" placeholder="Ask Gemini Evidence Copilot about gaps, registries, or central schemes...">
+              <button type="button" id="wbCopilotBtn" class="btn btn-primary">Ask Copilot</button>
+            </div>
+            <div id="wbCopilotAnswer" class="wb-copilot-response" aria-live="polite"></div>
+          </div>
+
+          <h5 class="wb-sources-section-title">Governed Reference Registries & Data Provenance</h5>
+        </div>
+      `;
+    }
+
+    const evidence = data.evidence_summary || {};
+    const overview = `<div class="wb-evidence-note wb-evidence-prominent"><div class="wb-evidence-status-row"><strong>${esc(evidence.confidence_label || 'Screening evidence only')}</strong><span class="wb-tag wb-tag-alert">${num(evidence.citizen_reports_in_scope)} citizen reports in scope</span><span class="wb-tag">${num(evidence.reference_records_in_scope)} reference records in scope</span></div><p>${esc(evidence.confidence_reason || 'Reference values require verification before they support an allocation or eligibility decision.')}</p><div class="wb-evidence-status-grid"><span>Sources: <strong>${num(evidence.loaded_sources)}/${num(evidence.source_count)}</strong> loaded</span><span>Publisher verified: <strong>${num(evidence.verified_sources)}</strong></span><span>Verification pending: <strong>${num(evidence.pending_sources)}</strong></span><span>Missing: <strong>${num(evidence.missing_sources)}</strong></span></div><p class="wb-muted">Source status is shown per dataset below. A publisher name, URL or checksum does not by itself prove authenticity, current geography or accuracy.</p></div>`;
+    return gapHtml + overview + (data.sources || []).map(s => {
+      const rows = Array.isArray(s.sample) ? s.sample : [];
+      const keys = [...new Set(rows.flatMap(r => Object.keys(r)))].filter(k => !['source_publisher', 'source'].includes(k));
+      const fields = ['district', 'state', ...keys.filter(k => !['district', 'state'].includes(k))].filter(k => keys.includes(k));
+      const status = s.status ? String(s.status).replaceAll('_', ' ') : (!s.loaded ? 'Unavailable' : 'Verification pending');
+      const preview = rows.length ? table(fields.map(k => sourceFields[k]?.[0] || k.replaceAll('_', ' ').replace(/^./, c => c.toUpperCase())), rows.map(r => fields.map(k => sourceValue(k, r[k])))) : '<p>No source records match the selected state and district.</p>';
+      const href = /^https?:\/\//.test(s.url || '') ? s.url : null;
+      return `<details class="wb-card wb-source-card" data-evidence-source="${esc(s.source)}"><summary><span class="wb-source-heading">${esc(s.name)}</span><span class="wb-source-status">${status}</span><span class="wb-source-byline">${esc(s.publisher || 'Publisher not documented')} · ${num(s.scoped_records)} matching source records in scope</span></summary><p>${esc(sourceDescriptions[s.source] || 'Reference indicators for reviewing local proposals.')}</p><p class="wb-source-context">Observation dates: ${s.observation_year ? esc(s.observation_year) + ' stated in the reference title; district observation dates are not documented in the file.' : 'Not documented in the loaded file. A year in the title identifies its stated edition, not a verified observation period.'}</p><h5>District indicators</h5><p class="wb-muted">Showing ${rows.length} of ${num(s.scoped_records)} matching records${s.scoped_records > rows.length ? '. Select a district in the filters to inspect its values' : ''}.</p>${preview}${href ? `<p><a href="${esc(href)}" target="_blank" rel="noopener">Open publisher reference ↗</a> <span class="wb-muted">— background link; not proof of this file’s values</span></p>` : '<p>Publisher reference link not supplied.</p>'}<details class="wb-source-technical"><summary>Verification and technical details</summary><p>Resource identifier: <code>${esc(s.resource_id || s.source)}</code>. Retrieved: ${esc(s.retrieved_at || 'Not recorded')}. API-reported update: ${esc(s.source_updated_at || 'Not recorded')}.</p><p>Publisher verification: ${s.publisher_verified ? 'Recorded' : 'Pending — no matching publisher document/table and completed review are recorded.'}</p><p>Geography: ${esc(s.boundary_status)}.</p><p>Reuse: ${esc(s.license_status)}.</p><p>Retained content checksum (SHA-256): <code>${esc(s.sha256 || 'No retained content')}</code></p><p class="wb-muted">This checksum identifies retained content. It does not establish publisher authenticity, current geographic compatibility or accuracy.</p><details><summary>Raw data preview (JSON)</summary><pre>${esc(JSON.stringify(rows, null, 2))}</pre></details></details></details>`;
     }).join('');
   }
   function card(p) {
     return `<article class="wb-card"><span class="wb-tag">#${p.rank} · ${p.committed?'Already committed':p.selected?'Selected in draft scenario':'Not selected'}</span><span class="wb-tag">${esc(p.review_status)}</span><h5>${esc(p.title)}</h5><p>${esc(p.district)}, ${esc(p.state)} · ${esc(p.ward||'Ward unspecified')} · ${esc(p.category)}</p><p>${num(p.reports)} reports · ${num(p.issues)} issue assignments · Screening score ${num(p.priority_score)}/100</p><p>${p.engineering_review?'Reviewed':'Illustrative'} capital ₹${num(p.cost_low_lakh)}–${num(p.cost_high_lakh)} lakh · Annual operation ₹${num(p.annual_operating_cost_lakh)} lakh (assumed)</p><p>Beneficiaries: ${p.beneficiaries==null?'survey required':num(p.beneficiaries)+' (human-reviewed project count; overlaps not deducted)'}. ${esc(p.outcome_measure)}: baseline required.</p><details><summary>Why this score?</summary>${table(['Component','Indicator (0–100)','Contribution'],Object.keys(p.components).map(k=>[esc(k),num(p.components[k]),num(p.contributions[k])]))}<p>Missing: ${esc(p.missing_components.join(', ')||'None')} · Available weights are renormalized. Unverified reference inputs make this a screening result.</p></details><button type="button" class="btn btn-sm btn-outline-primary" data-project="${esc(p.project_id)}">Inspect requests and evidence</button></article>`;
+  }
+  function renderInclusionEvidence(inclusion) {
+    const methodology = inclusion.methodology || {};
+    const weights = methodology.weights || {};
+    const thresholds = methodology.thresholds || {};
+    const quality = inclusion.data_quality || {};
+    const audit = inclusion.fairness_audit || {};
+    $('wbInclusionMethod').innerHTML = `<strong>Observed access-risk screen · ${esc(methodology.version || 'unversioned')}</strong><p>${esc(methodology.formula || 'Formula unavailable.')}</p><p>${esc(methodology.interpretation || '')}</p><p class="wb-muted">Weights: ${Object.entries(weights).map(([k,v]) => `${esc(k)} ${num(Number(v)*100)}%`).join(' · ')}. Alert threshold: deprivation ≥ ${num(thresholds.deprivation_index_min)} and reports/100k &lt; ${num(thresholds.reports_per_100k_max)}.</p><p class="wb-muted">Data mode: ${esc(quality.data_mode || 'unknown')} · Latest submission: ${esc(quality.latest_submission || 'none')} · ${esc(quality.analytics_replica || '')}</p>`;
+    const groupTable = (entry) => table(['Group','Reports','Share','Districts','Emergency rate','Resolution rate'], (entry?.groups || []).map(r => [esc(r.group), num(r.reports), num(r.report_share_pct)+'%', num(r.districts), num(r.emergency_rate_pct)+'%', num(r.resolution_rate_pct)+'%']));
+    $('wbInclusionAudit').innerHTML = `<div class="wb-evidence-note"><strong>Descriptive access diagnostics — not a fairness verdict</strong><p>${esc(audit.disclosure || '')}</p><h5>By language</h5>${groupTable(audit.language)}<h5>By intake channel</h5>${groupTable(audit.channel)}<p class="wb-muted">Required validation: ${esc((audit.required_validation || []).join(' · '))}</p></div>`;
   }
   function renderProjects() {
     if(!payload)return;
@@ -96,6 +185,7 @@
     $('analystFreshnessBar').textContent=`${s.metadata.data_mode} data · Latest submission: ${s.metadata.as_of||'none'} · Calculated ${new Date(s.metadata.calculated_at).toLocaleTimeString()} · ${p.metadata.version}`;
     $('wbDemandMetrics').innerHTML=metric('Reports',s.total_complaints)+metric('Issue assignments',s.distinct_issues)+metric('Emergency reports',s.emergency_count,'Immediate response; excluded from capital selection')+metric('Operational closure',s.resolution_rate,'% of current scoped requests');
     $('wbInclusion').innerHTML=`<p>${num(d.inclusion.access_investigation_count)} districts warrant an access investigation. Reporting propensity is unavailable; no hidden demand is invented.</p>`+table(['District','Reports','Reports /100k','Deprivation (0–1)','Access review'],d.inclusion.items.map(r=>[esc(r.district),num(r.requests),num(r.reports_per_100k),num(r.deprivation_index),r.investigate_access?'Survey recommended':'No flag from this rule']))+`<p>${esc(d.inclusion.outreach_status)}</p>`;
+    renderInclusionEvidence(d.inclusion);
     renderProjects();
     const a=p.allocation;
     $('wbBudgetResults').innerHTML=`<p>${esc(p.formula)}</p><p>Effective weights: ${Object.entries(p.weights).map(([k,v])=>`${esc(k)} ${num(v*100)}%`).join(' · ')}</p><div class="wb-metrics">${metric('Candidate projects',p.total_candidates)}${metric('Selected',a.selected_count)}${metric('Capital used',a.budget_used_lakh,'₹ lakh; scenario only')}${metric('Existing commitments',a.existing_commitments_lakh,'₹ lakh; known project decisions')}${metric('Capital remaining',a.budget_remaining_lakh,'₹ lakh')}${metric('Recurring operation',a.annual_operating_cost_lakh,'₹ lakh/year; assumed')}${metric('Ranks changed',p.delta.ranks_changed)}</div><p>${p.delta.newly_selected.length} newly selected · ${p.delta.removed.length} removed · capital change ₹${num(p.delta.budget_used_lakh)} lakh · linked-report change ${num(p.delta.reports_linked)}.</p><p>${esc(p.outcomes.status)}. Monetary NPV and IRR are not estimated.</p><p>Equity reservation shortfall: ₹${num(a.equity_reservation_shortfall_lakh)} lakh. Unused reservation is released to other eligible candidates.</p>${table(['Cost case','Selected','Capital (₹ lakh)','Reports linked'],Object.entries(p.sensitivity).map(([k,v])=>[esc(k),num(v.selected_count),num(v.budget_used_lakh),num(v.reports_linked)]))}<p class="wb-muted">${esc(a.method)} Scenario ID: ${esc(p.scenario_id)}. Preview limit does not change allocation.</p><p>${esc(p.limitations.join(' '))}</p>${p.selected_projects.map(card).join('')}`;
@@ -104,7 +194,11 @@
     $('projectsList').innerHTML=overview.map((x,i)=>window.NVBConsole.renderProjectCard(x,i,new Set())).join('')+window.NVBConsole.projectFooter(overview.length);
     window.NVBConsole.setSnapshot?.({stats:{totalComplaints:s.total_complaints,districtCount:s.districts_covered,languageCount:s.languages_supported,stateCount:s.states_covered,resolutionRate:s.resolution_rate,dailyTrend:s.daily_trend},projects:overview});
     renderCharts();
-    $('predictionContent').innerHTML='<p>Screening uses observed report density, deprivation and service coverage. No next-quarter forecast is asserted.</p>'+d.inclusion.items.filter(r=>r.requests).slice(0,6).map(r=>`<p><strong>${esc(r.district)}</strong>: ${num(r.requests)} reports; ${num(r.reports_per_100k)} per 100,000 district residents. Reference population requires verification.</p>`).join('');
+    if (window.NVBDemandScreening && typeof window.NVBDemandScreening.render === 'function') {
+      window.NVBDemandScreening.render(d.inclusion, d.stats);
+    } else {
+      $('predictionContent').innerHTML='<p>Screening uses observed report density, deprivation and service coverage. No next-quarter forecast is asserted.</p>'+d.inclusion.items.filter(r=>r.requests).slice(0,6).map(r=>`<p><strong>${esc(r.district)}</strong>: ${num(r.requests)} reports; ${num(r.reports_per_100k)} per 100,000 district residents. Reference population requires verification.</p>`).join('');
+    }
     $('projectsRefreshedAt').textContent='Snapshot '+new Date(s.metadata.calculated_at).toLocaleTimeString();
   }
   function renderCharts() {
@@ -137,7 +231,11 @@
       if(tab==='evidence') {const d=await api('/api/v2/analyst/evidence?'+qs);if(n===generation)$('wbEvidence').innerHTML=sourceCards(d);}
       if(tab==='delivery') {
         const d=await api('/api/v2/analyst/delivery?'+qs);if(n!==generation)return;
-        $('wbDelivery').innerHTML=table(['District','SLA on time / eligible','Coverage','Ack median /p90 (hours)','Closure','Open age p90 (days)','Citizen feedback'],d.items.map(r=>[esc(r.district),`${r.on_time}/${r.eligible}`,num(r.coverage_pct)+'%',`${num(r.median_ack_hours)} / ${num(r.p90_ack_hours)}`,`${r.closed}/${r.requests}`,num(r.p90_open_age_days),`${r.positive_feedback}/${r.feedback} positive`]))+'<p>No composite governance score is assigned. Response time, capital delivery and service outcomes are different measures.</p><h5>Linked decisions</h5>'+table(['Decision','Project','Status','Estimated capital','Review'],d.decisions.map(r=>[esc(r.decision_id),esc(r.project_id||'Legacy district decision'),esc(r.status),'₹'+num(r.estimated_project_cost_lakh)+' lakh',r.review?esc(r.review.evidence_reference):'Engineering review pending']));
+        const deliveryRequests = d.items.reduce((sum,r)=>sum + Number(r.requests || 0), 0);
+        const deliveryEligible = d.items.reduce((sum,r)=>sum + Number(r.eligible || 0), 0);
+        const deliveryFeedback = d.items.reduce((sum,r)=>sum + Number(r.feedback || 0), 0);
+        const deliveryBanner = `<div class="wb-evidence-note wb-evidence-prominent"><div class="wb-evidence-status-row"><strong>Descriptive operational evidence</strong><span class="wb-tag">${num(deliveryRequests)} requests</span><span class="wb-tag">${num(deliveryEligible)} SLA-eligible</span><span class="wb-tag">${num(deliveryFeedback)} feedback responses</span></div><p>Confidence is screening-level: response coverage and closure are observed service-process measures, not independently verified service impact.</p><p class="wb-muted">Definitions: ${esc(d.definitions?.coverage || 'Coverage definition unavailable.')} ${esc(d.definitions?.confirmation || '')}</p></div>`;
+        $('wbDelivery').innerHTML=deliveryBanner+table(['District','SLA on time / eligible','Coverage','Ack median /p90 (hours)','Closure','Open age p90 (days)','Citizen feedback'],d.items.map(r=>[esc(r.district),`${r.on_time}/${r.eligible}`,num(r.coverage_pct)+'%',`${num(r.median_ack_hours)} / ${num(r.p90_ack_hours)}`,`${r.closed}/${r.requests}`,num(r.p90_open_age_days),`${r.positive_feedback}/${r.feedback} positive`]))+'<p>No composite governance score is assigned. Response time, capital delivery and service outcomes are different measures.</p><h5>Linked decisions</h5>'+table(['Decision','Project','Status','Estimated capital','Review'],d.decisions.map(r=>[esc(r.decision_id),esc(r.project_id||'Legacy district decision'),esc(r.status),'₹'+num(r.estimated_project_cost_lakh)+' lakh',r.review?esc(r.review.evidence_reference):'Engineering review pending']));
       }
       if(tab==='outcomes') {
         const d=await api('/api/v2/analyst/readiness');if(n!==generation)return;
@@ -171,6 +269,60 @@
     if($('wbOutcomeProject').value)qs.set('project_id',$('wbOutcomeProject').value.trim());if($('wbOutcomeCluster').value)qs.set('cluster_id',$('wbOutcomeCluster').value.trim());
     try{const d=await api('/api/v2/analyst/outcomes?'+qs);$('wbOutcomeResult').innerHTML=`<div class="wb-warning"><strong>${esc(d.status.replaceAll('_',' '))}</strong><p>${esc(d.message||'Observed association only; not causal proof.')}</p></div>`+(d.counts?`<div class="wb-metrics">${metric('Before reports',d.counts.before)}${metric('Observed after reports',d.counts.after_observed)}${metric('Observed decrease',d.change_pct,'% — only for completed windows')}</div><p>${num(d.windows.observed_post_days)} of ${d.windows.days_each} follow-up days observed. Delivery date: ${esc(d.delivery_at)}. ${esc(d.delivery_verification)}</p><p>${esc(d.cautions.join(' '))}</p>`:'');}catch(err){$('wbOutcomeResult').textContent=err.message;}
   }
+  async function inclusionBrief() {
+    const button = $('wbInclusionBriefBtn');
+    button.disabled = true;
+    button.textContent = 'Preparing evidence…';
+    $('wbInclusionBrief').innerHTML = '<p class="wb-muted">Preparing a source-bound narrative from the current scoped indicators…</p>';
+    try {
+      const d = await api('/api/v2/analyst/inclusion-brief', {method:'POST', body:JSON.stringify(opts())});
+      const n = d.narrative || {};
+      const provider = d.fallback_used ? 'Local governed fallback' : 'Gemini live';
+      const evidence = d.provider_evidence || {};
+      $('wbInclusionBrief').innerHTML = `<span class="wb-tag">${esc(provider)}</span><span class="wb-tag">${esc(d.model || 'model not reported')}</span>${evidence.trace_id ? `<span class="wb-tag">Trace ${esc(evidence.trace_id)}</span>` : ''}<h5>${esc(n.summary || 'No summary returned')}</h5><h6>Observed findings</h6><ul>${(n.observed_findings || []).map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h6>Validation actions</h6><ul>${(n.validation_actions || []).map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h6>Limitations</h6><ul>${(n.limitations || []).map(x=>`<li>${esc(x)}</li>`).join('')}</ul><p class="wb-muted">Provider mode: ${esc(d.provider_mode || 'unknown')}. This narrative does not alter the deterministic screening score.</p>`;
+    } catch (err) {
+      $('wbInclusionBrief').innerHTML = `<p class="wb-warning">${esc(err.message)}</p>`;
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Explain evidence with Gemini';
+    }
+  }
+  async function askCopilot(queryText) {
+    const input = $('wbCopilotQuery');
+    const btn = $('wbCopilotBtn');
+    const container = $('wbCopilotAnswer');
+    if (!queryText && input) queryText = input.value.trim();
+    if (!queryText) return;
+    if (input) input.value = queryText;
+    if (btn) { btn.disabled = true; btn.textContent = 'Consulting Gemini…'; }
+    if (container) {
+      container.innerHTML = '<p class="wb-muted">Cross-examining registries and empirical intake with Gemini…</p>';
+    }
+    try {
+      const res = await api('/api/v2/analyst/evidence/ask', {
+        method: 'POST',
+        body: JSON.stringify({ query: queryText, ...opts() })
+      });
+      const isLive = res.provider_mode === 'gemini_live';
+      const provider = isLive ? '⚡ Gemini 3.6 Flash Live' : '🛡️ Governed Local Fallback';
+      const badgeClass = isLive ? 'badge-gemini-live' : 'badge-fallback';
+      const citations = (res.citations || []).map(c => `<li><strong>${esc(c.source)}:</strong> ${esc(c.anchor)}</li>`).join('');
+      container.innerHTML = `
+        <div class="wb-copilot-result">
+          <div class="wb-copilot-header" style="margin-bottom:0.6rem">
+            <span class="wb-tag ${badgeClass}">${provider}</span>
+            <span class="wb-tag">${esc(res.llm_model !== 'none' ? res.llm_model : 'Algorithmic Fallback')}</span>
+          </div>
+          <div class="wb-copilot-text" style="line-height:1.6;margin-bottom:0.75rem">${esc(res.answer).replace(/\n\n/g, '<br><br>')}</div>
+          ${citations ? `<h6>Statutory & Registry Citations</h6><ul class="wb-copilot-citations" style="margin:0;padding-left:1.2rem;font-size:0.85rem">${citations}</ul>` : ''}
+        </div>
+      `;
+    } catch (err) {
+      if (container) container.innerHTML = `<p class="wb-warning">${esc(err.message)}</p>`;
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Ask Copilot'; }
+    }
+  }
   function download(name,text,type) {const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
   async function exportBrief() {
     try{if(dirty)await refresh();const d=await api('/api/v2/analyst/brief',{method:'POST',body:JSON.stringify(opts())});const text=[d.title,d.status,'Generated: '+d.generated_at,'Scenario: '+d.scenario.scenario_id,'Scope: '+JSON.stringify(d.scenario.scope),'',...d.claims.map(c=>`${c.text}\nSource: ${c.source}`),'','Assumptions:',...d.assumptions,'','Source registry:',...d.sources.sources.map(s=>`${s.name}: ${s.status}; SHA-256 ${s.sha256}; ${s.url}`),'','Required review:',...d.evaluation_required].join('\n');download('NVB-decision-brief-'+d.scenario.scenario_id+'.txt',text,'text/plain;charset=utf-8');}catch(err){error(err);}
@@ -190,12 +342,16 @@
   const legacyStats=loadStats,legacyCharts=loadCharts,legacyProjects=loadPriorityProjects;
   loadStats=function(){if(getActiveRole()==='analyst')return loading;return legacyStats();};
   loadCharts=function(){if(getActiveRole()==='analyst')return renderCharts();return legacyCharts();};
-  loadPriorityProjects=function(){if(getActiveRole()==='analyst')return loading;return legacyProjects();};
-  loadPrediction=function(){ /* The canonical snapshot renders observed screening. */ };
+  loadPrediction=function(){
+    if (payload?.inclusion && window.NVBDemandScreening) {
+      window.NVBDemandScreening.render(payload.inclusion, payload.stats);
+    }
+  };
   document.addEventListener('DOMContentLoaded',()=>{
     document.querySelectorAll('[data-workbench-tab]').forEach(b=>{b.addEventListener('click',()=>selectTab(b.dataset.workbenchTab));b.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const all=[...document.querySelectorAll('[data-workbench-tab]')],i=all.indexOf(b),next=e.key==='Home'?0:e.key==='End'?all.length-1:(i+(e.key==='ArrowRight'?1:-1)+all.length)%all.length;all[next].click();all[next].focus();});});
     Object.values(extraScope).forEach(id=>$(id).addEventListener('change',refreshAll));
     $('wbScenarioForm').addEventListener('submit',e=>{e.preventDefault();refresh();});
+    $('wbInclusionBriefBtn').addEventListener('click', inclusionBrief);
     $('wbScenarioForm').addEventListener('input',e=>{dirty=true;if(e.target.type==='range')e.target.nextElementSibling.textContent=Number(e.target.value).toFixed(2);$('wbScenarioStatus').textContent='Settings changed — compare scenarios to apply.';});
     $('wbProjectSearch').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>refresh(),350);});
     $('wbMoreProjects').addEventListener('click',()=>{projectOffset+=50;refresh(false);});
@@ -203,6 +359,15 @@
     $('wbCloseDialog').addEventListener('click',()=>$('wbProjectDialog').close());
     $('wbOutcomeForm').addEventListener('submit',outcome);$('wbExportBrief').addEventListener('click',exportBrief);
     document.querySelector('[data-subtab="admin-policy"]')?.addEventListener('click',approvals);$('wbRefreshApprovals')?.addEventListener('click',approvals);
-    document.addEventListener('click',e=>{const b=e.target.closest('[data-project]');if(b)detail(b.dataset.project);const x=e.target.closest('[data-export-project]');if(x){api('/api/v2/analyst/projects/'+encodeURIComponent(x.dataset.exportProject)+'/export?'+params(opts())).then(d=>download(x.dataset.exportProject+'.json',JSON.stringify(d.record,null,2),'application/json')).catch(error);}const o=e.target.closest('[data-outcome-project]');if(o){$('wbOutcomeProject').value=o.dataset.outcomeProject;$('wbProjectDialog').close();selectTab('outcomes');}});
+    document.addEventListener('click',e=>{
+      const b=e.target.closest('[data-project]');if(b)detail(b.dataset.project);
+      const x=e.target.closest('[data-export-project]');if(x){api('/api/v2/analyst/projects/'+encodeURIComponent(x.dataset.exportProject)+'/export?'+params(opts())).then(d=>download(x.dataset.exportProject+'.json',JSON.stringify(d.record,null,2),'application/json')).catch(error);}
+      const o=e.target.closest('[data-outcome-project]');if(o){$('wbOutcomeProject').value=o.dataset.outcomeProject;$('wbProjectDialog').close();selectTab('outcomes');}
+      const copilotBtn=e.target.closest('#wbCopilotBtn');if(copilotBtn)askCopilot();
+      const chip=e.target.closest('.wb-copilot-chip');if(chip)askCopilot(chip.dataset.query);
+    });
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Enter' && e.target.id==='wbCopilotQuery'){e.preventDefault();askCopilot();}
+    });
   });
 })();

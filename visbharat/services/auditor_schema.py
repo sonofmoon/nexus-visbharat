@@ -64,6 +64,18 @@ def migrate():
         'CREATE INDEX IF NOT EXISTS idx_auditor_job_status ON auditor_jobs(status,created_at)',
     ]
     for sql in statements: db.execute(sql)
+    # Evidence-pack integrity metadata is additive so existing installations keep
+    # their snapshots while new exports become independently checksum-verifiable.
+    if db.backend == 'postgres':
+        snapshot_columns = {r['column_name'] for r in db.execute("SELECT column_name FROM information_schema.columns WHERE table_name='auditor_snapshots'").fetchall()}
+    else:
+        snapshot_columns = {r['name'] for r in db.execute('PRAGMA table_info(auditor_snapshots)').fetchall()}
+    for name, kind in [('payload_sha256', 'TEXT'), ('manifest_json', 'TEXT')]:
+        if name not in snapshot_columns:
+            try:
+                db.execute(f'ALTER TABLE auditor_snapshots ADD COLUMN {name} {kind}')
+            except Exception:
+                pass
     from datetime import datetime, timezone
     last = db.execute('SELECT COALESCE(MAX(id),0) AS n FROM audit_logs').fetchone()['n']
     db.execute('''INSERT INTO auditor_chain_state(id,legacy_end_id,head_seq,head_hash,head_id,migrated_at)

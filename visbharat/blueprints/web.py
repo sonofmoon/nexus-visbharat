@@ -165,6 +165,7 @@ def dashboard():
     return render_template(
         'dashboard.html',
         states=states,
+        categories=current_app.config.get('CATEGORIES', []),
         google_maps_api_key=maps_key,
         role_tokens=role_tokens,
         pilot_csrf=session.get('pilot_csrf',''),

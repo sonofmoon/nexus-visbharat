@@ -1,21 +1,21 @@
 {
-  "recorded_at": "2026-09-22T05:20:15.781403+00:00",
+  "recorded_at": "2026-09-25T06:10:34.665416+00:00",
   "algorithm": "sha256",
   "files": [
     {
       "path": "docs/evaluation/quality.json",
-      "bytes": 14612,
-      "sha256": "25a7112f079f43bae019cfc36950d22d65bb5d54e7bce8338d0d5de8056e80a3"
+      "bytes": 50071,
+      "sha256": "807f06e6174a7fa88acad2188b91ae903cb710a063347dbb44117203934a5f36"
     },
     {
       "path": "docs/evaluation/baseline-quality.json",
-      "bytes": 12533,
-      "sha256": "996a7e9c34c45720d88aa19a6835aec31d8b201732b8583d7fd04bde9b2218b8"
+      "bytes": 42511,
+      "sha256": "0ca9418b6bb905c0acd19265f9483ca88c37858d8a56ab50e201f8a499d97f29"
     },
     {
       "path": "docs/evaluation/review-pack.json",
-      "bytes": 10773,
-      "sha256": "ba8515a42ec9861e2e9e8778b9eacc67d6750a694244c27713a7ce5cfd929b56"
+      "bytes": 45774,
+      "sha256": "59b8e7ae08103dfafcb377d9a0460df14f9ec68be2a09e097fb35b07e74b8f9c"
     },
     {
       "path": "docs/evaluation/load.json",
@@ -33,24 +33,9 @@
       "sha256": "9d488e2a161147408268d2fe6ff1f631397f8a124dc93efa980ac3867cc60fc4"
     },
     {
-      "path": "scratch/analyst-implementation/browser/results.json",
-      "bytes": 778,
-      "sha256": "b05a9f65103f7467f1c6e8cbe377d58a02343fbe53871bea582f63c8c95cf56d"
-    },
-    {
-      "path": "scratch/analyst-implementation/regression-final.log",
-      "bytes": 19182,
-      "sha256": "e16c2787f819798175ccb59c7ddeadd56f436815d4eb28c6302d1e0346614444"
-    },
-    {
-      "path": "scratch/jury-demo-v2/live-verification.json",
-      "bytes": 382,
-      "sha256": "f3365a3f8f873c088d089c5b5e7c834d2a4a143eef2b706a82e078c2855aaf82"
-    },
-    {
       "path": "visbharat/services/analyst_workbench.py",
-      "bytes": 44381,
-      "sha256": "27e9e3aef8a0c88d903f557d603db01c120763ff024639488e15100f197fbf38"
+      "bytes": 62914,
+      "sha256": "82a74132c440af876ffe7a6f572b04c190e1e39f2315f76271ff39d71e558f76"
     },
     {
       "path": "visbharat/services/analyst_compat.py",
@@ -59,28 +44,28 @@
     },
     {
       "path": "visbharat/blueprints/analyst.py",
-      "bytes": 15795,
-      "sha256": "d642f3afdfb19815725dd48180a1c177816cb656d8c5b37c5c2e66b23f21c72a"
+      "bytes": 18788,
+      "sha256": "1abfead7b8ebc9ee7c71c8ff66b6deb6f46b0c2e9a90c56835d4c8a4c4e62d1b"
     },
     {
       "path": "templates/analyst_workbench.html",
-      "bytes": 6447,
-      "sha256": "6b4fc8bd313889773c82bab2b13b68900953285a11760dde9d9d86bf23ef8cc4"
+      "bytes": 7009,
+      "sha256": "15c51d8e72a82dab7c355ccca8bcd7711e94ebee015f4b75b9e9ff3f00f99c32"
     },
     {
       "path": "static/js/analyst-workbench.js",
-      "bytes": 30826,
-      "sha256": "f55291d92dc80e0a829621910abcca9d02a76c49e0d051d501bf47d99acfdc18"
+      "bytes": 42922,
+      "sha256": "784ee237ee122c20ebe6b818a63be1f673fdc493127811be051b6f363d18848a"
     },
     {
       "path": "static/css/analyst-workbench.css",
-      "bytes": 4144,
-      "sha256": "2b3ba75089bb68a650457795b1be5008e8dd2f9e1c31adb54b17f4aba093553e"
+      "bytes": 10894,
+      "sha256": "c38b3df374b8d1b99ea0ddd8eed7345bec373d8251299ada324962b30528eaaf"
     },
     {
       "path": "tests/test_analyst_workbench.py",
-      "bytes": 14285,
-      "sha256": "a7f60e3734cea3a8970a6435a23e12b472343f30040fefeeec70a9177fea06a0"
+      "bytes": 15221,
+      "sha256": "f1ff4cefa52dcd583e2eeed2c6c67f16e1a886e39e8a6c352911d8485a7fa13b"
     },
     {
       "path": "tests/test_dashboard_deployment.py",

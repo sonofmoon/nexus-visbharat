@@ -1269,12 +1269,51 @@ def priority_projects():
 @intake_bp.route('/api/policy-brief/<district>', methods=['GET'])
 def policy_brief(district):
     import html
-    from ..services.analyst_workbench import stats as scoped_stats,scope_from
-    scope=scope_from(request.args);scope['district']=district
-    data=scoped_stats(scope)
-    summary=f"{data['total_complaints']} requests; {data['emergency_count']} emergencies in the selected scope."
-    brief=f"<h4>{html.escape(district)} decision evidence</h4><p>{html.escape(summary)}</p><p>Open Budget Scenarios for a project-specific, cited decision brief. No unsupported benefit estimate is generated.</p>"
-    return jsonify(success=True,brief=brief,summary=summary,citations=[{'source':'operational_database','scope':scope,'as_of':data['metadata']['as_of']}],ai_mode='deterministic_evidence_summary')
+    from ..services.analyst_workbench import stats as scoped_stats, scope_from
+    from ..services.policy_outputs import generate_rag_policy_brief
+    
+    scope = scope_from(request.args)
+    scope['district'] = district
+    data = scoped_stats(scope)
+    
+    # Extract top complaint categories in this district to guide RAG query
+    cats = data.get('categories') or {}
+    top_cats = sorted(cats.keys(), key=lambda k: cats[k], reverse=True)[:3]
+    top_cat_str = ', '.join(top_cats) if top_cats else 'infrastructure and municipal services'
+    
+    query = request.args.get('query') or f"{top_cat_str} infrastructure priorities"
+    
+    rag_result = generate_rag_policy_brief(query=query, district=district, limit=5)
+    
+    gov_meta = (rag_result.get('citation_chain') or {}).get('governance') or {}
+    llm_model = gov_meta.get('llm_model') or 'none'
+    is_gemini_live = (llm_model != 'none' and 'gemini' in llm_model.lower())
+    provider_mode = 'gemini_live' if is_gemini_live else 'local_fallback'
+    
+    citations = (rag_result.get('citation_chain') or {}).get('sources') or []
+    demand_summary = f"{data['total_complaints']} requests; {data['emergency_count']} emergencies in {district}."
+    
+    return jsonify({
+        'success': True,
+        'district': district,
+        'query': query,
+        'summary': rag_result.get('summary') or demand_summary,
+        'recommendations': rag_result.get('recommendations') or [],
+        'citations': citations,
+        'citation_count': len(citations),
+        'demand_signals': {
+            'total_complaints': data.get('total_complaints', 0),
+            'emergency_count': data.get('emergency_count', 0),
+            'resolution_rate': data.get('resolution_rate', 0),
+            'top_categories': top_cats,
+            'as_of': (data.get('metadata') or {}).get('as_of')
+        },
+        'ai_mode': 'gemini_rag_live' if is_gemini_live else 'local_governed_retrieval',
+        'llm_model': llm_model,
+        'provider_mode': provider_mode,
+        'corpus_path': (rag_result.get('citation_chain') or {}).get('corpus_path'),
+        'brief': rag_result.get('summary') or demand_summary
+    })
 
 
 

@@ -61,6 +61,7 @@ from ..services.governance import (
     record_consent_event, list_consent_events, privatize_count, should_apply_dp, dp_metadata,
     get_dpdp_controls, get_dpdp_evidence, get_dpdp_readiness, get_dpg_status
 )
+from ..services.public_safety import allow as allow_public_request
 from ..services.code_mix import normalize_code_mix
 from ..services.policy_outputs import compute_demand_investment_alignment_map, generate_rag_policy_brief
 from ..services.layer4_fusion import layer4_source_status, compute_layer4_fusion
@@ -808,16 +809,21 @@ def governance_dpg_status_secure():
 
 @governance_bp.route('/api/public/transparency/summary', methods=['GET'])
 def public_transparency_summary():
+    allowed, retry_after = allow_public_request(f"transparency:{request.remote_addr or 'unknown'}", 60, 60)
+    if not allowed:
+        return jsonify({'success': False, 'error': 'Public transparency rate limit reached; retry shortly.'}), 429, {'Retry-After': str(retry_after)}
     db = get_db()
     min_group = max(int(current_app.config.get('PUBLIC_TRANSPARENCY_MIN_GROUP_SIZE', 3)), 1)
 
-    total_row = db.execute('SELECT COUNT(*) AS c, MAX(created_at) AS latest_created_at FROM citizen_requests').fetchone()
+    public_clause, public_params = _public_request_scope(request.args)
+    total_row = db.execute(f'SELECT COUNT(*) AS c, MAX(c.created_at) AS latest_created_at FROM citizen_requests c WHERE {public_clause}', public_params).fetchone()
     district_rows = db.execute(
-        '''
-        SELECT district, COUNT(*) AS request_count
-        FROM citizen_requests
-        GROUP BY district
-        '''
+        f'''
+        SELECT c.district, COUNT(*) AS request_count
+        FROM citizen_requests c
+        WHERE {public_clause}
+        GROUP BY c.district
+        ''', public_params
     ).fetchall()
 
     total_requests = int((total_row['c'] or 0) if total_row else 0)
@@ -845,13 +851,86 @@ def public_transparency_summary():
                 },
                 'latest_created_at': latest_created_at,
                 'differential_privacy': dp,
+                'filters': {key: request.args.get(key, '') for key in ('pilot_id', 'state', 'district', 'category', 'urgency', 'language', 'channel') if request.args.get(key)},
+                'notice': 'Counts are publication-safe aggregates. Small groups are suppressed and configured differential privacy may perturb counts.',
             },
         }
     )
 
 
+def _public_request_scope(args):
+    conditions = ['1=1']
+    params = []
+    for field in ('state', 'district', 'category', 'urgency', 'input_language', 'source_channel'):
+        arg = 'language' if field == 'input_language' else ('channel' if field == 'source_channel' else field)
+        value = str(args.get(arg) or '').strip()
+        if value:
+            conditions.append(f'c.{field}=?')
+            params.append(value)
+    pilot_id = str(args.get('pilot_id') or '').strip()
+    if pilot_id:
+        conditions.append('EXISTS (SELECT 1 FROM pilot_requests pr WHERE pr.request_id=c.request_id AND pr.pilot_id=?)')
+        params.append(pilot_id)
+    return ' AND '.join(conditions), params
+
+
+@governance_bp.route('/api/public/transparency/priority-signals', methods=['GET'])
+def public_transparency_priority_signals():
+    """Publish only privacy-thresholded planning signals, never delivery claims."""
+    allowed, retry_after = allow_public_request(f"transparency-signals:{request.remote_addr or 'unknown'}", 60, 60)
+    if not allowed:
+        return jsonify({'success': False, 'error': 'Public transparency rate limit reached; retry shortly.'}), 429, {'Retry-After': str(retry_after)}
+    from ..services.analyst_workbench import candidates, provenance, scope_from
+
+    minimum = max(int(current_app.config.get('PUBLIC_TRANSPARENCY_MIN_GROUP_SIZE', 3)), 1)
+    try:
+        limit = min(max(int(request.args.get('limit', 12)), 1), 50)
+    except (TypeError, ValueError):
+        return jsonify({'success': False, 'error': 'limit must be an integer'}), 400
+    try:
+        scope = scope_from(request.args)
+    except ValueError as exc:
+        return jsonify({'success': False, 'error': str(exc)}), 400
+    grouped = {}
+    for item in candidates(scope):
+        key = (item.get('state') or '', item.get('district') or '', item.get('category') or '')
+        current = grouped.setdefault(key, {'state': key[0], 'district': key[1], 'category': key[2], 'request_count': 0, 'active_request_count': 0, 'screening_score': 0.0})
+        current['request_count'] += int(item.get('reports') or 0)
+        current['active_request_count'] += int(item.get('active_reports') or 0)
+        current['screening_score'] = max(current['screening_score'], float(item.get('priority_score') or 0.0))
+
+    ranked = [item for item in grouped.values() if item['request_count'] >= minimum]
+    ranked.sort(key=lambda item: (-item['screening_score'], -item['request_count'], item['district'], item['category']))
+    meta = provenance(scope)
+    items = []
+    for rank, item in enumerate(ranked[:limit], 1):
+        published_count = privatize_count(item['request_count'], epsilon=float(dp_metadata().get('epsilon') or 0.75)) if should_apply_dp() else item['request_count']
+        items.append({
+            'rank': rank,
+            'state': item['state'],
+            'district': item['district'],
+            'category': item['category'],
+            'published_request_count': max(0, int(published_count)),
+            'screening_score': round(item['screening_score'] * 100, 1),
+            'signal_status': 'screening_only_unverified_reference',
+            'delivery_status': 'not_published',
+            'notice': 'This is a privacy-thresholded planning signal, not a funded project, delivery-progress measure, or impact claim.',
+        })
+    return jsonify(success=True, items=items, meta={
+        'source': 'operational_database',
+        'as_of': meta.get('as_of'),
+        'data_mode': meta.get('data_mode'),
+        'min_group_size': minimum,
+        'differential_privacy': dp_metadata(),
+        'notice': 'Priority signals are screening outputs. Engineering review, administrative approval and field evidence are required before implementation claims.',
+    })
+
+
 @governance_bp.route('/api/public/transparency/districts', methods=['GET'])
 def public_transparency_districts():
+    allowed, retry_after = allow_public_request(f"transparency-districts:{request.remote_addr or 'unknown'}", 60, 60)
+    if not allowed:
+        return jsonify({'success': False, 'error': 'Public transparency rate limit reached; retry shortly.'}), 429, {'Retry-After': str(retry_after)}
     try:
         limit = int(request.args.get('limit', 100))
     except ValueError:
@@ -862,30 +941,28 @@ def public_transparency_districts():
     min_group = max(int(current_app.config.get('PUBLIC_TRANSPARENCY_MIN_GROUP_SIZE', 3)), 1)
 
     db = get_db()
+    public_clause, public_params = _public_request_scope(request.args)
     rows = db.execute(
-        '''
-        SELECT district, state, COUNT(*) AS request_count,
-               SUM(CASE WHEN urgency = 'Emergency' THEN 1 ELSE 0 END) AS emergency_count,
-               SUM(CASE WHEN urgency IN ('Emergency', 'Urgent') THEN 1 ELSE 0 END) AS high_priority_count,
-               COUNT(DISTINCT category) AS category_diversity
-        FROM citizen_requests
-        GROUP BY district, state
+        f'''
+        SELECT c.district, c.state, COUNT(*) AS request_count,
+               SUM(CASE WHEN c.urgency = 'Emergency' THEN 1 ELSE 0 END) AS emergency_count,
+               SUM(CASE WHEN c.urgency IN ('Emergency', 'Urgent') THEN 1 ELSE 0 END) AS high_priority_count,
+               COUNT(DISTINCT c.category) AS category_diversity
+        FROM citizen_requests c
+        WHERE {public_clause}
+        GROUP BY c.district, c.state
         HAVING COUNT(*) >= ?
-        ORDER BY request_count DESC, emergency_count DESC, district ASC
+        ORDER BY request_count DESC, emergency_count DESC, c.district ASC
         LIMIT ?
         ''',
-        (min_group, limit),
+        [*public_params, min_group, limit],
     ).fetchall()
 
     total_groups_row = db.execute(
-        '''
+        f'''
         SELECT COUNT(*) AS c
-        FROM (
-            SELECT district
-            FROM citizen_requests
-            GROUP BY district
-        ) grouped
-        '''
+        FROM (SELECT c.district FROM citizen_requests c WHERE {public_clause} GROUP BY c.district) grouped
+        ''', public_params
     ).fetchone()
 
     total_groups = int((total_groups_row['c'] or 0) if total_groups_row else 0)
@@ -923,20 +1000,25 @@ def public_transparency_districts():
 
 @governance_bp.route('/api/public/transparency/categories', methods=['GET'])
 def public_transparency_categories():
+    allowed, retry_after = allow_public_request(f"transparency-categories:{request.remote_addr or 'unknown'}", 60, 60)
+    if not allowed:
+        return jsonify({'success': False, 'error': 'Public transparency rate limit reached; retry shortly.'}), 429, {'Retry-After': str(retry_after)}
     min_group = max(int(current_app.config.get('PUBLIC_TRANSPARENCY_MIN_GROUP_SIZE', 3)), 1)
 
     db = get_db()
+    public_clause, public_params = _public_request_scope(request.args)
     rows = db.execute(
-        '''
-        SELECT category, COUNT(*) AS request_count,
-               SUM(CASE WHEN urgency = 'Emergency' THEN 1 ELSE 0 END) AS emergency_count,
-               COUNT(DISTINCT district) AS district_coverage
-        FROM citizen_requests
-        GROUP BY category
+        f'''
+        SELECT c.category, COUNT(*) AS request_count,
+               SUM(CASE WHEN c.urgency = 'Emergency' THEN 1 ELSE 0 END) AS emergency_count,
+               COUNT(DISTINCT c.district) AS district_coverage
+        FROM citizen_requests c
+        WHERE {public_clause}
+        GROUP BY c.category
         HAVING COUNT(*) >= ?
-        ORDER BY request_count DESC, category ASC
+        ORDER BY request_count DESC, c.category ASC
         ''',
-        (min_group,),
+        [*public_params, min_group],
     ).fetchall()
 
     items = []
@@ -1020,6 +1102,9 @@ def get_cluster_multi_lens(cluster_id, role=None):
 
 @governance_bp.route('/api/v1/transparency/verify-chain', methods=['GET'])
 def verify_transparency_chain():
+    allowed, retry_after = allow_public_request(f"transparency-verify:{request.remote_addr or 'unknown'}", 30, 60)
+    if not allowed:
+        return jsonify({'success': False, 'error': 'Transparency verification rate limit reached; retry shortly.'}), 429, {'Retry-After': str(retry_after)}
     result = verify_chain_integrity(limit=500)
     return jsonify({'success': True, **result})
 

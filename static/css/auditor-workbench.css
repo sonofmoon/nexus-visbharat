@@ -6,3 +6,277 @@
 @media(max-width:480px){.auditor-workbench .aw-card{padding:14px}}
 .auditor-workbench .aw-table td{min-width:100px}
 [data-theme=dark] .auditor-workbench .aw-table code{color:#b9d7ed}
+
+/* ===== GEMINI FORENSIC AUDITOR & STATUTORY ACCOUNTABILITY STYLES ===== */
+.aw-forensic-panel, .aw-finance-risk-panel, .aw-chain-inspector, .aw-dpdpa-panel, .aw-security-posture, .aw-outcomes-scorecard {
+  border-left: 4px solid #14635b;
+}
+.aw-forensic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--aw-line);
+  padding-bottom: 12px;
+}
+.aw-forensic-header h3 {
+  margin: 0 0 4px;
+  font-size: 19px;
+  font-weight: 700;
+}
+.aw-forensic-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.aw-opinion-box {
+  background: var(--aw-soft);
+  border: 1px solid var(--aw-line);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 18px;
+}
+.aw-opinion-box h4 {
+  margin: 0 0 8px;
+  color: #14635b;
+  font-size: 15px;
+  font-weight: 700;
+}
+.aw-opinion-text {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--aw-ink);
+  margin-bottom: 12px;
+}
+.aw-corrective-actions h5 {
+  margin: 10px 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--aw-muted);
+}
+.aw-corrective-actions ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.aw-corrective-actions li {
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.aw-redflags-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  margin: 12px 0 18px;
+}
+.aw-redflag-card {
+  border: 1px solid var(--aw-line);
+  border-radius: 9px;
+  padding: 14px;
+  background: var(--aw-paper);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.aw-redflag-card.aw-sev-critical {
+  border-left: 4px solid #dc2626;
+}
+.aw-redflag-card.aw-sev-elevated, .aw-redflag-card.aw-sev-high {
+  border-left: 4px solid #ea580c;
+}
+.aw-redflag-card.aw-sev-moderate, .aw-redflag-card.aw-sev-medium {
+  border-left: 4px solid #ca8a04;
+}
+.aw-redflag-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+.aw-redflag-tag {
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.aw-redflag-tag.aw-sev-critical { background: #fee2e2; color: #991b1b; }
+.aw-redflag-tag.aw-sev-elevated, .aw-redflag-tag.aw-sev-high { background: #ffedd5; color: #9a3412; }
+.aw-redflag-tag.aw-sev-moderate, .aw-redflag-tag.aw-sev-medium { background: #fef9c3; color: #854d0e; }
+.aw-redflag-norm {
+  color: var(--aw-muted);
+  font-weight: 600;
+  font-size: 11px;
+}
+.aw-redflag-card h5 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+.aw-redflag-finding {
+  font-size: 12.5px;
+  line-height: 1.45;
+  margin: 0;
+}
+.aw-redflag-action {
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px dashed var(--aw-line);
+  font-size: 12px;
+  color: #14635b;
+  font-weight: 600;
+}
+
+/* ===== CRYPTOGRAPHIC CHAIN VISUALIZER ===== */
+.aw-chain-visual {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 16px 8px;
+  margin: 10px 0;
+}
+.aw-chain-node {
+  border: 1px solid var(--aw-line);
+  background: var(--aw-soft);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 170px;
+}
+.aw-chain-node.aw-chain-head {
+  border-color: #14635b;
+  background: rgba(20, 99, 91, 0.06);
+}
+.aw-chain-node-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--aw-muted);
+}
+.aw-chain-node code {
+  font-size: 11px;
+}
+.aw-chain-arrow {
+  color: var(--aw-muted);
+  font-weight: bold;
+}
+.aw-text-good { color: #16a34a; font-weight: 600; }
+.aw-text-warn { color: #ca8a04; font-weight: 600; }
+
+/* ===== AUDITOR COPILOT STYLES ===== */
+.aw-copilot-container {
+  border-top: 3px solid #14635b;
+  background: var(--aw-soft);
+  margin-top: 24px;
+}
+.aw-copilot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.aw-copilot-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.aw-copilot-title h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+.aw-copilot-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 14px;
+}
+.aw-copilot-chip {
+  background: var(--aw-paper);
+  border: 1px solid var(--aw-line);
+  border-radius: 16px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--aw-ink);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+.aw-copilot-chip:hover {
+  background: #e4f2ed;
+  border-color: #14635b;
+  color: #14635b;
+}
+.aw-copilot-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.aw-copilot-input-row input {
+  flex: 1;
+}
+.aw-copilot-response {
+  margin-top: 14px;
+}
+.aw-copilot-result {
+  background: var(--aw-paper);
+  border: 1px solid var(--aw-line);
+  border-left: 4px solid #14635b;
+  border-radius: 8px;
+  padding: 16px;
+}
+.aw-copilot-result-header {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.aw-copilot-text {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--aw-ink);
+}
+.aw-copilot-result h5 {
+  margin: 12px 0 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--aw-muted);
+}
+.aw-copilot-citations {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--aw-muted);
+}
+.aw-copilot-citations li {
+  margin-bottom: 3px;
+}
+
+[data-theme=dark] .aw-opinion-box,
+[data-theme=dark] .aw-copilot-container {
+  background: #14232e;
+}
+[data-theme=dark] .aw-opinion-box h4 {
+  color: #64d6c2;
+}
+[data-theme=dark] .aw-chain-node {
+  background: #1c3040;
+}
+[data-theme=dark] .aw-chain-node.aw-chain-head {
+  background: rgba(100, 214, 194, 0.1);
+  border-color: #64d6c2;
+}
+[data-theme=dark] .aw-copilot-chip {
+  background: #1c3040;
+  color: #dbe8f1;
+}
+[data-theme=dark] .aw-copilot-result {
+  background: #182a38;
+}
+.aw-legal-source{margin:10px 0 0;color:var(--aw-muted);font-size:11px;line-height:1.5}.aw-legal-source a{color:#14635b;font-weight:650;text-decoration:underline}
