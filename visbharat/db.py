@@ -302,6 +302,17 @@ class DbConnectionAdapter:
         cur = self._conn.execute(normalized, params)
         return DbCursorAdapter(cur, self.backend)
 
+    def executemany(self, query, params_seq):
+        if not params_seq:
+            return None
+        normalized = self._normalize_query(query.replace('%', '%%') if self.backend == 'postgres' else query)
+        if self.backend == 'postgres':
+            cur = self._conn.cursor()
+            cur.executemany(normalized, params_seq)
+            return DbCursorAdapter(cur, self.backend)
+        cur = self._conn.executemany(normalized, params_seq)
+        return DbCursorAdapter(cur, self.backend)
+
     def executescript(self, script):
         if self.backend == 'postgres':
             cur = self._conn.cursor()
@@ -368,7 +379,7 @@ def _open_connection():
             return _connect_sqlite(_sqlite_path_from_url(database_url))
         raise RuntimeError('Unsupported DATABASE_URL scheme; refusing SQLite fallback')
 
-    database_path = current_app.config['DATABASE_PATH']
+    database_path = current_app.config.get('DATABASE_PATH') or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'visbharat.db')
     return _connect_sqlite(database_path)
 
 
@@ -834,6 +845,37 @@ def seed_citizen_requests_from_csv():
     if not os.path.exists(csv_path):
         return
 
+    try:
+        count_row = db.execute("SELECT COUNT(*) as n FROM citizen_requests").fetchone()
+        if count_row and (count_row['n'] if isinstance(count_row, dict) else count_row[0]) >= 45000:
+            return
+    except Exception:
+        pass
+
+    insert_sql = (
+        '''
+        INSERT INTO citizen_requests (
+            request_id, source_channel, input_language, district, state,
+            lat, lng, original_text, translated_text, category,
+            urgency, sentiment, status, ai_metadata_json, created_at,
+            ward, service_type, routed_department, sla_due_at, sla_breached_at, sla_escalation_level, submitted_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT (request_id) DO NOTHING
+        '''
+        if db.backend == 'postgres'
+        else
+        '''
+        INSERT OR IGNORE INTO citizen_requests (
+            request_id, source_channel, input_language, district, state,
+            lat, lng, original_text, translated_text, category,
+            urgency, sentiment, status, ai_metadata_json, created_at,
+            ward, service_type, routed_department, sla_due_at, sla_breached_at, sla_escalation_level, submitted_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        '''
+    )
+
+    batch = []
+    BATCH_SIZE = 1000
     with open(csv_path, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for r in reader:
@@ -842,52 +884,24 @@ def seed_citizen_requests_from_csv():
                 continue
             meta_json = r.get('ai_metadata_json') or json.dumps({'seeded_from_csv': True})
             now = r.get('date') or datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
-            if db.backend == 'postgres':
-                db.execute(
-                    '''
-                    INSERT INTO citizen_requests (
-                        request_id, source_channel, input_language, district, state,
-                        lat, lng, original_text, translated_text, category,
-                        urgency, sentiment, status, ai_metadata_json, created_at,
-                        ward, service_type, routed_department, sla_due_at, sla_breached_at, sla_escalation_level, submitted_by
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ON CONFLICT (request_id) DO NOTHING
-                    ''',
-                    (
-                        req_id, r.get('source', 'Web Form'), r.get('language', 'en'),
-                        r.get('district', ''), r.get('state', ''),
-                        float(r.get('lat', 0) or 0), float(r.get('lng', 0) or 0),
-                        r.get('original_text', ''), r.get('translated_text', ''),
-                        r.get('category', ''), r.get('urgency', 'Routine'),
-                        r.get('sentiment', 'Neutral'), r.get('status', 'New'),
-                        meta_json, r.get('created_at') or now,
-                        r.get('ward') or None, r.get('service_type') or None, r.get('routed_department') or None,
-                        r.get('sla_due_at') or None, r.get('sla_breached_at') or None, int(r.get('sla_escalation_level') or 0), r.get('submitted_by') or None
-                    )
-                )
-            else:
-                db.execute(
-                    '''
-                    INSERT OR IGNORE INTO citizen_requests (
-                        request_id, source_channel, input_language, district, state,
-                        lat, lng, original_text, translated_text, category,
-                        urgency, sentiment, status, ai_metadata_json, created_at,
-                        ward, service_type, routed_department, sla_due_at, sla_breached_at, sla_escalation_level, submitted_by
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ''',
-                    (
-                        req_id, r.get('source', 'Web Form'), r.get('language', 'en'),
-                        r.get('district', ''), r.get('state', ''),
-                        float(r.get('lat', 0) or 0), float(r.get('lng', 0) or 0),
-                        r.get('original_text', ''), r.get('translated_text', ''),
-                        r.get('category', ''), r.get('urgency', 'Routine'),
-                        r.get('sentiment', 'Neutral'), r.get('status', 'New'),
-                        meta_json, r.get('created_at') or now,
-                        r.get('ward') or None, r.get('service_type') or None, r.get('routed_department') or None,
-                        r.get('sla_due_at') or None, r.get('sla_breached_at') or None, int(r.get('sla_escalation_level') or 0), r.get('submitted_by') or None
-                    )
-                )
-    db.commit()
+            batch.append((
+                req_id, r.get('source', 'Web Form'), r.get('language', 'en'),
+                r.get('district', ''), r.get('state', ''),
+                float(r.get('lat', 0) or 0), float(r.get('lng', 0) or 0),
+                r.get('original_text', ''), r.get('translated_text', ''),
+                r.get('category', ''), r.get('urgency', 'Routine'),
+                r.get('sentiment', 'Neutral'), r.get('status', 'New'),
+                meta_json, r.get('created_at') or now,
+                r.get('ward') or None, r.get('service_type') or None, r.get('routed_department') or None,
+                r.get('sla_due_at') or None, r.get('sla_breached_at') or None, int(r.get('sla_escalation_level') or 0), r.get('submitted_by') or None
+            ))
+            if len(batch) >= BATCH_SIZE:
+                db.executemany(insert_sql, batch)
+                db.commit()
+                batch = []
+        if batch:
+            db.executemany(insert_sql, batch)
+            db.commit()
 
 
 def seed_default_users():
@@ -2034,6 +2048,9 @@ def migrate_application(app):
 def ensure_canonical_district_alignment():
     db = get_db()
     try:
+        check = db.execute("SELECT 1 FROM citizen_requests WHERE state = 'Unknown' OR LOWER(state) = 'unknown' OR state IS NULL OR TRIM(state) = '' LIMIT 1").fetchone()
+        if not check:
+            return
         from .config import PILOT_STATE_TO_DISTRICTS
         for st, dists in PILOT_STATE_TO_DISTRICTS.items():
             if dists:
