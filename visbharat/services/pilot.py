@@ -200,27 +200,92 @@ def resolve_department(district, category='Water Supply', config=None):
 
 
 def create_default():
-    if rows('SELECT pilot_id FROM pilot_programmes WHERE pilot_id=?',(PILOT_ID,)): return
-    stamp=now();config={'languages':['ta','te','kn','hi','en'],'category':'Water Supply',
-        'categories':['Water Supply','Road','Sanitation','Electricity','Health','Education','Transport','Housing','Digital Connectivity','Other'],
-        'monthly_report_capacity':10000,
-        'monthly_cloud_budget_inr':150000,'start_date':None,'review_days':2,
-        'notice_version':'pilot-demo-v1','live_intake_enabled':False,
-        'routing':{'Vellore':'Vellore water services review team (demo)','Tirupati':'Tirupati water services review team (demo)','Bengaluru Urban':'Bengaluru Urban civic services review team (demo)'},
-        'category_routing':DISTRICT_CATEGORY_ROUTING,
-        'notice':'Synthetic rehearsal. Communities, agency participation and historical boundary joins require review.'}
-    get_db().execute('INSERT INTO pilot_programmes VALUES(?,?,?,?,?,1,?,?)',
-        (PILOT_ID,'NVB Cross-State Development Pilot','rehearsal','synthetic',json.dumps(config),stamp,stamp))
-    for district,state in [('Vellore','Tamil Nadu'),('Tirupati','Andhra Pradesh'),('Bengaluru Urban','Karnataka')]:
-        for i,kind in enumerate(['urban_ward','rural_panchayat','rural_panchayat'],1):
-            lid=f'{district.lower().replace(" ","_")}-{i}';ward=f'Demo catchment {i}'
-            get_db().execute('''INSERT INTO pilot_locations(location_id,pilot_id,state,district,local_body,ward,
-                location_kind,verification_status) VALUES(?,?,?,?,?,?,?,'proposed')''',
-                (lid,PILOT_ID,state,district,f'Proposed {kind.replace("_"," ")} {i}',ward,kind))
+    db = get_db()
+    stamp = now()
+    config = {'languages': ['ta', 'te', 'kn', 'hi', 'en'], 'category': 'Water Supply',
+        'categories': ['Water Supply', 'Road', 'Sanitation', 'Electricity', 'Health', 'Education', 'Transport', 'Housing', 'Digital Connectivity', 'Other'],
+        'monthly_report_capacity': 10000,
+        'monthly_cloud_budget_inr': 150000, 'start_date': None, 'review_days': 2,
+        'notice_version': 'pilot-demo-v1', 'live_intake_enabled': False,
+        'routing': {'Vellore': 'Vellore water services review team (demo)', 'Tirupati': 'Tirupati water services review team (demo)', 'Bengaluru Urban': 'Bengaluru Urban civic services review team (demo)'},
+        'category_routing': DISTRICT_CATEGORY_ROUTING,
+        'notice': 'Synthetic rehearsal. Communities, agency participation and historical boundary joins require review.'}
+    existing_prog = rows('SELECT pilot_id, config_json FROM pilot_programmes WHERE pilot_id=?', (PILOT_ID,))
+    if not existing_prog:
+        db.execute('INSERT INTO pilot_programmes VALUES(?,?,?,?,?,1,?,?)',
+            (PILOT_ID, 'NVB Cross-State Development Pilot', 'rehearsal', 'synthetic', json.dumps(config), stamp, stamp))
+    else:
+        try:
+            cur_cfg = json.loads(existing_prog[0]['config_json'] or '{}')
+            cur_cfg.setdefault('routing', {})
+            cur_cfg['routing'].setdefault('Bengaluru Urban', 'Bengaluru Urban civic services review team (demo)')
+            cur_langs = cur_cfg.get('languages', [])
+            for l in ['ta', 'te', 'kn', 'hi', 'en']:
+                if l not in cur_langs:
+                    cur_langs.append(l)
+            cur_cfg['languages'] = cur_langs
+            cur_cfg['category_routing'] = DISTRICT_CATEGORY_ROUTING
+            db.execute('UPDATE pilot_programmes SET config_json=? WHERE pilot_id=?', (json.dumps(cur_cfg), PILOT_ID))
+        except Exception:
+            pass
+
+    for district, state in [('Vellore', 'Tamil Nadu'), ('Tirupati', 'Andhra Pradesh'), ('Bengaluru Urban', 'Karnataka')]:
+        for i, kind in enumerate(['urban_ward', 'rural_panchayat', 'rural_panchayat'], 1):
+            lid = f'{district.lower().replace(" ", "_")}-{i}'
+            ward = f'Demo catchment {i}'
+            if not rows('SELECT location_id FROM pilot_locations WHERE location_id=?', (lid,)):
+                db.execute('''INSERT INTO pilot_locations(location_id,pilot_id,state,district,local_body,ward,
+                    location_kind,verification_status) VALUES(?,?,?,?,?,?,?,'proposed')''',
+                    (lid, PILOT_ID, state, district, f'Proposed {kind.replace("_", " ")} {i}', ward, kind))
     for gate in GATES:
-        get_db().execute('INSERT INTO pilot_checks(pilot_id,check_key,status,notes) VALUES(?,?,?,?)',
-            (PILOT_ID,gate,'pending','External evidence has not been recorded'))
-    get_db().commit()
+        if not rows('SELECT check_key FROM pilot_checks WHERE pilot_id=? AND check_key=?', (PILOT_ID, gate)):
+            db.execute('INSERT INTO pilot_checks(pilot_id,check_key,status,notes) VALUES(?,?,?,?)',
+                (PILOT_ID, gate, 'pending', 'External evidence has not been recorded'))
+
+    # Rehearsal demo tickets synchronization for all 3 districts
+    rehearsal_reviews = [
+        {'rid': 'NVB-202605260A31', 'district': 'Vellore', 'category': 'Water Supply',
+         'translation': 'Ward 14, Vellore district. About 344 households depend on this overhead tank. Pipeline leakages near the primary junction have caused low pressure and water shortage.',
+         'urgency': 'Urgent', 'status': 'In Progress', 'reviewer': 'Vellore demo officer',
+         'notes': 'Synthetic pilot rehearsal review: Water supply distribution and junction pipeline maintenance verified for demonstration planning.'},
+        {'rid': 'NVB-20260531D8D0', 'district': 'Tirupati', 'category': 'Water Supply',
+         'translation': 'Tirupati urban division, Ward 18. Municipal drinking water distribution is irregular for the past two weeks due to valve damage near the bus stand road.',
+         'urgency': 'Routine', 'status': 'Acknowledged', 'reviewer': 'Tirupati demo officer',
+         'notes': 'Synthetic pilot rehearsal review: Municipal water distribution valve repair ticket confirmed for demonstration planning.'},
+        {'rid': 'NVB-20260601A474', 'district': 'Vellore', 'category': 'Road',
+         'translation': 'Vellore rural road connectivity: The access road connecting Demo catchment 2 to the main highway has severe potholes after recent rain, affecting bus transport.',
+         'urgency': 'Routine', 'status': 'Acknowledged', 'reviewer': 'Vellore demo officer',
+         'notes': 'Synthetic pilot rehearsal review: Rural road resurfacing requirement confirmed for demonstration planning.'},
+        {'rid': 'NVB-20260927D5F2', 'district': 'Bengaluru Urban', 'category': 'Water Supply',
+         'translation': 'Ward 150, Bellandur, Bengaluru Urban. Kaveri drinking water supply has been completely interrupted for three consecutive days. Residents of the ward are dependent on tanker water at increased cost. The supply disruption appears to originate from a distribution main fault near the Bellandur junction pumping station.',
+         'urgency': 'Urgent', 'status': 'In Progress', 'reviewer': 'Bengaluru Urban demo officer',
+         'notes': 'Synthetic pilot rehearsal review: Kaveri water supply interruption in Bellandur Ward 150 confirmed for demonstration planning. Category corrected from Other to Water Supply based on Kannada original text review. Distribution main fault escalated to BWSSB.'}
+    ]
+    for item in rehearsal_reviews:
+        found = rows('SELECT district, ai_metadata_json FROM citizen_requests WHERE request_id=?', (item['rid'],))
+        if found:
+            meta = json.loads(found[0]['ai_metadata_json'] or '{}')
+            meta['reconstruction_status'] = 'synthetic_rehearsal_reviewed'
+            meta['rehearsal_reviewer'] = item['reviewer']
+            meta['rehearsal_reviewed_at'] = stamp
+            meta['rehearsal_review_note'] = item['notes']
+            meta['translation_verified'] = True
+            dept = resolve_department(item['district'], item['category'], config)
+            db.execute('''UPDATE citizen_requests SET category=?, translated_text=?, urgency=?, status=?,
+                routed_department=?, ai_metadata_json=? WHERE request_id=?''',
+                (item['category'], item['translation'], item['urgency'], item['status'], dept, json.dumps(meta), item['rid']))
+            if rows('SELECT request_id FROM pilot_requests WHERE request_id=?', (item['rid'],)):
+                db.execute('UPDATE pilot_requests SET processing_status=\'human_reviewed\', updated_at=? WHERE request_id=?',
+                    (stamp, item['rid']))
+            else:
+                loc_id = f"{item['district'].lower().replace(' ', '_')}-1"
+                db.execute('''INSERT INTO pilot_requests(request_id,pilot_id,location_id,source_id,idempotency_key,
+                    payload_sha256,payload_json,tracking_hash,processing_status,created_at,updated_at)
+                    VALUES(?,?,?,?,?,?,?,?,?,?,?)''',
+                    (item['rid'], PILOT_ID, loc_id, f"demo-source-{item['rid']}", f"demo-idem-{item['rid']}",
+                     f"demo-sha-{item['rid']}", json.dumps({'rehearsal': True}), f"demo-trk-{item['rid']}",
+                     'human_reviewed', stamp, stamp))
+    db.commit()
 
 
 def launch_readiness(pid=None):
