@@ -46,6 +46,8 @@ instance/public-data/
 *.tfvars
 !*.tfvars.example
 *.backup*
+*.bak
+*.bak.*
 *.tmp
 *.db
 *.sqlite
