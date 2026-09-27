@@ -1,6 +1,6 @@
 # Independent multilingual review
 
-The 468 cases in `review-pack-v3.json` were curated across 13 national languages (36 cases each with Tamil-first priority) to evaluate intent classification, multilingual translation fidelity, and life-safety triage across 10 municipal categories and 3 urgency tiers. The dataset includes 143 high-stakes emergency cases with strict 1:1:1 linguistic parity (11 per language across 13 languages), achieving 100% emergency recall (143/143) under Google Gemini 3.6 Flash & high-precision multilingual inference. While developer-curated to stress-test regional dialects and urgent boundary conditions, these provisional labels await independent third-party municipal adjudication. `benchmark-v3-quality.json` records multilingual evaluation responses; `baseline-quality.json` records local heuristic fallback.
+The 468 developer-curated text cases in [review-pack-v3.json](review-pack-v3.json) cover 13 languages (36 cases each, with Tamil-first priority), 10 civic categories and three urgency tiers. The dataset includes 143 emergency cases, 11 per language; its labels remain provisional pending independent review. Dataset coverage is distinct from evaluated coverage: [benchmark-v3-quality.json](benchmark-v3-quality.json) currently records a 26-case live-mode run, with two Water Supply cases per language (one Urgent and one Emergency). It reports 100% category accuracy, 1.0000 category Macro-F1, 65.38% urgency accuracy and emergency recall of 13/13. Per-case provider, served-model and fallback evidence is absent from the aggregate report, so successful Google execution for every case remains unverified. These results do not establish full-dataset performance, Speech-to-Text accuracy or translation fidelity. [baseline-quality.json](baseline-quality.json) records the earlier local classifier on 108 v2 cases across English, Tamil and Telugu, with 0.3764 category Macro-F1; it is not directly comparable with the current v3 subset.
 
 ## Review procedure
 
@@ -42,6 +42,22 @@ The current reports explicitly leave these fields unmeasured. Synthetic text/aud
 
 ## Reproduction
 
-`python scripts/evaluate_multilingual_benchmark.py` invokes the configured live classifier and translation provider without submitting citizen requests. Save the existing report before rerunning. `--provider baseline` evaluates fallback behavior and writes the baseline report; it does not overwrite the live report. The reports need to retain provider/model, sample IDs, input hash, time, fallbacks and limitations. Timing includes translation for native-language samples and is not a classifier-only comparison.
+Run these commands from the repository root. The evaluator defaults to local simulation against the full v3 text dataset; it does not call Google unless `--live` is supplied. Use a separate `--output` path because the default output overwrites `docs/evaluation/benchmark-v3-quality.json` in either mode.
+
+```sh
+python scripts/evaluate_multilingual_benchmark.py --output scratch/evaluation/benchmark-v3-simulation.json
+```
+
+To repeat the current 26-case sampling configuration using the Google AI client:
+
+```sh
+python scripts/evaluate_multilingual_benchmark.py --live --sample-per-lang 2 --output scratch/evaluation/benchmark-v3-live-sample.json
+```
+
+Live mode requires Google credentials and may incur provider charges. The evaluator reads `GOOGLE_AI_API_KEY` or `GEMINI_API_KEY`, then attempts its configured Secret Manager lookup if neither is set. The client can fall back to local classification. Repeating the command does not guarantee identical scores or successful Google execution for every case.
+
+There is no `--provider` option. The simulation command evaluates v3 and does not reproduce or replace the historical 108-case v2 `baseline-quality.json`. Both commands classify text without submitting citizen requests; they do not independently evaluate speech recognition or translation fidelity. Recorded live-mode elapsed time includes the evaluator's delay (default 0.25 seconds per case), any retries and client processing, so it is not isolated model latency.
+
+The current report saves aggregate and per-language metrics but omits per-case predictions and provider/fallback provenance. Its `live_verified` field reflects the `--live` flag, not verified execution. A provider-verified evaluation needs retained case IDs, actual served models, fallback status and execution evidence in addition to the input hash and aggregate scores.
 
 `python scripts/benchmark_analyst.py --rows 100000 --requests 20` operates on an isolated SQLite copy. Run it without concurrent browser/test workloads. Small-sample tail percentiles are descriptive; use a longer deployment soak for capacity planning.

@@ -35,6 +35,18 @@ flowchart LR
 
 The system keeps model-assisted interpretation separate from policy decisions. Immediate hazards use a deterministic FastPath, while capital and programme decisions remain subject to human review.
 
+## Designed as a Digital Public Good
+
+Nexus VisBharat is designed to support reusable, accountable civic infrastructure through open source software, documented interfaces and configurable safeguards.
+
+- **Open licensing:** Released under the [Apache License 2.0](LICENSE), permitting use, inspection, modification and redistribution subject to its terms. External datasets and provider services retain their respective terms.
+- **Multilingual participation:** The broader prototype includes support for 13 languages. The bounded pilot enables Tamil, Telugu, Kannada, Hindi and English; voice execution and language quality require service-specific verification.
+- **Reusable configuration:** Containerised deployment, configurable district and department routing, and multiple intake connectors support adaptation across communities. Connector implementation and verified external delivery are reported separately.
+- **Documented interfaces:** REST API documentation and JSON schemas describe analyst decisions, federation records and auditor evidence exports.
+- **Privacy safeguards:** Consent records, pattern-based identifier masking in selected intake paths, role-scoped access and redacted evidence exports support responsible data handling. Public aggregates can optionally use differential privacy, with a default epsilon of 0.75 when enabled. These controls do not constitute legal compliance certification.
+
+NVB is designed with Digital Public Good principles in mind. It does not claim formal recognition or endorsement by the Digital Public Goods Alliance.
+
 ## See the product in action
 
 The screenshots below are part of the repository and show the main product journey. They use the prepared showcase environment; they do not represent authenticated citizen records or proof of government adoption.
@@ -67,6 +79,16 @@ The policy dashboard helps teams compare demand, service categories, geography a
 
 The pilot workspace shows how a programme can rehearse local routing and state or district boundaries before a wider rollout.
 
+The bounded pilot rehearsal covers **Vellore, Tirupati and Bengaluru Urban**, with these [prepared fictional examples](visbharat/services/pilot_examples.py):
+
+| District | State | Prepared example |
+|---|---|---|
+| Vellore | Tamil Nadu | Tamil — Water Supply: drinking water available for only one hour daily and a leaking pipe near a school. |
+| Tirupati | Andhra Pradesh | Telugu — Sanitation: a blocked street drain causes rainwater to collect near a school. |
+| Bengaluru Urban | Karnataka | Kannada — Road: large potholes near a bus stop affect children travelling to school. |
+
+These are synthetic rehearsal scenarios, not claims of participating government authorities or live citizen requests. The five pilot languages are Tamil, Telugu, Kannada, Hindi and English.
+
 ![NVB pilot workspace](docs/screenshots/05_ministry_pilot_dashboard.png)
 
 *Pilot scenarios remain labelled as rehearsal data until an authority supplies approved operational data.*
@@ -84,8 +106,8 @@ The auditor workspace links cases, evidence and recorded actions so that an auth
 | Capability | What NVB provides |
 |---|---|
 | Citizen intake | Text, browser voice and assisted channel workflows with consent and source context. |
-| Language intelligence | Speech transcription, translation and structured extraction for 13 national languages (Tamil first, Telugu, Hindi, Bengali, Marathi, Kannada, Malayalam, Gujarati, Punjabi, Odia, Assamese, Urdu, and English). |
-| Emergency FastPath | Deterministic hazard screening and escalation when provider calls are unavailable or a high-severity signal needs immediate handling. |
+| Language intelligence | The broader prototype includes configuration for 13 supported languages; the Pilot enables five (Tamil first, Telugu, Kannada, Hindi, English). Availability and evaluated quality vary by language, feature and provider. |
+| Emergency FastPath | Deterministic hazard screening and escalation routing; external delivery and responder acknowledgement require configured connectors and receipt evidence. |
 | Analyst workspace | Demand, inclusion, gap, project and budget scenario views for human-led planning. |
 | Delivery follow-up | Tasks, decisions, evidence and completed-window outcome reporting in one timeline. |
 | Audit and governance | Role-scoped access, minimized provider telemetry, PII scrubbing, idempotent intake and hash-linked audit events. |
@@ -99,7 +121,7 @@ NVB uses Google Cloud services where they provide useful operational capability:
 - **Cloud Speech-to-Text** supports voice intake.
 - **Cloud Translation** supports multilingual workflows.
 - **Cloud SQL PostgreSQL** is the durable deployment path for operational records.
-- **Pub/Sub and an outbox pattern** support controlled agency delivery and replay-safe processing.
+- **Pub/Sub and an outbox pattern** support queued delivery to configured destinations; agency receipt must be verified separately.
 - **BigQuery and reference-data adapters** support analytics and contextual indicators where configured.
 
 The application includes a deterministic local path for emergency screening and offline development. A configured provider is not treated as proof of a successful live inference; provider evidence is recorded separately when available.
@@ -108,8 +130,8 @@ The application includes a deterministic local path for emergency screening and 
 
 NVB is designed to make the important boundaries visible:
 
-- Personal identifiers are scrubbed at ingress before storage or model processing where the configured scrubber applies.
-- Model output is kept separate from policy scoring and human authorisation.
+- Selected intake paths apply pattern-based masking of recognised identifiers. Private records may retain original content; complete anonymisation is not guaranteed.
+- AI-assisted classifications feed explicit planning rules; scoring assumptions are inspectable and funding decisions require human approval.
 - Role-scoped access limits analyst, auditor and administrator operations.
 - Audit events are hash-linked and can be explicitly verified.
 - Synthetic, descriptive and externally verified evidence are labelled separately.
@@ -239,11 +261,14 @@ Implementation details:
 
 ## Evidence and current limits
 
-- [Multilingual evaluation](docs/evaluation/benchmark-v3-quality.json) contains 468 developer-curated challenge cases across 13 national languages (Tamil first, Telugu, Hindi, Bengali, Marathi, Kannada, Malayalam, Gujarati, Punjabi, Odia, Assamese, Urdu, and English). It reports category macro-F1 of 0.9910, urgency accuracy of 95.09% and emergency recall of 143/143 (100% emergency parity, 11 per language across 10 categories). Independent external adjudication remains pending.
-- [Baseline comparison](docs/evaluation/baseline-quality.json) records the local keyword fallback on the same challenge set.
+- **Benchmark dataset:** [The v3 challenge set](docs/evaluation/review-pack-v3.json) contains 468 developer-curated cases across 13 languages and 10 civic categories, including 143 emergency cases—11 per language. Labels remain provisional pending independent review.
+- **Current evaluation:** [The latest report](docs/evaluation/benchmark-v3-quality.json) records a 26-case run using the evaluator’s `--live` option, with two cases per language. It reports 100% category accuracy, 1.0000 category Macro-F1, 65.38% urgency accuracy and emergency recall of 13/13. The current sampling selects Water Supply requests only, so these results do not establish performance across all categories or urgency levels.
+- **Provider evidence:** Live mode invokes the Google AI client, which can fall back to the local classifier. The aggregate report does not preserve per-case provider, served-model and fallback evidence; successful Google execution for every case therefore remains unverified. Reported median elapsed time is approximately 1.68 seconds and includes evaluator delays and any retries.
+- **Earlier baseline:** [The baseline report](docs/evaluation/baseline-quality.json) evaluates 108 English, Tamil and Telugu cases from the v2 dataset, reporting 0.3764 category Macro-F1. It is not directly comparable with the current v3 subset.
+- **Working prototype evidence:** [Local validation](docs/evaluation/pilot-upgrade-rehearsal/VALIDATION.md) records 63 passing workflow/API tests, four passing browser tests and three completed synthetic district rehearsals with redacted dossiers. These results do not establish government adoption, field impact or production-scale reliability.
 - [DPDP architecture](docs/DPDP_COMPLIANCE_ARCHITECTURE.md) documents consent, data-minimisation, configurable public-transparency differential privacy, and ingress-scrubbing design choices. Public transparency defaults to epsilon `0.75` when differential privacy is enabled.
 - [Security threat model](docs/SECURITY_THREAT_MODEL.md) describes trust boundaries, token handling, Secret Manager rotation and RBAC controls under the STRIDE framework.
-- [External audit anchoring](docs/EXTERNAL_ANCHORING_SPEC.md) specifies Merkle root batching, RFC 3161 trusted timestamps and Sigstore Rekor public transparency log integration.
+- [Proposed external audit anchoring specification](docs/EXTERNAL_ANCHORING_SPEC.md) describes Merkle root batching, RFC 3161 timestamps and Sigstore Rekor transparency concepts; implementation remains a proposed specification.
 - [Model evidence dossier](docs/evaluation/MODEL_EVIDENCE_DOSSIER.md) records proxy diagnostics, calibration telemetry and forecasting limitations.
 - [Reproducible ML pipeline](scripts/train_stress_model.py) implements reproducible training and verification for the Layer 4 spatial demand stress booster (`model.bst`).
 - [Load measurements](docs/evaluation/load.json) cover synthetic rows and local Flask test-client conditions; they exclude network and provider latency.
@@ -291,7 +316,7 @@ rate limiting, abuse detection and monitoring.
 
 ## Run locally
 
-This section is for a safe, local demonstration. It uses synthetic data, SQLite and manual/offline fallbacks. It does not create a municipal pilot and it does not require Google Cloud credentials.
+This section is for a safe, local demonstration. It uses synthetic data, SQLite (the default only when no external database URL is configured) and manual/offline fallbacks. Explicitly selecting an isolated local database ensures the demonstration will not inadvertently connect to a remote database. It does not create a municipal pilot and it does not require Google Cloud credentials.
 
 If you only want to explore NVB, use the [hosted showcase ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/). Use the local instructions when you want to run the application on your own computer.
 
@@ -317,6 +342,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 $env:NVB_DISABLE_EXTERNAL_SERVICES="1"
 $env:DEMO_MODE="true"
+$env:DATABASE_URL = "sqlite:///" + (Join-Path $PWD.Path "scratch/readme-demo.db").Replace('\','/')
 python -m flask --app app run --host 127.0.0.1 --port 5000 --no-reload
 ```
 
@@ -331,6 +357,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 set NVB_DISABLE_EXTERNAL_SERVICES=1
 set DEMO_MODE=true
+set "DATABASE_URL=sqlite:///%CD%/scratch/readme-demo.db"
 python -m flask --app app run --host 127.0.0.1 --port 5000 --no-reload
 ```
 
@@ -343,6 +370,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 export NVB_DISABLE_EXTERNAL_SERVICES=1
 export DEMO_MODE=true
+export DATABASE_URL="sqlite:///$PWD/scratch/readme-demo.db"
 python -m flask --app app run --host 127.0.0.1 --port 5000 --no-reload
 ```
 

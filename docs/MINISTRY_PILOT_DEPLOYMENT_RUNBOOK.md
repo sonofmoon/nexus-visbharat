@@ -1,8 +1,11 @@
-# Vellore–Tirupati pilot deployment and recovery
+# Original Vellore–Tirupati pilot deployment and recovery plan
 
-Implementation authorised on 19 September 2026. This package prepares a controlled water-service pilot in Tamil, Telugu and English. Cloud provisioning, spending, ministry outreach and real citizen onboarding have not been performed. The working localhost rehearsal is separate from the original 12,500-record demonstration database.
+This runbook records the original implementation scope authorised on 19 September 2026: a proposed two-district water-service pilot in Vellore and Tirupati, using Tamil, Telugu and English. Its original local rehearsal did not perform cloud provisioning, spending, ministry outreach or real citizen onboarding and was separate from the original 12,500-record demonstration database. Those historical statements are not a current deployment-status report.
 
-## Local demonstration
+> [!NOTE]
+> **Relationship to the current hackathon rehearsal:** The current synthetic demonstration covers **Vellore, Tirupati and Bengaluru Urban**, with **Tamil, Telugu, Kannada, Hindi and English** enabled. Its prepared examples are Tamil Water Supply in Vellore, Telugu Sanitation in Tirupati and Kannada Road requests in Bengaluru Urban. See the [current README](../README.md#4-rehearse-a-scoped-pilot) and [recorded three-district validation](evaluation/pilot-upgrade-rehearsal/VALIDATION.md). The two-district seed counts, water-service focus, language assumptions and rollout schedule below belong to the original plan. They are not the current demonstration's totals or evidence of government participation. Deployment and recovery procedures provide a starting point; geography, languages, routing, identities and acceptance evidence must be reviewed for any expanded operational pilot.
+
+## Original local demonstration baseline
 
 ```powershell
 python scripts/run_ministry_pilot.py --port 5001

@@ -617,6 +617,11 @@
       color: #b45309;
       border: 1px solid #fcd34d;
     }
+    .corridor-badge-ka {
+      background: #fce7f3;
+      color: #be185d;
+      border: 1px solid #f472b6;
+    }
 
     /* Evidence Dossier Grid */
     .evidence-grid {
@@ -831,7 +836,14 @@
     .evidence-link { white-space: normal; line-height: 1.45; }
     .evidence-icon { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--accent-blue-light); color: var(--accent-blue); }
     @media (max-width: 900px) { .vitals-grid, .evidence-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 560px) { .vitals-grid, .evidence-grid { grid-template-columns: 1fr; } .hero-cta-grid .btn { width: 100%; } }</style>
+    @media (max-width: 560px) {
+      .vitals-grid, .evidence-grid, .requirements-grid, .corridor-grid { grid-template-columns: minmax(0, 1fr); }
+      .nav-container { flex-wrap: wrap; }
+      .nav-actions { width: 100%; justify-content: flex-end; }
+      .brand-title { flex-wrap: wrap; }
+      .hero-cta-grid .btn { width: 100%; white-space: normal; }
+    }
+  </style>
 
   <!-- Structured Data JSON-LD Schema -->
   <script type="application/ld+json">
@@ -848,7 +860,7 @@
           "price": "0.00",
           "priceCurrency": "INR"
         },
-        "description": "Sovereign Digital Public Infrastructure bridging multilingual citizen voice grievances to evidence-linked, tamper-evident municipal capital allocation.",
+        "description": "An open-source civic intelligence prototype connecting multilingual requests with evidence-linked planning, human review and tamper-evident audit records.",
         "url": "https://nexusaitech.in/apps/nvb/index.html",
         "author": {
           "@type": "Person",
@@ -866,18 +878,18 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "How does Nexus VisBharat ensure compliance with India's DPDP Act 2023?",
+            "name": "What privacy safeguards does NVB implement?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "NVB enforces deterministic PII redaction at edge ingestion, ensuring Aadhaar numbers, phone numbers, and full citizen names are scrubbed before storage and LLM inference. All telemetry records zero citizen prompt data."
+              "text": "NVB applies pattern-based masking of recognized identifiers on selected intake paths. Private records may retain original submission content; complete anonymization is not guaranteed. Public views withhold citizen text, contact details and exact locations. Differential privacy is optional for public aggregates, with a default epsilon of 0.75 when enabled. These controls do not constitute legal compliance certification."
             }
           },
           {
             "@type": "Question",
-            "name": "How does NVB prevent LLM hallucination in municipal budget allocation?",
+            "name": "How are AI-assisted interpretation and funding decisions separated?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The Strategic Prioritization Score (SPS v2.4) is calculated deterministically via mathematical formula combining urgency, vulnerable demographic weight, spatial isolation, and verification status. The Gen AI models provide structured extraction and citizen synthesis, but never directly execute budgetary funds without municipal human review."
+              "text": "AI-assisted classifications feed explicit planning rules. Recorded urgency and reference indicators remain subject to review. Scoring assumptions and cost estimates are inspectable, and project decisions require authorized human approval. Synthetic approvals do not represent government sanctions or expenditure."
             }
           }
         ]
@@ -939,48 +951,48 @@
       </h1>
 
       <p class="hero-subtitle">
-        Nexus VisBharat brings multilingual intake, AI-assisted triage, evidence, prioritization and accountable follow-through into one operational platform for public-service teams.
+        Nexus VisBharat brings multilingual intake, AI-assisted triage, evidence, prioritization and accountable follow-through into one working prototype for public-service teams.
       </p>
 
       <!-- Live Action CTAs (Evaluator Deep Links) -->
       <div class="hero-cta-grid">
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener" class="btn btn-primary">🎙️ Citizen voice intake</a>
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/#trackSection" target="_blank" rel="noopener" class="btn btn-secondary">↗ Trace a ticket journey</a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot/submit" target="_blank" rel="noopener" class="btn btn-primary">🎙️ Citizen voice intake</a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener" class="btn btn-secondary">↗ Trace a ticket journey</a>
         <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener" class="btn btn-secondary">▦ Policy Dashboard</a>
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run/pilot" target="_blank" rel="noopener" class="btn btn-secondary">◌ Pilot Portal</a>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot" target="_blank" rel="noopener" class="btn btn-secondary">◌ Pilot Portal</a>
       </div>
 
-      <!-- Real-Time Operational Vitals Grid -->
+      <!-- Recorded prototype evidence; these are not live operational counters -->
       <div class="vitals-grid">
         <div class="vital-card">
           <div class="vital-metric">13</div>
-          <div class="vital-label">National Languages</div>
-          <div class="vital-subtext">13 National Languages (Tamil first) with Gemini Flash &amp; Chirp-2</div>
+          <div class="vital-label">Supported Languages</div>
+          <div class="vital-subtext">13 supported languages (Tamil first) across prototype; 5 in Pilot</div>
         </div>
         <div class="vital-card">
           <div class="vital-metric">50,000</div>
           <div class="vital-label">Prepared Records</div>
-          <div class="vital-subtext">Synthetic demo dataset across 408 canonical districts in 13 states</div>
+          <div class="vital-subtext">Prepared synthetic corpus across 408 district entries in 13 states; not live cloud totals</div>
         </div>
         <div class="vital-card">
-          <div class="vital-metric">&lt;800ms</div>
-          <div class="vital-label">FastPath Hazard Recall</div>
-          <div class="vital-subtext">100% (143/143) emergency recall across 13 national languages</div>
+          <div class="vital-metric">0.021 ms</div>
+          <div class="vital-label">FastPath In-Process Triage</div>
+          <div class="vital-subtext">Median internal screening time in a local 600-request microbenchmark; excludes HTTP, database, cloud and delivery latency</div>
         </div>
         <div class="vital-card">
-          <div class="vital-metric">0.991 / 95.1%</div>
-          <div class="vital-label">Macro-F1 &amp; Urgency Acc</div>
-          <div class="vital-subtext">Empirical accuracy across 468-case multilingual benchmark suite</div>
+          <div class="vital-metric">26 cases</div>
+          <div class="vital-label">13-language live-mode evaluation</div>
+          <div class="vital-subtext">100% category accuracy, 65.38% urgency accuracy, emergency recall 13/13. Water Supply-only sample; provider/fallback verification incomplete.</div>
         </div>
         <div class="vital-card">
           <div class="vital-metric">SHA-256</div>
           <div class="vital-label">Tamper-Evident Ledger</div>
-          <div class="vital-subtext">Cryptographic block verification with zero prompt/PII leakage</div>
+          <div class="vital-subtext">Hash-chain verification detects inconsistencies when run; not an immutable record or privacy guarantee</div>
         </div>
         <div class="vital-card">
-          <div class="vital-metric">12.5k</div>
-          <div class="vital-label">Prepared showcase records</div>
-          <div class="vital-subtext">100% automated regression coverage across pilots &amp; audit trails</div>
+          <div class="vital-metric">63 + 4</div>
+          <div class="vital-label">Passing Tests</div>
+          <div class="vital-subtext">63 workflow/API and 4 browser tests passed (27 September 2026 local validation); not a coverage percentage</div>
         </div>
       </div>
     </div>
@@ -1003,17 +1015,17 @@
 
           <h3 class="req-title">Complete End-to-End Workflow</h3>
           <p class="req-body">
-            Demonstrates an uninterrupted pipeline: Citizen voice or text submission &rarr; edge PII scrubbing &rarr; vernacular translation &rarr; spatial demand clustering &rarr; Strategic Prioritization Score (SPS v2.4) &rarr; municipal human-in-the-loop review &rarr; delivery follow-up.
+            Rehearse citizen submission &rarr; consent and selected-path identifier masking &rarr; AI-assisted interpretation or manual review &rarr; demand grouping &rarr; explicit planning rules &rarr; officer review &rarr; synthetic decision and redacted evidence export. Provider execution and field outcomes require separate evidence.
           </p>
           <div class="req-tags">
             <span class="tag">Voice/Text Intake</span>
             <span class="tag">Spatial Clustering</span>
             <span class="tag">Human Review</span>
-            <span class="tag">SPS v2.4</span>
+            <span class="tag">Explicit planning rules</span>
           </div>
         </div>
         <div class="req-action">
-          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Production Live</span>
+          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Deployed demonstration</span>
           <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submission" target="_blank" rel="noopener">↗ Trace a ticket journey</a>
         </div>
       </div>
@@ -1024,7 +1036,7 @@
 
           <h3 class="req-title">Deep Google AI &amp; Cloud Integration</h3>
           <p class="req-body">
-            Native deployment on Google Cloud Run (<code>asia-south1</code> Mumbai). Features multimodal Gemini Flash for structured classification, Cloud Speech-to-Text v2 (Chirp-2 model) for dialect-resilient audio transcription, Cloud Translation v3, and BigQuery spatial fusion.
+            Deployed on Google Cloud Run (<code>asia-south1</code>, Mumbai), with integration code for Gemini classification, regional speech transcription, Cloud Translation and BigQuery analytics. Enabled configuration does not prove successful provider execution; language quality and runtime availability require separate verification.
           </p>
           <div class="req-tags">
             <span class="tag">Cloud Run (asia-south1)</span>
@@ -1034,7 +1046,7 @@
           </div>
         </div>
         <div class="req-action">
-          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Deployed &amp; Verified</span>
+          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Deployed demonstration</span>
           <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/api/ai/status" target="_blank" rel="noopener">Inspect AI Status &rarr;</a>
         </div>
       </div>
@@ -1045,7 +1057,7 @@
 
           <h3 class="req-title">Realistic Data &amp; Public Datasets</h3>
           <p class="req-body">
-            Grounded with 50,000 prepared demonstration records correlated against public Indian governance datasets: SECC 2011 deprivation percentiles, Census demographics, NFHS-5 health infrastructure gaps, and PM Gati Shakti spatial corridors.
+            Uses a prepared 50,000-record synthetic corpus with reference-data adapters and contextual indicators for deprivation, demographics and infrastructure. Reference sources, dates and geographic joins require review; demonstration records do not establish official dataset integration or field impact.
           </p>
           <div class="req-tags">
             <span class="tag">50k Records</span>
@@ -1055,7 +1067,7 @@
           </div>
         </div>
         <div class="req-action">
-          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Calibrated Demo Data</span>
+          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Synthetic data; source validation separate</span>
           <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard" target="_blank" rel="noopener">▦ Explore analyst scenarios</a>
         </div>
       </div>
@@ -1064,19 +1076,19 @@
       <div class="req-card">
         <div>
 
-          <h3 class="req-title">Built for India: Inter-State Corridor</h3>
+          <h3 class="req-title">Built for India: Tri-District Pilot Rehearsal</h3>
           <p class="req-body">
-            Specifically tailored for the Tamil Nadu — Andhra Pradesh cross-border municipal corridor (Vellore Municipal Corporation and Tirupati Municipal Corporation). Implements state-isolated RBAC to prevent unauthorized cross-border data leakage.
+            Demonstrates inter-state governance across three enrolled rehearsal districts: Vellore (Tamil Nadu), Tirupati (Andhra Pradesh), and Bengaluru Urban (Karnataka). Municipal names refer to synthetic rehearsal geographies and do not represent formal participating authorities.
           </p>
           <div class="req-tags">
             <span class="tag">Vellore (TN)</span>
             <span class="tag">Tirupati (AP)</span>
-            <span class="tag">Bilingual Border</span>
+            <span class="tag">Bengaluru (KA)</span>
             <span class="tag">State-Isolated RBAC</span>
           </div>
         </div>
         <div class="req-action">
-          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Active Municipal Pilot</span>
+          <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Synthetic district rehearsal</span>
           <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot" target="_blank" rel="noopener">Explore Pilot &rarr;</a>
         </div>
       </div>
@@ -1087,18 +1099,18 @@
 
           <h3 class="req-title">Multilingual Voice Processing</h3>
           <p class="req-body">
-            Supports native Tamil (Tamil), Telugu (Telugu), and Indian English. Allows citizens to speak naturally, review live speech-to-text transcripts, verify translated drafts, and override misrecognitions prior to official submission.
+            The Pilot enables Tamil, Telugu, Kannada, Hindi and English. Where a speech provider is connected, citizens can review and correct transcripts and translations before submission. Text entry and officer review remain available; a fresh team-recorded Tamil or Telugu fictional request is the planned voice demonstration.
           </p>
           <div class="req-tags">
             <span class="tag">Tamil Speech</span>
             <span class="tag">Telugu Speech</span>
-            <span class="tag">Live Transcription</span>
+            <span class="tag">Provider-dependent speech</span>
             <span class="tag">Citizen Review</span>
           </div>
         </div>
         <div class="req-action">
           <span style="font-size: 0.75rem; color: var(--text-tertiary);">Status: Interactive Intake</span>
-          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/submit" target="_blank" rel="noopener">🎙️ Citizen voice intake</a>
+          <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot/submit" target="_blank" rel="noopener">🎙️ Citizen voice intake</a>
         </div>
       </div>
     </div>
@@ -1110,7 +1122,7 @@
       <div class="section-eyebrow">System Architecture</div>
       <h2 class="section-title">Google Cloud Defense-in-Depth Architecture</h2>
       <p class="section-desc">
-        A resilient, privacy-first topology designed for zero data loss, DPDP 2023 compliance, and deterministic budgetary accountability.
+        A resilient, privacy-first topology designed with documented persistence, recovery and privacy controls whose operational validation remains separate.
       </p>
     </div>
 
@@ -1125,9 +1137,9 @@
           <span class="arch-step-num">01</span>
           <h4 class="arch-box-title">Ingress &amp; Edge</h4>
           <ul class="arch-box-list">
-            <li>Multi-channel intake (Web, IVR, WhatsApp, SMS)</li>
+            <li>Web intake and configurable messaging/voice connectors</li>
             <li>HMAC SHA-256 webhook signatures</li>
-            <li>Replay attack protection via nonces</li>
+            <li>Timestamp checks and idempotent event handling</li>
             <li>Client-side audio compression</li>
           </ul>
         </div>
@@ -1139,7 +1151,7 @@
           <ul class="arch-box-list">
             <li>Google Cloud Run (Serverless)</li>
             <li>Gunicorn + gthread concurrent workers</li>
-            <li>Deterministic FastPath triage (&lt;800ms)</li>
+            <li>Deterministic FastPath screening; local timing measured separately</li>
             <li>Health endpoints (<code>/readyz</code>, <code>/healthz</code>)</li>
           </ul>
         </div>
@@ -1152,7 +1164,7 @@
             <li>Vertex AI / Gemini Flash multimodal</li>
             <li>Cloud STT v2 (Chirp-2 model)</li>
             <li>Cloud Translation v3</li>
-            <li>Regex &amp; NER PII scrubbing engine</li>
+            <li>Pattern-based masking in selected intake paths</li>
           </ul>
         </div>
 
@@ -1164,18 +1176,18 @@
             <li>Cloud SQL PostgreSQL deployment path</li>
             <li>BigQuery spatial analytics fusion</li>
             <li>Cloud Pub/Sub outbox replication</li>
-            <li>SQLite ephemeral sandbox fallback</li>
+            <li>SQLite for explicitly configured local demonstrations</li>
           </ul>
         </div>
 
         <!-- Layer 5 -->
         <div class="arch-box">
           <span class="arch-step-num">05</span>
-          <h4 class="arch-box-title">Sovereign Governance</h4>
+          <h4 class="arch-box-title">Governance &amp; Review</h4>
           <ul class="arch-box-list">
             <li>SHA-256 cryptographically chained ledger</li>
-            <li>Zero prompt/PII telemetry logging</li>
-            <li>State-level isolated RBAC enforcement</li>
+            <li>Minimized provider telemetry and redacted exports</li>
+            <li>Programme and district-scoped access controls</li>
             <li>Human-in-the-Loop decision lock</li>
           </ul>
         </div>
@@ -1185,13 +1197,13 @@
 
 
 
-  <!-- Dual Pilot Municipal Corridor -->
+  <!-- Three prepared district examples from the judging package -->
   <section class="container" id="corridor">
     <div class="section-header">
       <div class="section-eyebrow">Regional Grounding</div>
-      <h2 class="section-title">The Vellore — Tirupati Municipal Corridor</h2>
+      <h2 class="section-title">Tri-District Pilot Rehearsal (Vellore, Tirupati, Bengaluru Urban)</h2>
       <p class="section-desc">
-        A cross-border demonstration of sovereign inter-state governance, handling linguistic transitions and localized deprivation indices.
+        Three prepared fictional requests across Tamil Nadu, Andhra Pradesh and Karnataka. The Pilot enables Tamil, Telugu, Kannada, Hindi and English. District names identify rehearsal geographies, not formally participating authorities. Community boundaries remain proposed demonstration catchments.
       </p>
     </div>
 
@@ -1199,38 +1211,57 @@
       <!-- Vellore (Tamil Nadu) -->
       <div class="corridor-card">
         <div class="corridor-header">
-          <h3 class="corridor-title">Vellore Municipal Corporation</h3>
-          <span class="corridor-badge corridor-badge-tn">Tamil Nadu &bull; TN-023</span>
+          <h3 class="corridor-title">Vellore District Rehearsal</h3>
+          <span class="corridor-badge corridor-badge-tn">Tamil Nadu &bull; Fictional request</span>
         </div>
         <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
-          Focuses on Palar river basin water sanitation, tannery effluent drainage hazards, and rural bus connectivity in border taluks (Katpadi, Gudiyatham).
+          Prepared Tamil request: drinking water arrives for only one hour daily, and a pipe near the school is leaking. The example uses an enrolled demonstration catchment.
         </p>
         <ul style="font-size: 0.82rem; color: var(--text-secondary); list-style: none; margin-bottom: 1.25rem;">
-          <li style="margin-bottom: 0.35rem;"><strong>Primary Ingress:</strong> Tamil (Tamil) voice &amp; SMS</li>
-          <li style="margin-bottom: 0.35rem;"><strong>Demographic Factor:</strong> SECC 2011 Tannery Corridor Deprivation Index</li>
-          <li style="margin-bottom: 0.35rem;"><strong>RBAC Isolation:</strong> Scoped exclusively to Tamil Nadu state officials</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Prepared input:</strong> Tamil text with team-prepared English translation</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Service:</strong> Water Supply; costs and beneficiaries require review</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Officer scope:</strong> Vellore district demonstration role</li>
         </ul>
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot?district=Vellore" target="_blank" rel="noopener" class="btn btn-secondary" style="width: 100%;">
-          View Vellore Municipal Data &rarr;
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot/submit?example=vellore-water" target="_blank" rel="noopener" class="btn btn-secondary" style="width: 100%;">
+          Try Vellore Water Example &rarr;
         </a>
       </div>
 
       <!-- Tirupati (Andhra Pradesh) -->
       <div class="corridor-card">
         <div class="corridor-header">
-          <h3 class="corridor-title">Tirupati Municipal Corporation</h3>
-          <span class="corridor-badge corridor-badge-ap">Andhra Pradesh &bull; AP-019</span>
+          <h3 class="corridor-title">Tirupati District Rehearsal</h3>
+          <span class="corridor-badge corridor-badge-ap">Andhra Pradesh &bull; Fictional request</span>
         </div>
         <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
-          Focuses on pilgrim corridor municipal surge capacity, water scarcity in peripheral tribal settlements, and road safety along ghat approaches.
+          Prepared Telugu request: a blocked street drain causes rainwater to collect near a school. The example uses an enrolled demonstration catchment.
         </p>
         <ul style="font-size: 0.82rem; color: var(--text-secondary); list-style: none; margin-bottom: 1.25rem;">
-          <li style="margin-bottom: 0.35rem;"><strong>Primary Ingress:</strong> Telugu (Telugu) voice &amp; WhatsApp</li>
-          <li style="margin-bottom: 0.35rem;"><strong>Demographic Factor:</strong> Urban Pilgrim Transit &amp; Aspirational Ward Weight</li>
-          <li style="margin-bottom: 0.35rem;"><strong>RBAC Isolation:</strong> Scoped exclusively to Andhra Pradesh state officials</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Prepared input:</strong> Telugu text with team-prepared English translation</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Service:</strong> Sanitation; costs and beneficiaries require review</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Officer scope:</strong> Tirupati district demonstration role</li>
         </ul>
-        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot?district=Tirupati" target="_blank" rel="noopener" class="btn btn-secondary" style="width: 100%;">
-          View Tirupati Municipal Data &rarr;
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot/submit?example=tirupati-sanitation" target="_blank" rel="noopener" class="btn btn-secondary" style="width: 100%;">
+          Try Tirupati Sanitation Example &rarr;
+        </a>
+      </div>
+
+      <!-- Bengaluru Urban (Karnataka) -->
+      <div class="corridor-card">
+        <div class="corridor-header">
+          <h3 class="corridor-title">Bengaluru Urban Rehearsal</h3>
+          <span class="corridor-badge corridor-badge-ka">Karnataka &bull; Fictional request</span>
+        </div>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Prepared Kannada request: large potholes near the bus stop affect children travelling to school. The Road example uses an enrolled demonstration catchment, not an asserted official ward.
+        </p>
+        <ul style="font-size: 0.82rem; color: var(--text-secondary); list-style: none; margin-bottom: 1.25rem;">
+          <li style="margin-bottom: 0.35rem;"><strong>Prepared input:</strong> Kannada text with team-prepared English translation</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Service:</strong> Road; costs and beneficiaries require review</li>
+          <li style="margin-bottom: 0.35rem;"><strong>Officer scope:</strong> Bengaluru Urban district demonstration role</li>
+        </ul>
+        <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/pilot/submit?example=bengaluru-road" target="_blank" rel="noopener" class="btn btn-secondary" style="width: 100%;">
+          Try Bengaluru Road Example &rarr;
         </a>
       </div>
     </div>
@@ -1242,7 +1273,7 @@
       <div class="section-eyebrow">Empirical Verification</div>
       <h2 class="section-title">Evaluation Evidence Dossier</h2>
       <p class="section-desc">
-        All benchmarking claims are backed by stored JSON artifacts and cryptographic SHA-256 manifests in the open-source repository.
+        Inspect the recorded scope and limitations of each evaluation. Checksums establish file integrity, not provider execution, benchmark independence or field impact.
       </p>
     </div>
 
@@ -1251,34 +1282,34 @@
         <div>
           <div class="evidence-icon">◈</div>
           <h4 class="evidence-title">Quality Benchmark Suite</h4>
-          <p class="evidence-desc">468 evaluated multilingual cases across 13 national languages measuring Category Macro-F1 (0.991), Urgency Accuracy (95.1%), and Emergency Recall (143/143, 100%).</p>
+          <p class="evidence-desc">26-case live-mode run from a 468-case developer-curated dataset: 100% category accuracy (1.0000 F1), 65.38% urgency accuracy and emergency recall 13/13 across 13 languages. Sampling covers Water Supply only. Per-case provider, served-model and fallback verification remains incomplete; independent label review is pending.</p>
         </div>
         <div class="evidence-link">docs/evaluation/benchmark-v3-quality.json ↗</div>
       </a>
 
-      <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/MODEL_EVIDENCE_DOSSIER.md" target="_blank" rel="noopener" class="evidence-card">
+      <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/pilot-upgrade-rehearsal/VALIDATION.md" target="_blank" rel="noopener" class="evidence-card">
         <div>
           <div class="evidence-icon">◈</div>
-          <h4 class="evidence-title">Model Evidence Dossier</h4>
-          <p class="evidence-desc">Complete scientific documentation of Gemini Flash prompting strategies, fallback triggers, and proxy forecasting disclosures.</p>
+          <h4 class="evidence-title">Local Workflow Validation</h4>
+          <p class="evidence-desc">63 workflow/API tests and four browser tests passed on 27 September 2026. Three isolated district journeys include access-denial checks and redacted exports. These are local synthetic rehearsals, not live provider or government validation.</p>
         </div>
-        <div class="evidence-link">docs/evaluation/MODEL_EVIDENCE_DOSSIER.md ↗</div>
+        <div class="evidence-link">docs/evaluation/pilot-upgrade-rehearsal/VALIDATION.md ↗</div>
       </a>
 
-      <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/evidence-manifest.json" target="_blank" rel="noopener" class="evidence-card">
+      <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/pilot-upgrade-rehearsal/manifest.json" target="_blank" rel="noopener" class="evidence-card">
         <div>
           <div class="evidence-icon">◈</div>
-          <h4 class="evidence-title">Cryptographic Manifest</h4>
-          <p class="evidence-desc">SHA-256 checksum verification verifying the tamper-evident integrity of 17 key evidence files and test suites.</p>
+          <h4 class="evidence-title">Rehearsal Dossier Manifest</h4>
+          <p class="evidence-desc">Three redacted district dossiers with SHA-256 checksums, scenario IDs and explicit limitations. Checksums support artifact integrity checks; synthetic decisions do not establish government approval.</p>
         </div>
-        <div class="evidence-link">docs/evaluation/evidence-manifest.json ↗</div>
+        <div class="evidence-link">docs/evaluation/pilot-upgrade-rehearsal/manifest.json ↗</div>
       </a>
 
       <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/load.json" target="_blank" rel="noopener" class="evidence-card">
         <div>
           <div class="evidence-icon">◈</div>
           <h4 class="evidence-title">Load &amp; Concurrency Report</h4>
-          <p class="evidence-desc">Empirical latency profiles under concurrent user requests, validating FastPath sub-800ms deterministic response bounds.</p>
+          <p class="evidence-desc">Local SQLite and Flask test-client load measurements. These exclude network and model latency and do not establish a Cloud Run response-time guarantee.</p>
         </div>
         <div class="evidence-link">docs/evaluation/load.json ↗</div>
       </a>
@@ -1299,12 +1330,12 @@
       <!-- Q1 -->
       <div class="faq-item">
         <div class="faq-question">
-          <span>How does Nexus VisBharat ensure compliance with India's DPDP Act 2023?</span>
+          <span>What privacy safeguards does NVB implement?</span>
           <span class="faq-icon">▾</span>
         </div>
         <div class="faq-answer">
           <p>
-            Nexus VisBharat applies a <em>zero-trust edge sanitization</em> policy. Citizen submissions undergo deterministic regex and NER PII scrubbing (masking 12-digit Aadhaar numbers, phone numbers, and full names) prior to database insertion and LLM inference. Telemetry logs record zero raw prompt data. All analytical views use aggregated k-anonymity clustering to ensure individual citizen identities cannot be re-identified.
+            NVB applies pattern-based masking of recognized identifiers on selected intake paths. Private records may retain original submission content; complete anonymization is not guaranteed. Public views withhold citizen text, contact details and exact locations. Differential privacy is optional for public aggregates, with a default epsilon of 0.75 when enabled. These controls do not constitute legal compliance certification.
           </p>
         </div>
       </div>
@@ -1312,12 +1343,12 @@
       <!-- Q2 -->
       <div class="faq-item">
         <div class="faq-question">
-          <span>How does the system prevent LLM hallucinations in capital budget allocations?</span>
+          <span>How are AI-assisted interpretation and funding decisions separated?</span>
           <span class="faq-icon">▾</span>
         </div>
         <div class="faq-answer">
           <p>
-            LLMs are <strong>never</strong> allowed to compute financial budgets autonomously. Generative AI (Gemini Flash) is restricted solely to unstructured text/speech extraction, translation, and structured summarization. Capital allocation scores (Strategic Prioritization Score, SPS v2.4) are calculated using a 100% deterministic mathematical formula based on verified urgency, demographic deprivation indices, and spatial clustering. Furthermore, final budgetary decisions require human-in-the-loop municipal approval.
+            AI-assisted classifications feed explicit planning rules. Recorded urgency and reference indicators remain subject to review. Scoring assumptions and cost estimates are inspectable, and project decisions require authorized human approval. Synthetic approvals do not represent government sanctions or expenditure.
           </p>
         </div>
       </div>
@@ -1330,7 +1361,7 @@
         </div>
         <div class="faq-answer">
           <p>
-            In alignment with transparent software engineering ethics, we use the scientifically accurate term <strong>tamper-evident</strong>. Each log entry stores the cryptographic SHA-256 hash of its predecessor, creating a verifiable blockchain-style cryptographic sequence. Any manual modification or tampering with a historical record immediately breaks the hash chain and triggers automated validation alerts in the auditor console (<code>/auditor</code>).
+            Audit events are linked through SHA-256 hashes. Hash-chain verification can detect inconsistencies when run; it does not guarantee immediate detection or protection against an administrator rewriting the chain. Independently retained checkpoints can support comparison. External anchoring remains a proposed design, not a verified deployment.
           </p>
         </div>
       </div>
@@ -1343,7 +1374,7 @@
         </div>
         <div class="faq-answer">
           <p>
-            NVB features a deterministic <strong>FastPath Emergency Fallback</strong>. If Vertex AI or Google AI REST endpoints timeout or fail, the platform falls back to deterministic rule-based keyword extraction and urgency scoring in &lt;800ms. High-severity hazards (e.g., collapsed bridges, electrocution risks, toxic water contamination) are automatically escalated to municipal emergency channels without stalling the citizen intake pipeline.
+            NVB includes deterministic local hazard screening and manual-review paths when provider processing is unavailable. The recorded <a href="https://github.com/sonofmoon/nexus-visbharat/blob/main/docs/evaluation/FASTPATH_CONCURRENCY_BENCHMARK.md" target="_blank" rel="noopener">600-request local microbenchmark</a> measured 0.021 ms median internal screening time, excluding HTTP, database, cloud and delivery latency. This is not an end-to-end response-time guarantee. High-severity signals can be routed to configured escalation paths; confirmed responder delivery requires connector and receipt evidence.
           </p>
         </div>
       </div>
@@ -1356,7 +1387,7 @@
         </div>
         <div class="faq-answer">
           <p>
-            The production code contains documented deployment pathways for connecting Cloud SQL PostgreSQL with automated private IP peering and IAM authentication. The platform is pre-architected as an Apache 2.0 Digital Public Good (DPG), ready to interface directly with existing national platforms like CPGRAMS, UMANG, and State Integrated Grievance Redressal Systems.
+            The repository documents a deployment path using external PostgreSQL, named identities, provider configuration and recovery checks. Operational opening also requires participating authorities, reviewed geography, data responsibilities and recorded acceptance evidence. NVB is Apache 2.0 software designed with Digital Public Good principles; it does not claim formal DPGA recognition or endorsement. Potential integration with CPGRAMS, UMANG or state systems requires agency coordination, data-sharing arrangements and tested connectors.
           </p>
         </div>
       </div>
@@ -1366,9 +1397,9 @@
   <!-- Evaluator Launchpad / Live Links -->
   <section class="container">
     <div class="launchpad-banner">
-      <h2 class="launchpad-title">Experience Nexus VisBharat Live in Production</h2>
+      <h2 class="launchpad-title">Explore the Nexus VisBharat Deployed Demonstration</h2>
       <p class="launchpad-subtitle">
-        Deploying sovereign AI to empower every citizen's voice in democratic municipal governance.
+        Explore fictional citizen requests, district review, planning and redacted evidence. No government adoption or field impact is implied.
       </p>
       <div class="launchpad-buttons">
         <a href="https://nexus-visbharath-510474645723.asia-south1.run.app" target="_blank" rel="noopener" class="btn btn-white"> Open live platform ↗</a>
@@ -1385,7 +1416,7 @@
           <div class="brand-icon" style="width:32px;height:32px;font-size:0.85rem;">NVB</div>
           <strong style="color:#ffffff;font-size:1.1rem;">Nexus VisBharat (NVB)</strong>
         </div>
-        <p style="max-width:720px;margin:0 0 1.1rem;line-height:1.7;">A sovereign Digital Public Infrastructure (DPI) platform bridging marginalized vernacular citizen voice with transparent municipal capital budget allocations.</p>
+        <p style="max-width:720px;margin:0 0 1.1rem;line-height:1.7;">An open-source civic intelligence prototype connecting multilingual requests with transparent planning, human review and auditable decisions.</p>
         <p style="font-size:0.82rem;color:#94a3b8;margin:0;line-height:1.7;">Developed by <strong style="color:#cbd5e1;">Dr. Ravikumar Chandrasekaran</strong><br>Thanthai Periyar E.V. Ramasamy Government Polytechnic College, Vellore, Tamil Nadu.</p>
       </div>
       <div class="footer-bottom" style="margin-top:2rem;">
