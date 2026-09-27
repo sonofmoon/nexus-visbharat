@@ -756,11 +756,27 @@ def gmail_pubsub_webhook():
         notification = decode_pubsub_message(request.get_json(silent=True) or {})
         result = process_notification(notification, _ingest_text_request)
         return jsonify(success=True, channel='Gmail', **result)
-    except GmailTransientError:
-        current_app.logger.warning('Gmail intake temporarily unavailable; asking Pub/Sub to retry')
-        return jsonify(success=False, error='Gmail intake temporarily unavailable; retry requested'), 503
+    except GmailTransientError as exc:
+        current_app.logger.warning('Gmail intake temporarily unavailable: %s; asking Pub/Sub to retry with backoff', exc)
+        return jsonify(success=False, error=str(exc)), 503, {'Retry-After': '60'}
     except ValueError as error:
         return jsonify(success=False, error=str(error)), 400
+
+
+@channels_bp.route('/api/channels/email/gmail/sync', methods=['POST'])
+def gmail_sync():
+    """Drain and process any unread messages directly from the Gmail inbox."""
+    if not current_app.config.get('GMAIL_ENABLED', False):
+        return jsonify({'success': False, 'error': 'Gmail intake is not enabled'}), 503
+    token = (request.headers.get('X-Admin-Token') or request.headers.get('X-Gmail-PubSub-Token') or request.args.get('token') or '').strip()
+    if not token and request.headers.get('Authorization', '').startswith('Bearer '):
+        token = request.headers.get('Authorization')[7:].strip()
+    expected_tokens = [t for t in (current_app.config.get('ADMIN_API_TOKEN'), current_app.config.get('GMAIL_PUBSUB_SHARED_TOKEN')) if t]
+    if expected_tokens and (not token or not any(hmac.compare_digest(token, exp) for exp in expected_tokens)):
+        return jsonify({'success': False, 'error': 'unauthorized'}), 401
+    from ..services.gmail_gateway import sync_inbox
+    result = sync_inbox(_ingest_text_request)
+    return jsonify(success=True, channel='Gmail', **result)
 
 
 @channels_bp.route('/api/channels/email/gmail/health', methods=['GET'])

@@ -178,18 +178,30 @@ class GmailClient:
 
     def request(self, method, path, *, params=None, body=None, retry_auth=True):
         url = f"{GMAIL_API}/{self.mailbox}/{path.lstrip('/')}"
-        response = requests.request(
-            method,
-            url,
-            params=params or {},
-            json=body,
-            headers={"Authorization": f"Bearer {self._token()}"},
-            timeout=int(current_app.config.get("GMAIL_API_TIMEOUT_SECONDS", 15) or 15),
-        )
+        try:
+            response = requests.request(
+                method,
+                url,
+                params=params or {},
+                json=body,
+                headers={"Authorization": f"Bearer {self._token()}"},
+                timeout=int(current_app.config.get("GMAIL_API_TIMEOUT_SECONDS", 15) or 15),
+            )
+        except requests.exceptions.RequestException as exc:
+            raise GmailTransientError(f"Gmail network connection error: {type(exc).__name__} {exc}") from exc
+
         if response.status_code == 401 and retry_auth:
             self._credentials = None
             return self.request(method, path, params=params, body=body, retry_auth=False)
-        if response.status_code >= 500 or response.status_code == 429:
+
+        is_quota = response.status_code == 429 or (
+            response.status_code == 403
+            and any(k in response.text.lower() for k in ("quota", "ratelimit", "resource_exhausted", "user_rate_limit"))
+        )
+        if is_quota:
+            raise GmailTransientError(f"Gmail API rate limited or quota exceeded ({response.status_code}): {_json_error(response)}")
+
+        if response.status_code >= 500:
             raise GmailTransientError(f"Gmail API temporarily unavailable ({response.status_code})")
         if response.status_code >= 400:
             raise ValueError(f"Gmail API rejected request: {_json_error(response)}")
@@ -207,6 +219,14 @@ class GmailClient:
                 "labelFilterAction": "include",
             },
         )
+
+    def unread_messages(self, max_results=20):
+        try:
+            response = self.request("GET", "messages", params={"q": "is:unread label:INBOX", "maxResults": max_results})
+            return [str(m.get("id")).strip() for m in response.get("messages", []) if m.get("id")]
+        except Exception as exc:
+            LOGGER.warning("Failed to fetch unread messages from INBOX: %s", exc)
+            return []
 
     def history(self, start_history_id):
         messages = []
@@ -476,8 +496,11 @@ def process_notification(notification, ingest_text, client=None):
     except ValueError as error:
         if "404" in str(error) or "history" in str(error).lower():
             renew_watch(client)
-            raise GmailTransientError("Gmail history cursor expired; watch renewed, notification will be retried") from error
-        raise
+            message_ids = client.unread_messages()
+            if not message_ids:
+                raise GmailTransientError("Gmail history cursor expired; watch renewed, notification will be retried") from error
+        else:
+            raise
     processed = []
     for message_id in message_ids:
         processed.append(_process_message(client, message_id, current_history_id, ingest_text))
@@ -485,6 +508,21 @@ def process_notification(notification, ingest_text, client=None):
     db.execute("UPDATE gmail_watch_state SET history_id=?,updated_at=? WHERE mailbox=?", (current_history_id, _now(), _mailbox()))
     db.commit()
     return {"processed": processed, "history_id": current_history_id, "status": "ok"}
+
+
+def sync_inbox(ingest_text, client=None):
+    """Drain and ingest any unread messages directly from the Gmail inbox."""
+    client = client or GmailClient()
+    unread_ids = client.unread_messages()
+    state = _state()
+    history_id = state.get("history_id", "") if state else ""
+    processed = []
+    for mid in unread_ids:
+        try:
+            processed.append(_process_message(client, mid, history_id, ingest_text))
+        except Exception as exc:
+            LOGGER.warning("Failed to process message %s during inbox sync: %s", mid, exc)
+    return {"processed": processed, "total_found": len(unread_ids), "status": "ok"}
 
 
 def decode_pubsub_message(body):

@@ -148,7 +148,7 @@ def test_telegram_intake_full_flow_tamil(app):
         # Check outbox has start message
         db = get_db()
         msg1 = db.execute("SELECT * FROM telegram_outbox WHERE chat_id=? ORDER BY created_at DESC", (str(chat_id),)).fetchone()
-        assert "வணக்கம்" in msg1["payload_json"]
+        assert "Nexus VisBharat" in msg1["payload_json"]
 
         # 2. Select Tamil
         up2 = {"update_id": 1002, "callback_query": {"id": "cb1", "message": {"chat": {"id": chat_id}}, "data": "lang:ta"}}

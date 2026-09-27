@@ -39,6 +39,44 @@ STRINGS = _get_strings()
 
 ORDERED_LANG_CODES = ("ta", "te", "hi", "bn", "mr", "kn", "ml", "gu", "pa", "or", "as", "ur", "en")
 
+PROCESSING_TOAST = {
+    "ta": "⏳ செயலாக்குகிறது...",
+    "te": "⏳ ప్రాసెస్ చేస్తోంది...",
+    "hi": "⏳ प्रक्रिया जारी है...",
+    "bn": "⏳ প্রক্রিয়াকরণ হচ্ছে...",
+    "mr": "⏳ प्रक्रिया सुरू आहे...",
+    "kn": "⏳ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲಾಗುತ್ತಿದೆ...",
+    "ml": "⏳ പ്രോസസ്സ് ചെയ്യുന്നു...",
+    "gu": "⏳ પ્રક્રિયા ચાલુ છે...",
+    "pa": "⏳ ਪ੍ਰਕਿਰਿਆ ਜਾਰੀ ਹੈ...",
+    "or": "⏳ ପ୍ରକ୍ରିୟାକରଣ ଚାଲିଛି...",
+    "as": "⏳ প্ৰক্ৰিয়াকৰণ চলি আছে...",
+    "ur": "⏳ پروسیسنگ ہو رہی ہے...",
+    "en": "⏳ Processing...",
+}
+
+SUBMITTING_INTERIM = {
+    "ta": "⏳ உங்கள் கோரிக்கை பதிவு செய்யப்படுகிறது. AI சரிபார்ப்பு மற்றும் வகைப்படுத்தல் நடைபெறுகிறது...",
+    "te": "⏳ మీ అభ్యర్థన నమోదు చేయబడుతోంది. AI పరిశీలన మరియు వర్గీకరణ కొనసాగుతోంది...",
+    "hi": "⏳ आपका अनुरोध दर्ज किया जा रहा है। AI सत्यापन और वर्गीकरण प्रगति पर है...",
+    "bn": "⏳ আপনার অনুরোধ নথিভুক্ত করা হচ্ছে। AI যাচাইকরণ প্রক্রিয়াধীন...",
+    "mr": "⏳ तुमची विनंती नोंदवली जात आहे. AI पडताळणी आणि वर्गीकरण सुरू आहे...",
+    "kn": "⏳ ನಿಮ್ಮ ವಿನಂತಿಯನ್ನು ನೋಂದಾಯಿಸಲಾಗುತ್ತಿದೆ. AI ಪರಿಶೀಲನೆ ಪ್ರಗತಿಯಲ್ಲಿದೆ...",
+    "ml": "⏳ നിങ്ങളുടെ അപേക്ഷ രേഖപ്പെടുത്തുന്നു. AI പരിശോധന പുരോഗമിക്കുന്നു...",
+    "gu": "⏳ તમારી વિનંતી નોંધાઈ રહી છે. AI ચકાસણી અને વર્ગીકરણ પ્રક્રિયામાં છે...",
+    "pa": "⏳ ਤੁਹਾਡੀ ਬੇਨਤੀ ਦਰਜ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ। AI ਪੜਤਾਲ ਜਾਰੀ ਹੈ...",
+    "or": "⏳ ଆପଣଙ୍କ ଅନୁରୋଧ ପଞ୍ଜୀକୃତ ହେଉଛି। AI ଯାଞ୍ଚ ପ୍ରକ୍ରିୟା ଜାରି ରହିଛି...",
+    "as": "⏳ আপোনাৰ অনুৰোধ পঞ্জীয়ন কৰা হৈছে। AI পৰীক্ষণ চলি আছে...",
+    "ur": "⏳ آپ کی درخواست درج کی جا رہی ہے۔ AI تصدیق جاری ہے...",
+    "en": "⏳ Registering your request. AI verification and classification in progress...",
+}
+
+def _processing_toast(lang):
+    return PROCESSING_TOAST.get(lang, PROCESSING_TOAST["en"])
+
+def _submitting_interim(lang):
+    return SUBMITTING_INTERIM.get(lang, SUBMITTING_INTERIM["en"])
+
 LANGUAGE_KEYBOARD = [
     [("தமிழ் (Tamil)", "lang:ta"), ("తెలుగు (Telugu)", "lang:te")],
     [("हिन्दी (Hindi)", "lang:hi"), ("বাংলা (Bengali)", "lang:bn")],
@@ -395,7 +433,16 @@ BOT_PROMPTS = {
         "help": "Nexus VisBharat شہری امداد:\n\n1. /start - نئی شکایت।\n2. /status [ٹکٹ] - کیفیت چیک کریں۔\n3. /language - زبان تبدیل کریں۔",
     },
     "en": {
-        "greeting": "Welcome to Nexus VisBharat (@NexusVisBharatBot) Citizen Intake.\n\nPlease choose your preferred language:",
+        "greeting": (
+            "🏛️ Welcome to Nexus VisBharat (@NexusVisBharatBot)\n"
+            "Public Digital Infrastructure for Accountable District Governance\n\n"
+            "Nexus VisBharat is an AI-powered citizen grievance redressal and participatory governance platform. "
+            "You can report civic and infrastructure issues—such as water supply, roads, sanitation, electricity, "
+            "and healthcare—in your own language using text, voice notes, or photos.\n\n"
+            "Your report is automatically translated, verified, and routed directly to the responsible district authorities "
+            "with full audit transparency under the DPDP Act 2023.\n\n"
+            "👇 Please choose your preferred language to begin:"
+        ),
         "select_state": "Please select your State or Union Territory:",
         "select_district": "State: {state}\n\nPlease select your District using the buttons below, or type your district name directly:",
         "district_not_found": "District '{text}' was not recognized in {state}. Please select from the buttons below or type a valid district name:",
@@ -529,10 +576,26 @@ def _queue_text(chat_id, text, reply_markup=None, message_key=None):
            chat_id, "sendMessage", payload)
 
 
-def _queue_callback_answer(callback_id, message_key):
+def _send_quick_action(method, payload):
+    if current_app.config.get("TESTING"):
+        return
+    token = _token()
+    if not token:
+        return
+    try:
+        requests.post(_api_url(method), json=payload, timeout=2)
+    except Exception:
+        pass
+
+
+def _queue_callback_answer(callback_id, message_key, text=None):
     if not callback_id:
         return
-    _queue(message_key, "callback", "answerCallbackQuery", {"callback_query_id": callback_id})
+    payload = {"callback_query_id": callback_id}
+    if text:
+        payload["text"] = str(text)[:200]
+    _send_quick_action("answerCallbackQuery", payload)
+    _queue(message_key, "callback", "answerCallbackQuery", payload)
 
 
 def dispatch_outbox(limit=None):
@@ -663,7 +726,7 @@ def _text(chat_id, text, reply_markup=None, key=None):
 def _start(chat_id):
     session = {"stage": "language", "nonce": uuid4().hex[:12]}
     _save(chat_id, session)
-    greeting = BOT_PROMPTS["ta"]["greeting"]
+    greeting = BOT_PROMPTS["en"]["greeting"]
     _text(chat_id, greeting, _keyboard(LANGUAGE_KEYBOARD), f"chat:{chat_id}:start:{session['nonce']}")
     return session
 
@@ -742,6 +805,12 @@ def _submit(chat_id, session, ingest_text):
         _text(chat_id, _i18n(language, "issue"))
         return
 
+    # Immediate feedback while AI translation & verification runs
+    _send_quick_action("sendChatAction", {"chat_id": chat_id, "action": "typing"})
+    interim_msg = _submitting_interim(language)
+    _send_quick_action("sendMessage", {"chat_id": chat_id, "text": interim_msg})
+    _text(chat_id, interim_msg, key=f"chat:{chat_id}:submitting:{session.get('nonce', uuid4().hex)}")
+
     state = session.get("state") or "Tamil Nadu"
     district = session.get("district") or session.get("location") or "Vellore"
     ward = session.get("ward") or ""
@@ -780,8 +849,11 @@ def _submit(chat_id, session, ingest_text):
 def _callback(update, chat_id, ingest_text):
     callback = update.get("callback_query") or {}
     action = str(callback.get("data") or "")
-    _queue_callback_answer(callback.get("id"), f"callback:{callback.get('id') or hashlib.sha256(action.encode()).hexdigest()}")
     session = _session(chat_id)
+    lang = action[5:] if action.startswith("lang:") and action[5:] in ORDERED_LANG_CODES else _lang(session)
+    toast = _processing_toast(lang)
+    _send_quick_action("sendChatAction", {"chat_id": chat_id, "action": "typing"})
+    _queue_callback_answer(callback.get("id"), f"callback:{callback.get('id') or hashlib.sha256(action.encode()).hexdigest()}", text=toast)
 
     if action.startswith("lang:") and action[5:] in ORDERED_LANG_CODES:
         language = action[5:]

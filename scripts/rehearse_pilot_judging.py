@@ -118,13 +118,46 @@ def run(output):
     return app
 
 
+def serve_db(db_path, port=5002):
+    import sqlite3
+    db_path = Path(db_path).resolve()
+    con = sqlite3.connect(str(db_path))
+    con.row_factory = sqlite3.Row
+    users = con.cursor().execute("SELECT name, role, api_token FROM users").fetchall()
+    con.close()
+    credentials = {u['role']: u['api_token'] for u in users if u['role'] in ('admin', 'analyst', 'auditor')}
+    app = create_app({
+        'TESTING': False,
+        'TEMPLATES_AUTO_RELOAD': True,
+        'DATABASE_URL': '',
+        'DATABASE_PATH': str(db_path),
+        'DEMO_MODE': True,
+        'SEED_DEMO_DATA': False,
+        'AUTO_MIGRATE': False,
+        'DISABLE_EXTERNAL_SERVICES': True,
+        'SECRET_KEY': secrets.token_urlsafe(32),
+        'PILOT_ID': pilot.PILOT_ID,
+        'PILOT_ONLY': True,
+        'PILOT_MODEL_CALLS': False,
+        'PILOT_ANALYTICS_SYNC': False,
+        'LOCAL_EVALUATION_WORKER': False,
+        **{role.upper() + '_API_TOKEN': val for role, val in credentials.items()}
+    })
+    app.run(host='127.0.0.1', port=port, debug=False, use_reloader=False)
+
+
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',default='scratch/pilot-judging-package')
     parser.add_argument('--serve',action='store_true')
     parser.add_argument('--port',type=int,default=5002)
+    parser.add_argument('--db',default=None,help='Serve existing rehearsal database')
     args=parser.parse_args()
-    app=run(args.output)
-    if args.serve:
-        app.config['TESTING']=False
-        app.run(host='127.0.0.1',port=args.port,debug=False,use_reloader=False)
+    if args.db:
+        serve_db(args.db, port=args.port)
+    else:
+        app=run(args.output)
+        if args.serve:
+            app.config['TESTING']=False
+            app.config['TEMPLATES_AUTO_RELOAD']=True
+            app.run(host='127.0.0.1',port=args.port,debug=False,use_reloader=False)
