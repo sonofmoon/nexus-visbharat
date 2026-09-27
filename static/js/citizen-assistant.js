@@ -15,16 +15,21 @@
     hint.textContent = 'Tap Record voice to start. Tap Stop recording when finished.';
     $('dfcxAssistantWindow').insertBefore(hint, $('dfcxInputForm').nextSibling);
   }
-  let strings = {}, config, language = 'en', current, sessionId = '', token = '', busy = false, opened = false;
+  let strings = {}, config, language = 'ta', current, sessionId = '', token = '', busy = false, opened = false;
   let pending = null, muted = false, lastReply = '', audio = null, audioEpoch = 0, audioAbort = null;
   let recorder = null, media = null, recognition = null, recordingEpoch = 0, recordingTimer = null, inputMode = 'text';
-  const locale = {en:'en-IN',ta:'ta-IN',te:'te-IN'};
+  const locale = {
+    ta: 'ta-IN', te: 'te-IN', hi: 'hi-IN',
+    bn: 'bn-IN', mr: 'mr-IN', kn: 'kn-IN', ml: 'ml-IN',
+    gu: 'gu-IN', pa: 'pa-IN', or: 'or-IN', as: 'as-IN', ur: 'ur-IN',
+    en: 'en-IN'
+  };
   const t = key => strings[language]?.[key] || strings.en?.[key] || key;
   const id = () => crypto.randomUUID().replaceAll('-', '');
   const status = key => { $('dfcxStatus').textContent = t(key); };
   const boot = Promise.all([
-    fetch('/static/data/assistant_i18n.json').then(r => { if (!r.ok) throw Error(); return r.json(); }),
-    fetch('/api/dialogflow/config').then(r => { if (!r.ok) throw Error(); return r.json(); })
+    fetch('/static/data/assistant_i18n.json?v=' + Date.now()).then(r => { if (!r.ok) throw Error(); return r.json(); }),
+    fetch('/api/dialogflow/config?v=' + Date.now()).then(r => { if (!r.ok) throw Error(); return r.json(); })
   ]).then(([translations, settings]) => { strings = translations; config = settings; localize(); });
   // Attach a handler immediately so a failed initial request cannot become an unhandled rejection.
   boot.catch(() => { $('dfcxStatus').textContent = 'Assistant could not load. Reload the page to retry.'; });
@@ -306,6 +311,9 @@
     if (sessionId) {
       saveSession();
       send('resume');
+    } else {
+      $('dfcxMessageStream').replaceChildren();
+      send('start');
     }
   });
   $('dfcxUseLocation').addEventListener('click', () => send('location', {district: $('dfcxDistrict').value, ward: $('dfcxWard').value}));

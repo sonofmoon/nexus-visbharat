@@ -307,8 +307,13 @@ def request_journey(request_id):
         if isinstance(result, dict):
             steps[key] = {k:result.get(k) for k in ('model','provider_mode','fallback_used','provider_evidence','confidence_basis','citizen_review','provider_output')}
     decisions = [d for d in detail['decisions'] if request_id in d.get('source',{}).get('request_ids', [])]
-    return jsonify(success=True, request={k:row.get(k) for k in
-        ('request_id','state','district','ward','category','urgency','input_language','source_channel','original_text','translated_text','status','routed_department')},
+    pid = metadata.get('pilot_id') or scope.get('pilot_id')
+    req_dict = {k:row.get(k) for k in
+        ('request_id','state','district','ward','category','urgency','input_language','source_channel','original_text','translated_text','status','routed_department')}
+    if pid:
+        req_dict['pilot_id'] = pid
+    return jsonify(success=True, request=req_dict,
+        pilot_id=pid,
         data_mode='synthetic' if metadata.get('is_synthetic') else metadata.get('data_mode', 'unverified_submission'),
         processing=steps, clusters=clusters, project_id=project_id,
         planning_eligible=request_id in detail['capital_request_ids'],

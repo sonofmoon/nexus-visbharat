@@ -4,7 +4,7 @@
   if(!pid)return;
   if(window.NVB_PILOT_ONLY){
     const existing=sessionStorage.getItem('nvb_active_role');
-    if(['vellore','tirupati'].includes(existing)){
+    if(['vellore','tirupati','bengaluru_urban'].includes(existing)){
       sessionStorage.setItem('nvb_token_analyst',sessionStorage.getItem('nvb_token_'+existing)||'');
       sessionStorage.setItem('nvb_active_role','analyst');
     }
@@ -20,7 +20,7 @@
       applyRoleLayout(role);
       setDisplayForSelectors(['#aiRuntimePanel','.panel-map','.panel-projects','.panel-brief','.panel-feed','.panel-prediction','.panel-ops'],'none');
       document.getElementById('rbacReportTitle').textContent=role==='auditor'?'Independent pilot audit':'Pilot evidence and investment';
-      document.getElementById('rbacReportSubtitle').textContent='Vellore · Tirupati · Authorised programme scope';
+      document.getElementById('rbacReportSubtitle').textContent='Vellore · Tirupati · Bengaluru Urban · Authorised programme scope';
       const bar=document.getElementById('roleQuickActions');bar.innerHTML='<button type="button" class="btn btn-primary">Refresh pilot evidence</button>';
       bar.querySelector('button').onclick=refreshAll;refreshAll();
     };
@@ -51,7 +51,7 @@
     banner.innerHTML=`
       <div class="pilot-scope-banner-left">
         <span class="pilot-scope-tag"><i class="bi bi-shield-check"></i> BOUNDED PILOT SCOPE</span>
-        <span>Active Programme: <strong>Vellore–Tirupati Water Action Pilot</strong> (Tamil Nadu &amp; Andhra Pradesh)</span>
+        <span>Active Programme: <strong>NVB Cross-State Development Pilot</strong> (Tamil Nadu, Andhra Pradesh &amp; Karnataka)</span>
       </div>
       <a class="pilot-scope-return-link" href="/pilot"><i class="bi bi-arrow-left-circle-fill"></i> Return to Ministry Pilot Portal</a>
     `;

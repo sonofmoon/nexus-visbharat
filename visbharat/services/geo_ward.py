@@ -164,7 +164,14 @@ def resolve_geo_ward_context(
     geocoded_district = ''
 
     if lat_f is None and google_maps_client and hasattr(google_maps_client, 'geocode_address'):
-        query = (address or text or pin or district or '').strip()
+        if address:
+            query = f"{address.strip()}, {district.strip()}".strip(', ') if district else address.strip()
+        elif pin:
+            query = f"{pin.strip()}, {district.strip()}".strip(', ') if district else pin.strip()
+        elif text:
+            query = f"{text.strip()}, {district.strip()}".strip(', ') if district else text.strip()
+        else:
+            query = str(district or '').strip()
         if query:
             geo_telemetry['geocode_attempted'] = True
             started = time.perf_counter()
@@ -195,7 +202,14 @@ def resolve_geo_ward_context(
 
     district_input = str(district or '').strip()
     district_evidence = geocoded_district or pin_district
-    district_mismatch = bool(district_input and district_evidence and district_input.lower() != district_evidence.lower())
+    if geocoded_district and not address and not pin and district_input:
+        if district_input.lower() in geocoded_district.lower() or geocoded_district.lower() in district_input.lower():
+            district_mismatch = False
+        else:
+            district_evidence = pin_district
+            district_mismatch = bool(district_input and district_evidence and district_input.lower() != district_evidence.lower())
+    else:
+        district_mismatch = bool(district_input and district_evidence and district_input.lower() != district_evidence.lower())
 
     def _finalize(payload: dict):
         out = dict(payload or {})

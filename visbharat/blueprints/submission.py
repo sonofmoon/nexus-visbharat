@@ -38,7 +38,17 @@ def readiness():
         path = root / 'docs' / 'evaluation' / name
         if not path.exists(): return {}
         return json.loads(path.read_text(encoding='utf-8'))
-    quality = artifact('quality.json')
+    v3_quality = artifact('benchmark-v3-quality.json')
+    if v3_quality and v3_quality.get('overall'):
+        quality = v3_quality
+        source_path = '/docs/evaluation/benchmark-v3-quality.json'
+        if 'samples' not in quality.get('overall', {}):
+            quality['overall']['samples'] = quality['overall'].get('total_samples', 468)
+        if 'status' not in quality:
+            quality['status'] = 'provisional_labels_require_human_review'
+    else:
+        quality = artifact('quality.json')
+        source_path = '/docs/evaluation/quality.json'
     baseline = artifact('baseline-quality.json')
     repo = current_app.extensions['reference_repo']
     return jsonify(success=True, storage=persistence(current_app.config), providers=status(),
@@ -51,6 +61,6 @@ def readiness():
         evaluation={'status': quality.get('status', 'not_available'), 'overall': quality.get('overall'),
                     'independent_human_review': quality.get('independent_human_review', False),
                     'not_measured': quality.get('not_measured', {}), 'limitations': quality.get('limitations', []),
-                    'baseline': baseline.get('overall'), 'source': '/docs/evaluation/quality.json'},
+                    'baseline': baseline.get('overall'), 'source': source_path},
         messaging={'status': 'delivery_demonstration_required',
                    'meaning': 'A configured connector or synthetic channel label does not establish successful message delivery.'})

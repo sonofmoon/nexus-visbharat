@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary & Regulatory Classification
 
-Nexus-Visbharath (NVB) operates as an AI-orchestrated public grievance triage and spatial allocation infrastructure across 97 southern Indian municipal jurisdictions spanning Tamil Nadu, Andhra Pradesh, Telangana, Karnataka, and Kerala. Under the **Digital Personal Data Protection Act, 2023 (DPDP Act 2023)**:
+Nexus-Visbharath (NVB) operates as an AI-orchestrated public grievance triage and spatial allocation infrastructure across 408 canonical districts spanning 13 Indian States & UTs (Tamil Nadu, Andhra Pradesh, Telangana, Uttar Pradesh, Maharashtra, West Bengal, Karnataka, Gujarat, Odisha, Kerala, Punjab, Assam, and Delhi). Under the **Digital Personal Data Protection Act, 2023 (DPDP Act 2023)**:
 
 - **Data Fiduciary:** Municipal administrative entities, state urban development directorates, and the Nexus-Visbharath civic operating framework.
 - **Data Principal:** Citizens residing within Indian municipal territories who submit public grievance reports or whose locality telemetry is processed.
@@ -18,7 +18,7 @@ Nexus-Visbharath (NVB) operates as an AI-orchestrated public grievance triage an
 +-----------------------------------------------------------------------------------+
 |                            CITIZEN INGRESS BOUNDARY                               |
 |   Multilingual Notice & Purpose-Limited Consent (Sec 5 & 6)                       |
-|   English | Tamil (தமிழ்) | Telugu (తెలుగు)                                        |
+|   13 National Languages (Tamil, Telugu, Hindi, Bengali, Marathi, Kannada, Malayalam, Gujarati, Punjabi, Odia, Assamese, Urdu, English)                                        |
 +-----------------------------------------------------------------------------------+
                                          |
                                          v

@@ -72,12 +72,15 @@ def test_preview_failure_does_not_block_durable_submission(env):
 
 def test_channel_requires_signature_and_verified_receipt_before_home_activation(env):
     env.app.config['PILOT_CHANNEL_TELEGRAM_SECRET']='test-channel-signature'
-    r=env.client.post('/api/v2/pilot/settings',headers=env.admin,json={'version':1,'portal':{'channels':{'telegram':{'enabled':True,'address':'https://t.me/ExamplePilotBot','owner':'District team'}}}})
+    env.app.config['PILOT_CHANNEL_TELEGRAM_RECEIPT_SECRET']='independent-gateway-receipt-key'
+    r=env.client.post('/api/v2/pilot/settings',headers=env.admin,json={'version':1,'portal':{'channels':{'telegram':{'enabled':True,'address':'https://t.me/NvbPilotBot','owner':'District team'}}}})
     assert r.status_code==200,r.json
-    def send(data,signature=True):
+    def send(data,signature=True,receipt_key=None):
         raw=json.dumps(data).encode();stamp=str(int(time.time()))
         sig=hmac.new(b'test-channel-signature',stamp.encode()+b'.'+raw,hashlib.sha256).hexdigest()
-        return env.client.post('/api/v2/pilot/channels/telegram/webhook',data=raw,content_type='application/json',headers={'X-Pilot-Timestamp':stamp,'X-Pilot-Signature':sig if signature else 'bad'})
+        headers={'X-Pilot-Timestamp':stamp,'X-Pilot-Signature':sig if signature else 'bad'}
+        if receipt_key:headers['X-Pilot-Receipt-Signature']=hmac.new(receipt_key.encode(),stamp.encode()+b'.'+raw,hashlib.sha256).hexdigest()
+        return env.client.post('/api/v2/pilot/channels/telegram/webhook',data=raw,content_type='application/json',headers=headers)
     payload={'event_id':'telegram-event-123','location_id':'vellore-1','text':'Drinking water is not available every morning.','language':'en','consent_granted':True}
     assert send(payload,False).status_code==403
     first=send(payload);assert first.status_code==200,first.json
@@ -87,8 +90,24 @@ def test_channel_requires_signature_and_verified_receipt_before_home_activation(
     assert not next(c for c in channels if c['id']=='telegram')['available']
     assert send({'event_id':'telegram-event-123','action':'delivery_receipt','delivered':True}).status_code==200
     channels=env.client.get('/api/v2/pilot/public-config').json['channels']
+    assert not next(c for c in channels if c['id']=='telegram')['available']
+    assert next(c for c in channels if c['id']=='telegram')['href']==''
+    receipt={'event_id':'telegram-event-123','action':'delivery_receipt','delivered':True,'live_provider_verified':True}
+    assert send(receipt).json['channel_status']=='local_connector_passed'
+    with env.app.app_context():
+        settings=pilot_portal.configuration(pilot.programme(pilot.PILOT_ID))['channels']['telegram']
+    receipt.update(config_hash=pilot.digest(settings),provider='test_gateway',provider_message_id='fixture-message-123',receipt_id='fixture-receipt-123')
+    assert send(receipt,receipt_key='wrong-key').status_code==403
+    assert send({**receipt,'config_hash':'old-config'},receipt_key='independent-gateway-receipt-key').status_code==400
+    assert send({**receipt,'event_id':'unknown-event'},receipt_key='independent-gateway-receipt-key').status_code==400
+    assert send(receipt,receipt_key='independent-gateway-receipt-key').status_code==200
+    channels=env.client.get('/api/v2/pilot/public-config').json['channels']
     assert next(c for c in channels if c['id']=='telegram')['available']
     with env.app.app_context():assert pilot.rows('SELECT source_channel FROM citizen_requests')[0]['source_channel']=='Telegram'
+    with env.app.app_context():version=pilot.programme(pilot.PILOT_ID)['version']
+    assert env.client.post('/api/v2/pilot/settings',headers=env.admin,json={'version':version,'portal':{'channels':{'telegram':{'address':'https://t.me/NvbChangedBot'}}}}).status_code==200
+    channel=next(c for c in env.client.get('/api/v2/pilot/public-config').json['channels'] if c['id']=='telegram')
+    assert not channel['available'] and channel['connection_status']=='not_verified'
 
 
 def test_public_geography_and_enabled_web_channel(env):

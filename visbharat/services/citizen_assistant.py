@@ -11,11 +11,74 @@ from flask import current_app, jsonify, request
 from ..db import get_db
 from .pii_scrubber import scrub_text
 
-STRINGS = json.loads((Path(__file__).resolve().parents[2] / 'static/data/assistant_i18n.json').read_text(encoding='utf-8-sig'))
-YES = {'yes', 'y', 'confirm', 'submit', 'yes submit my request', 'confirm and submit', 'ஆம்', 'ஆம் சமர்ப்பிக்கவும்', 'உறுதிசெய்து சமர்ப்பி', 'ஆமாம்', 'சரி', 'சமர்ப்பி', 'అవును', 'అవును సమర్పించండి', 'నిర్ధారించి సమర్పించండి', 'సరే', 'సమర్పించు'}
-CANCEL = {'cancel', 'no', 'இல்லை', 'ரத்து', 'వద్దు', 'కాదు', 'రద్దు'}
-TRACK = {'track', 'check status', 'check status of my request', 'கோரிக்கை நிலை', 'நிலை', 'స్థితి', 'అభ్యర్థన స్థితి'}
-ALIASES = {'வேலூர்':'Vellore', 'వేలూరు':'Vellore', 'திருப்பதி':'Tirupati', 'తిరుపతి':'Tirupati', 'சென்னை':'Chennai', 'చెన్నై':'Chennai', 'கரூர்':'Karur', 'కరూర్':'Karur', 'హైదరాబాద్':'Hyderabad'}
+def _load_strings():
+    p = Path(__file__).resolve().parents[2] / 'static/data/assistant_i18n.json'
+    try:
+        return json.loads(p.read_text(encoding='utf-8-sig'))
+    except Exception:
+        return {}
+
+STRINGS = _load_strings()
+YES = {
+    'yes', 'y', 'confirm', 'submit', 'yes submit my request', 'confirm and submit', 'ok',
+    'ஆம்', 'ஆம் சமர்ப்பிக்கவும்', 'உறுதிசெய்து சமர்ப்பி', 'ஆமாம்', 'சரி', 'சமர்ப்பி',
+    'అవును', 'అవును సమర్పించండి', 'నిర్ధారించి సమర్పించండి', 'సరే', 'సమర్పించు',
+    'हाँ', 'हां', 'पुष्टि करें', 'दर्ज करें', 'सबमिट करें', 'सबमिट', 'ठीक है', 'स्वीकार',
+    'হ্যাঁ', 'জমা দিন', 'নিশ্চিত করুন', 'ঠিক আছে',
+    'हो', 'होय', 'सादर करा', 'निश्चित करा', 'ठीक आहे',
+    'ಹೌದು', 'ಸಲ್ಲಿಸಿ', 'ದೃಢೀಕರಿಸಿ', 'ಸರಿ',
+    'അതെ', 'സമർപ്പിക്കുക', 'ഉറപ്പാക്കുക', 'ശരി',
+    'હા', 'સબમિટ કરો', 'ખાતરી કરો', 'બરાબર',
+    'ਹਾਂ', 'ਜਮ੍ਹਾਂ ਕਰੋ', 'ਪੁਸ਼ਟੀ ਕਰੋ', 'ਠੀਕ ਹੈ',
+    'ହଁ', 'ଦାଖଲ କରନ୍ତୁ', 'ନିଶ୍ଚିତ କରନ୍ତୁ',
+    'হয়', 'দাখিল কৰক', 'নিশ্চিত কৰক',
+    'ہاں', 'تصدیق کریں', 'جمع کریں', 'ٹھیک ہے'
+}
+CANCEL = {
+    'cancel', 'no',
+    'இல்லை', 'ரத்து', 'வேண்டாம்',
+    'వద్దు', 'కాదు', 'ரద్దు',
+    'नहीं', 'रद्द करें', 'रद्द', 'कैंसिल', 'खारिज',
+    'না', 'বাতিল',
+    'नाही', 'रद्द करा',
+    'ಬೇಡ', 'ರದ್ದು',
+    'വേണ്ട', 'റദ്ദാക്കുക',
+    'ના', 'રદ કરો',
+    'ਨਹੀਂ', 'ਰੱਦ ਕਰੋ',
+    'ନା', 'ବାତିଲ',
+    'নহয়', 'বাতিল',
+    'نہیں', 'منسوخ'
+}
+TRACK = {
+    'track', 'check status', 'check status of my request', 'track request',
+    'கோரிக்கை நிலை', 'நிலை', 'கண்காணி', 'ட்ராக்', 'என் கோரிக்கை நிலை',
+    'స్థితి', 'అభ్యర్థన స్థితి', 'ట్రాక్', 'స్థితి తనిఖీ',
+    'ट्रैक करें', 'स्थिति', 'स्थिति जांचें', 'ट्रैक', 'शिकायत की स्थिति',
+    'অবস্থা', 'ট্র্যাক করুন', 'অবস্থা জানুন',
+    'स्थिती', 'तपासा', 'ट्रॅक करा',
+    'ಸ್ಥಿತಿ', 'ಪರಿಶೀಲಿಸಿ', 'ಟ್ರಾಕ್ ಮಾಡಿ',
+    'സ്ഥിതി', 'ട്രാക്ക്', 'അന്വേഷിക്കുക',
+    'સ્થિતિ', 'ટ્રેક કરો', 'સ્થિતિ તપાસો',
+    'ਸਥਿਤੀ', 'ਟਰੈਕ ਕਰੋ', 'ਜਾਂਚ ਕਰੋ',
+    'ସ୍ଥିତି', 'ଟ୍ରାକ୍ କରନ୍ତୁ',
+    'স্থিতি', 'ট্ৰেক কৰক',
+    'حیثیت', 'ٹریک کریں', 'حالت معلوم کریں'
+}
+ALIASES = {
+    'வேலூர்':'Vellore', 'சென்னை':'Chennai', 'கரூர்':'Karur', 'கோயம்புத்தூர்':'Coimbatore', 'மதுரை':'Madurai', 'திருச்சிராப்பள்ளி':'Tiruchirappalli', 'சேலம்':'Salem',
+    'వేలూరు':'Vellore', 'తிருப்பதி':'Tirupati', 'తిరుపతి':'Tirupati', 'చెన్నై':'Chennai', 'విశాఖపట్నం':'Visakhapatnam', 'విజయవాడ':'NTR', 'అమరావతి':'Guntur', 'గుంటూరు':'Guntur',
+    'హైదరాబాద్':'Hyderabad', 'వరంగల్':'Warangal',
+    'ಬೆಂಗಳೂರು':'Bengaluru Urban', 'ಮೈಸೂರು':'Mysuru', 'ಮಂಗಳೂರು':'Dakshina Kannada',
+    'തിരുവനന്തപുരം':'Thiruvananthapuram', 'കൊച്ചി':'Ernakulam', 'കോഴിക്കോട്':'Kozhikode',
+    'मुंबई':'Mumbai Suburban', 'पुणे':'Pune', 'नागपूर':'Nagpur', 'ठाणे':'Thane', 'नाशिक':'Nashik',
+    'અમદાવાદ':'Ahmedabad', 'સુરત':'Surat', 'વડોદરા':'Vadodara', 'રાજકોટ':'Rajkot',
+    'वाराणसी':'Varanasi', 'बनारस':'Varanasi', 'काशी':'Varanasi', 'लखनऊ':'Lucknow', 'कानपुर':'Kanpur Nagar', 'प्रयागराज':'Prayagraj', 'इलाहाबाद':'Prayagraj', 'आगरा':'Agra', 'गोरखपुर':'Gorakhpur',
+    'কলকাতা':'Kolkata', 'হাওড়া':'Howrah', 'শিলিগুড়ি':'Darjeeling',
+    'ਅੰਮ੍ਰਿਤਸਰ':'Amritsar', 'ਲੁਧਿਆਣਾ':'Ludhiana', 'ਜਲੰਧਰ':'Jalandhar',
+    'ଭୁବନେଶ୍ୱର':'Khordha', 'କଟକ':'Cuttack', 'ପୁରୀ':'Puri',
+    'গুৱাহাটী':'Kamrup Metropolitan',
+    'दिल्ली':'New Delhi', 'नई दिल्ली':'New Delhi'
+}
 
 
 def migrate(db):
@@ -32,7 +95,7 @@ def migrate(db):
 
 def configuration():
     repo = current_app.extensions['reference_repo']
-    return jsonify(success=True, languages=['en','ta','te'],
+    return jsonify(success=True, languages=list(current_app.config.get('LANGUAGES', {'en': 'English'}).keys()),
                    districts={s:repo.list_districts(s) for s in repo.list_states()}, session_ttl_seconds=86400)
 
 
@@ -63,20 +126,24 @@ def _district(text, proposed=''):
 
 
 def _body(row, key, flow='not_checked', intent='', confidence=None):
+    strings = _load_strings() or STRINGS
+    lang = row['language'] if row['language'] in strings else 'ta'
+    prompt = strings.get(lang, {}).get(key) or strings.get('en', {}).get(key) or key
     return {'session_id':row['session_id'], 'session_state':row['state'], 'language':row['language'],
             'version':row['version'], 'draft':json.loads(row['draft_json']),
-            'next_prompt':STRINGS[row['language']][key], 'flow':flow, 'intent':intent or key,
+            'next_prompt':prompt, 'flow':flow, 'intent':intent or key,
             'confidence':confidence, 'channel':'nvb_assistant',
             'receipt':receipt(row['request_id']) if row['request_id'] else None}
 
 
 def session_turn():
     started = time.perf_counter()
+    strings = _load_strings() or STRINGS
     data = request.get_json(silent=True)
     if not isinstance(data,dict):
         return jsonify(success=False,error='Expected a JSON object'),400
-    language, action, message = data.get('language','en'), data.get('action','message'), data.get('message','')
-    if not isinstance(language,str) or not isinstance(action,str) or language not in STRINGS or action not in {'start','resume','message','location','confirm','edit_issue','edit_location','cancel','track'}:
+    language, action, message = data.get('language','ta'), data.get('action','message'), data.get('message','')
+    if not isinstance(language,str) or not isinstance(action,str) or language not in strings or action not in {'start','resume','message','location','confirm','edit_issue','edit_location','cancel','track'}:
         return jsonify(success=False,error='Unsupported language or action'),400
     if not isinstance(message,str) or len(message)>4000:
         return jsonify(success=False,error='Message must be text, up to 4000 characters'),400
@@ -105,7 +172,7 @@ def session_turn():
         return jsonify(success=False,error='Session unavailable',code='session_unavailable'),403
     row = dict(row)
     if row['expires_at']<now:
-        return jsonify(success=False,error=STRINGS[language]['expired'],code='session_expired'),410
+        return jsonify(success=False,error=strings[language]['expired'],code='session_expired'),410
     turn_id = data.get('turn_id') or uuid4().hex
     if not isinstance(turn_id,str) or not re.fullmatch(r'[a-zA-Z0-9_-]{8,64}',turn_id):
         return jsonify(success=False,error='Invalid turn ID'),400
@@ -147,7 +214,7 @@ def session_turn():
                 provider_error = 'not_configured'
         if action=='message' and confidence is not None and confidence >= 0.65:
             action = {'nvb_cancel':'cancel','nvb_edit_location':'edit_location','nvb_edit_issue':'edit_issue'}.get(intent,action)
-        track_id = re.search(r'\bNVB-\d{8}[A-Fa-f0-9]{4}\b',text,re.I)
+        track_id = re.search(r'\bNVB-\d{8}[A-Fa-f0-9]{4}\b', message, re.I) or re.search(r'\bNVB-\d{8}[A-Fa-f0-9]{4}\b', text, re.I)
         tracked = None
         if action=='track' or lower in TRACK or track_id or intent in {'track_request','request_status','check status'}:
             candidate = track_id.group().upper() if track_id else row['request_id']
@@ -215,10 +282,10 @@ def session_turn():
         row.update(state=state,draft_json=json.dumps(draft,ensure_ascii=False),version=row['version']+1)
         out = _body(row,key,flow,intent,confidence)
         if key in {'saved','complete'} and out['receipt']:
-            out['next_prompt'] = STRINGS[language]['saved'].format(ticket=row['request_id'])
+            out['next_prompt'] = strings[language]['saved'].format(ticket=row['request_id'])
         if tracked:
             out['receipt'] = tracked
-            out['next_prompt'] = STRINGS[language]['tracked'].format(ticket=tracked['request_id'],status=STRINGS[language].get('status_'+tracked['status'].lower().replace(' ','_'),tracked['status']))
+            out['next_prompt'] = strings[language]['tracked'].format(ticket=tracked['request_id'],status=strings[language].get('status_'+tracked['status'].lower().replace(' ','_'),tracked['status']))
         out.update(prompt_key=key,provider_error=provider_error,latency_ms=round((time.perf_counter()-started)*1000))
         body = {'success':True,'session':out}
         if issued_token:
@@ -237,10 +304,10 @@ def session_turn():
         if saved and saved['request_id']:
             row['request_id'],row['state'] = saved['request_id'],'complete'
             out = _body(row,'complete',flow,intent,confidence)
-            out.update(next_prompt=STRINGS[language]['saved'].format(ticket=row['request_id']),prompt_key='saved',enrichment_pending=True)
+            out.update(next_prompt=strings[language]['saved'].format(ticket=row['request_id']),prompt_key='saved',enrichment_pending=True)
             return jsonify(success=True,session=out)
         current_app.logger.exception('Assistant turn failed')
-        return jsonify(success=False,error=STRINGS[language]['failed']),503
+        return jsonify(success=False,error=strings[language]['failed']),503
     finally:
         db.execute('UPDATE assistant_sessions SET busy_until=0,lock_token=NULL WHERE session_id=? AND lock_token=?',(sid,lock))
         db.commit()

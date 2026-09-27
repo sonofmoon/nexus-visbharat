@@ -25,13 +25,31 @@
         <section class="m3-card" id="request-location" aria-labelledby="location-title">
           <div class="m3-card-header"><span class="m3-step-number" aria-hidden="true">1</span><div><h2 class="m3-card-title" id="location-title">Your language & location</h2><p class="m3-card-subtitle">Help us connect your request to the right place.</p></div></div>
           <fieldset class="public-fieldset"><legend id="languageChipLabel">I’d like to use</legend>
-            <div class="m3-lang-chips">
-              <button type="button" class="m3-chip" data-lang="ta" aria-pressed="false" aria-label="Tamil language input"><span lang="ta">தமிழ்</span><span>Tamil</span></button>
-              <button type="button" class="m3-chip" data-lang="te" aria-pressed="false" aria-label="Telugu language input"><span lang="te">తెలుగు</span><span>Telugu</span></button>
-              <button type="button" class="m3-chip active" data-lang="en" aria-pressed="true" aria-label="English language input"><i class="bi bi-globe2" aria-hidden="true"></i> English</button>
+             <div class="m3-lang-chips">
+              {% if pilot_page %}
+                <button type="button" class="m3-chip active" data-lang="ta" aria-pressed="true" aria-label="Tamil language input"><span lang="ta">தமிழ்</span><span>Tamil</span></button>
+                <button type="button" class="m3-chip" data-lang="te" aria-pressed="false" aria-label="Telugu language input"><span lang="te">తెలుగు</span><span>Telugu</span></button>
+                <button type="button" class="m3-chip" data-lang="kn" aria-pressed="false" aria-label="Kannada language input"><span lang="kn">ಕನ್ನಡ</span><span>Kannada</span></button>
+                <button type="button" class="m3-chip" data-lang="hi" aria-pressed="false" aria-label="Hindi language input"><span lang="hi">हिन्दी</span><span>Hindi</span></button>
+                <button type="button" class="m3-chip" data-lang="en" aria-pressed="false" aria-label="English language input"><i class="bi bi-globe2" aria-hidden="true"></i> English</button>
+              {% else %}
+                <button type="button" class="m3-chip active" data-lang="ta" aria-pressed="true" aria-label="Tamil language input"><span lang="ta">தமிழ்</span><span>Tamil</span></button>
+                <button type="button" class="m3-chip" data-lang="te" aria-pressed="false" aria-label="Telugu language input"><span lang="te">తెలుగు</span><span>Telugu</span></button>
+                <button type="button" class="m3-chip" data-lang="hi" aria-pressed="false" aria-label="Hindi language input"><span lang="hi">हिन्दी</span><span>Hindi</span></button>
+                <button type="button" class="m3-chip" data-lang="bn" aria-pressed="false" aria-label="Bengali language input"><span lang="bn">বাংলা</span><span>Bengali</span></button>
+                <button type="button" class="m3-chip" data-lang="mr" aria-pressed="false" aria-label="Marathi language input"><span lang="mr">मराठी</span><span>Marathi</span></button>
+                <button type="button" class="m3-chip" data-lang="kn" aria-pressed="false" aria-label="Kannada language input"><span lang="kn">ಕನ್ನಡ</span><span>Kannada</span></button>
+                <button type="button" class="m3-chip" data-lang="ml" aria-pressed="false" aria-label="Malayalam language input"><span lang="ml">മലയാളം</span><span>Malayalam</span></button>
+                <button type="button" class="m3-chip" data-lang="gu" aria-pressed="false" aria-label="Gujarati language input"><span lang="gu">ગુજરાતી</span><span>Gujarati</span></button>
+                <button type="button" class="m3-chip" data-lang="pa" aria-pressed="false" aria-label="Punjabi language input"><span lang="pa">ਪੰਜਾਬੀ</span><span>Punjabi</span></button>
+                <button type="button" class="m3-chip" data-lang="or" aria-pressed="false" aria-label="Odia language input"><span lang="or">ଓଡ଼ಿଆ</span><span>Odia</span></button>
+                <button type="button" class="m3-chip" data-lang="as" aria-pressed="false" aria-label="Assamese language input"><span lang="as">অসমীয়া</span><span>Assamese</span></button>
+                <button type="button" class="m3-chip" data-lang="ur" aria-pressed="false" aria-label="Urdu language input"><span lang="ur">اردو</span><span>Urdu</span></button>
+                <button type="button" class="m3-chip" data-lang="en" aria-pressed="false" aria-label="English language input"><i class="bi bi-globe2" aria-hidden="true"></i> English</button>
+              {% endif %}
             </div>
-            <p class="form-hint" id="languageModeHint" role="status">Active script: English. You can switch script without losing typed text.</p>
-            <div class="hidden"><label for="language">Your language</label><select id="language" name="language" class="m3-select">{% for code, name in languages.items() %}<option value="{{ code }}" {% if code == 'en' %}selected{% endif %}>{{ name }} ({{ code }})</option>{% endfor %}</select></div>
+            <p class="form-hint" id="languageModeHint" role="status">Active script: Tamil. Voice input is recommended for faster capture.</p>
+            <div class="hidden"><label for="language">Your language</label><select id="language" name="language" class="m3-select">{% for code, name in languages.items() %}<option value="{{ code }}" {% if code == 'ta' %}selected{% endif %}>{{ name }} ({{ code }})</option>{% endfor %}</select></div>
           </fieldset>
           <div class="m3-grid-2">
             <div class="m3-form-group"><label for="state">State <span class="public-required">(required)</span></label><select id="state" name="state" class="m3-select" required><option value="">Select your state...</option></select></div>
@@ -101,13 +119,13 @@
       </section>
     </div>
     <aside class="submit-aside" aria-label="Request guidance and tracking">
-      <div class="public-guide m3-card"><span class="public-eyebrow">A LITTLE GUIDANCE</span><h2>From your voice<br>to local action.</h2><nav aria-label="Request sections"><ol class="public-step-list"><li><a href="#request-location"><span>1</span> Language & location</a></li><li><a href="#request-description"><span>2</span> Your request</a></li><li><a href="#request-review"><span>3</span> Review AI routing</a></li><li><a href="#request-consent"><span>4</span> Consent & submit</a></li></ol></nav><div class="public-guide-tip"><i class="bi bi-lightbulb" aria-hidden="true"></i><p>Be specific, not formal. A nearby landmark and a short description are a great start.</p></div><div class="public-guide-languages"><span lang="ta">தமிழ்</span><span lang="te">తెలుగు</span><span>English</span></div></div>
+      <div class="public-guide m3-card"><span class="public-eyebrow">A LITTLE GUIDANCE</span><h2>From your voice<br>to local action.</h2><nav aria-label="Request sections"><ol class="public-step-list"><li><a href="#request-location"><span>1</span> Language & location</a></li><li><a href="#request-description"><span>2</span> Your request</a></li><li><a href="#request-review"><span>3</span> Review AI routing</a></li><li><a href="#request-consent"><span>4</span> Consent & submit</a></li></ol></nav><div class="public-guide-tip"><i class="bi bi-lightbulb" aria-hidden="true"></i><p>Be specific, not formal. A nearby landmark and a short description are a great start.</p></div>{% if pilot_page %}<div class="public-guide-languages"><span lang="ta">தமிழ்</span><span lang="te">తెలుగు</span><span lang="kn">ಕನ್ನಡ</span><span lang="hi">हिन्दी</span><span>English</span></div>{% else %}<div class="public-guide-languages"><span lang="ta">தமிழ்</span><span lang="te">తెలుగు</span><span lang="hi">हिन्दी</span><span lang="bn">বাংলা</span><span lang="mr">मराठी</span><span lang="kn">ಕನ್ನಡ</span><span lang="ml">മലയാളം</span><span lang="gu">ગુજરાતી</span><span lang="pa">ਪੰਜਾਬੀ</span><span lang="or">ଓଡ଼ିଆ</span><span lang="as">অসমীয়া</span><span lang="ur">اردو</span><span>English</span></div>{% endif %}</div>
       <section class="m3-card public-track-card" aria-labelledby="track-title"><span class="public-circle" aria-hidden="true"><i class="bi bi-search"></i></span><h2 id="track-title">Already sent a request?</h2><p>Follow its status and department routing using your ticket ID.</p><label for="trackRequestIdInput">Request ID</label><input type="text" id="trackRequestIdInput" class="m3-input" placeholder="e.g. NVB-20260912A8F3" autocomplete="off" spellcheck="false">{% if pilot_page %}<label for="trackSecret">Private tracking code</label><input id="trackSecret" class="m3-input" type="password" autocomplete="off">{% endif %}<button type="button" class="m3-btn m3-btn-outline" id="trackStatusBtn">Track request <i class="bi bi-arrow-right" aria-hidden="true"></i></button><div id="trackResultContainer" class="public-track-result hidden" role="status"></div>{% if not pilot_page %}<a class="public-text-link" href="/dashboard">Explore the public policy dashboard</a>{% endif %}</section>
     </aside>
   </div>
 </main>
 {% include 'partials/public_footer.html' %}
- {% if pilot_page %}<script>window.NVBPilotPublic={{ {'locations':locations,'categories':categories,'languages':languages,'csrf':csrf,'routing':programme.config.routing,'ai_preview':ai_status}|tojson }};</script><script src="/static/js/pilot-public.js"></script><script src="/static/js/pilot-submit.js"></script>{% endif %}
+ {% if pilot_page %}<script>window.NVBPilotPublic={{ {'locations':locations,'categories':categories,'languages':languages,'csrf':csrf,'routing':programme.config.routing,'category_routing':programme.config.get('category_routing',{}),'ai_preview':ai_status,'examples':prepared_examples}|tojson }};</script><script src="/static/js/pilot-public.js"></script><script src="/static/js/pilot-submit.js"></script>{% endif %}
  <script>
  const citizenFetch=(...args)=>window.NVBPilotPublic?window.pilotCitizenFetch(...args):fetch(...args);
  async function loadStates() {
@@ -346,22 +364,24 @@
  if (typedText) return typedText;
  return (document.getElementById('voice-transcript').textContent || '').trim();
  }
-
- function updateLanguageInputHint(languageCode) {
- const hint = document.getElementById('voiceLanguageHint');
- const modeHint = document.getElementById('languageModeHint');
- if (languageCode === 'ta' || languageCode === 'te') {
- hint.textContent = 'Voice-first mode: press and hold to record, then release to auto-transcribe.';
- if (modeHint) {
- modeHint.textContent = languageCode === 'ta'
- ? 'Active script: Tamil. Voice input is recommended for faster capture.'
- : 'Active script: Telugu. Voice input is recommended for faster capture.';
- }
- return;
- }
- hint.textContent = 'Type your request or use mic. Click once to start/stop voice capture.';
- if (modeHint) modeHint.textContent = 'Active script: English. You can switch script without losing typed text.';
- }
+  const langNames = {
+    'ta': 'Tamil', 'te': 'Telugu', 'hi': 'Hindi',
+    'bn': 'Bengali', 'mr': 'Marathi', 'kn': 'Kannada', 'ml': 'Malayalam',
+    'gu': 'Gujarati', 'pa': 'Punjabi', 'or': 'Odia', 'as': 'Assamese', 'ur': 'Urdu',
+    'en': 'English'
+  };
+  function updateLanguageInputHint(languageCode) {
+    const hint = document.getElementById('voiceLanguageHint');
+    const modeHint = document.getElementById('languageModeHint');
+    const name = langNames[languageCode] || 'Tamil';
+    if (languageCode !== 'en') {
+      if (hint) hint.textContent = 'Voice-first mode: click mic to record in ' + name + ', then click again or pause to auto-transcribe.';
+      if (modeHint) modeHint.textContent = 'Active script: ' + name + '. Voice input is recommended for faster capture.';
+      return;
+    }
+    if (hint) hint.textContent = 'Type your request or use mic. Click once to start/stop voice capture.';
+    if (modeHint) modeHint.textContent = 'Active script: English. You can switch script without losing typed text.';
+  }
 
  function getDepartmentForCategory(cat) {
  const deptMap = {
@@ -380,12 +400,37 @@
  }
 
  function updateRoutedDepartment() {
- if(window.NVBPilotPublic){document.getElementById('routedDepartment').value=window.NVBPilotPublic.routing[document.getElementById('district').value]||'Select your district';return;}
- const catSelect = document.getElementById('category');
- const deptInput = document.getElementById('routedDepartment');
- if (catSelect && deptInput) {
- deptInput.value = getDepartmentForCategory(catSelect.value);
- }
+   const dist = document.getElementById('district')?.value || '';
+   const catSelect = document.getElementById('category');
+   const cat = catSelect?.value || 'Water Supply';
+   const deptInput = document.getElementById('routedDepartment');
+   if (!deptInput) return;
+   if(window.NVBPilotPublic) {
+     if (!dist) {
+       deptInput.value = 'Select your district';
+       return;
+     }
+     const catMap = window.NVBPilotPublic.category_routing || {};
+     const distRouting = catMap[dist] || {};
+     const aliases = {
+       'Water': 'Water Supply', 'Water Supply & Drainage': 'Water Supply',
+       'Roads': 'Road', 'Solid Waste': 'Sanitation',
+       'Power': 'Electricity', 'Internet': 'Digital Connectivity',
+       'Connectivity': 'Digital Connectivity'
+     };
+     const normalized = aliases[cat] || cat;
+     if (distRouting[normalized]) {
+       deptInput.value = distRouting[normalized];
+       return;
+     }
+     if (distRouting[cat]) {
+       deptInput.value = distRouting[cat];
+       return;
+     }
+     deptInput.value = (window.NVBPilotPublic.routing && window.NVBPilotPublic.routing[dist]) || `${dist} civic services review team (demo)`;
+     return;
+   }
+   deptInput.value = getDepartmentForCategory(cat);
  }
 
  function setUrgency(urgencyLevel, source = 'ai') {
@@ -529,7 +574,7 @@
  if(!res.ok || payload.success===false)throw new Error(payload.error || 'AI assistance unavailable');
  const result = payload.result || payload;
  let cleanTrans = (result.translated_text || text || '').trim();
- cleanTrans = cleanTrans.replace(/^(Citizen Request \([a-z]+\):|Tamil Citizen Request:|Telugu Citizen Request:|Translation:|English Translation:)\s*/i, '');
+ cleanTrans = cleanTrans.replace(/^(Citizen Request \([a-z]+\):|[A-Za-z\s]+ Citizen Request:|Translation:|English Translation:)\s*/i, '');
  
  if (textBox) textBox.value = cleanTrans;
  document.getElementById('translated-text').textContent = cleanTrans;
@@ -631,14 +676,19 @@
 
  mediaRecorder.start();
 
- // LIVE REAL-TIME BROWSER SPEECH RECOGNITION (Tamil, Telugu, English)
+ // LIVE REAL-TIME BROWSER SPEECH RECOGNITION (12 Indian Languages + 1 English)
  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
  if (SpeechRec && !window.NVBPilotPublic) {
  try {
  speechRecognition = new SpeechRec();
- const langSelected = document.getElementById('language').value || 'en';
- const langMap = { 'ta': 'ta-IN', 'te': 'te-IN', 'en': 'en-IN' };
- speechRecognition.lang = langMap[langSelected] || 'en-IN';
+ const langSelected = document.getElementById('language').value || 'ta';
+ const langMap = {
+   'ta': 'ta-IN', 'te': 'te-IN', 'hi': 'hi-IN',
+   'bn': 'bn-IN', 'mr': 'mr-IN', 'kn': 'kn-IN', 'ml': 'ml-IN',
+   'gu': 'gu-IN', 'pa': 'pa-IN', 'or': 'or-IN', 'as': 'as-IN', 'ur': 'ur-IN',
+   'en': 'en-IN'
+ };
+ speechRecognition.lang = langMap[langSelected] || 'ta-IN';
  speechRecognition.continuous = true;
  speechRecognition.interimResults = true;
 
@@ -825,6 +875,10 @@
  if (catSelect) {
  catSelect.addEventListener('change', updateRoutedDepartment);
  updateRoutedDepartment();
+ }
+ const distSelect = document.getElementById('district');
+ if (distSelect) {
+ distSelect.addEventListener('change', updateRoutedDepartment);
  }
 
 

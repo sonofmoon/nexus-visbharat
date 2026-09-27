@@ -1,8 +1,11 @@
-"""Durable Telegram webhook gateway.
+"""Durable Telegram webhook gateway for @NexusVisBharatBot.
 
-Telegram delivers an update at least once.  This module keeps the inbound
+Telegram delivers an update at least once. This module keeps the inbound
 update ledger and outbound send queue in SQL so a web process restart does not
 lose a citizen draft or create a second ticket.
+
+Supports all 13 states/UTs, 408 canonical LGD districts, and 13 languages
+with Tamil strictly prioritized first.
 """
 
 import hashlib
@@ -18,33 +21,421 @@ import requests
 from flask import current_app
 
 from ..db import delete_channel_session, get_channel_session, get_db, save_channel_session
+from ..config import PILOT_STATE_TO_DISTRICTS
 
 LOGGER = logging.getLogger(__name__)
-STRINGS = json.loads(
-    (Path(__file__).resolve().parents[2] / "static/data/assistant_i18n.json").read_text(encoding="utf-8-sig")
-)
-LANGUAGES = {lang: STRINGS[lang] for lang in ("en", "ta", "te")}
+
+
+def _get_strings():
+    try:
+        path = Path(__file__).resolve().parents[2] / "static" / "data" / "assistant_i18n.json"
+        return json.loads(path.read_text(encoding="utf-8-sig"))
+    except Exception as exc:
+        LOGGER.warning("Failed to load dynamic assistant_i18n.json: %s", exc)
+        return {}
+
+
+STRINGS = _get_strings()
+
+ORDERED_LANG_CODES = ("ta", "te", "hi", "bn", "mr", "kn", "ml", "gu", "pa", "or", "as", "ur", "en")
+
+LANGUAGE_KEYBOARD = [
+    [("தமிழ் (Tamil)", "lang:ta"), ("తెలుగు (Telugu)", "lang:te")],
+    [("हिन्दी (Hindi)", "lang:hi"), ("বাংলা (Bengali)", "lang:bn")],
+    [("मराठी (Marathi)", "lang:mr"), ("ಕನ್ನಡ (Kannada)", "lang:kn")],
+    [("മലയാളം (Malayalam)", "lang:ml"), ("ગુજરાતી (Gujarati)", "lang:gu")],
+    [("ਪੰਜਾਬੀ (Punjabi)", "lang:pa"), ("ଓଡ଼ିଆ (Odia)", "lang:or")],
+    [("অসমীয়া (Assamese)", "lang:as"), ("اردو (Urdu)", "lang:ur")],
+    [("English", "lang:en")],
+]
 
 STATE_KEYBOARD = [
     [("Tamil Nadu", "state:Tamil Nadu"), ("Andhra Pradesh", "state:Andhra Pradesh")],
-    [("Telangana", "state:Telangana")],
+    [("Telangana", "state:Telangana"), ("Kerala", "state:Kerala")],
+    [("Karnataka", "state:Karnataka"), ("Maharashtra", "state:Maharashtra")],
+    [("Gujarat", "state:Gujarat"), ("Odisha", "state:Odisha")],
+    [("West Bengal", "state:West Bengal"), ("Punjab", "state:Punjab")],
+    [("Assam", "state:Assam"), ("Uttar Pradesh", "state:Uttar Pradesh")],
+    [("Delhi", "state:Delhi")],
 ]
 
+# Major regional hub buttons for each of the 13 states/UTs (all strictly canonical)
 DISTRICT_KEYBOARDS = {
     "Tamil Nadu": [
         [("Vellore", "dist:Vellore"), ("Ranipet", "dist:Ranipet")],
         [("Tirupathur", "dist:Tirupathur"), ("Chennai", "dist:Chennai")],
         [("Coimbatore", "dist:Coimbatore"), ("Salem", "dist:Salem")],
+        [("Madurai", "dist:Madurai"), ("Tiruchirappalli", "dist:Tiruchirappalli")],
     ],
     "Andhra Pradesh": [
         [("Tirupati", "dist:Tirupati"), ("Chittoor", "dist:Chittoor")],
         [("Visakhapatnam", "dist:Visakhapatnam"), ("Guntur", "dist:Guntur")],
+        [("NTR (Vijayawada)", "dist:NTR"), ("Kurnool", "dist:Kurnool")],
     ],
     "Telangana": [
         [("Hyderabad", "dist:Hyderabad"), ("Warangal", "dist:Warangal")],
-        [("Medchal", "dist:Medchal-Malkajgiri"), ("Karimnagar", "dist:Karimnagar")],
+        [("Medchal-Malkajgiri", "dist:Medchal-Malkajgiri"), ("Karimnagar", "dist:Karimnagar")],
+        [("Nizamabad", "dist:Nizamabad"), ("Ranga Reddy", "dist:Ranga Reddy")],
+    ],
+    "Kerala": [
+        [("Thiruvananthapuram", "dist:Thiruvananthapuram"), ("Ernakulam", "dist:Ernakulam")],
+        [("Kozhikode", "dist:Kozhikode"), ("Thrissur", "dist:Thrissur")],
+        [("Kollam", "dist:Kollam"), ("Palakkad", "dist:Palakkad")],
+    ],
+    "Karnataka": [
+        [("Bengaluru Urban", "dist:Bengaluru Urban"), ("Mysuru", "dist:Mysuru")],
+        [("Belagavi", "dist:Belagavi"), ("Dakshina Kannada", "dist:Dakshina Kannada")],
+        [("Dharwad", "dist:Dharwad"), ("Kalaburagi", "dist:Kalaburagi")],
+    ],
+    "Maharashtra": [
+        [("Mumbai City", "dist:Mumbai City"), ("Mumbai Suburban", "dist:Mumbai Suburban")],
+        [("Pune", "dist:Pune"), ("Nagpur", "dist:Nagpur")],
+        [("Thane", "dist:Thane"), ("Nashik", "dist:Nashik")],
+    ],
+    "Gujarat": [
+        [("Ahmedabad", "dist:Ahmedabad"), ("Surat", "dist:Surat")],
+        [("Vadodara", "dist:Vadodara"), ("Rajkot", "dist:Rajkot")],
+        [("Bhavnagar", "dist:Bhavnagar"), ("Gandhinagar", "dist:Gandhinagar")],
+    ],
+    "Odisha": [
+        [("Khordha", "dist:Khordha"), ("Cuttack", "dist:Cuttack")],
+        [("Ganjam", "dist:Ganjam"), ("Puri", "dist:Puri")],
+        [("Sambalpur", "dist:Sambalpur"), ("Balasore", "dist:Balasore")],
+    ],
+    "West Bengal": [
+        [("Kolkata", "dist:Kolkata"), ("North 24 Parganas", "dist:North 24 Parganas")],
+        [("Howrah", "dist:Howrah"), ("Darjeeling", "dist:Darjeeling")],
+        [("South 24 Parganas", "dist:South 24 Parganas"), ("Hooghly", "dist:Hooghly")],
+    ],
+    "Punjab": [
+        [("Ludhiana", "dist:Ludhiana"), ("Amritsar", "dist:Amritsar")],
+        [("Jalandhar", "dist:Jalandhar"), ("Patiala", "dist:Patiala")],
+        [("Bathinda", "dist:Bathinda"), ("Hoshiarpur", "dist:Hoshiarpur")],
+    ],
+    "Assam": [
+        [("Kamrup Metropolitan", "dist:Kamrup Metropolitan"), ("Dibrugarh", "dist:Dibrugarh")],
+        [("Cachar", "dist:Cachar"), ("Jorhat", "dist:Jorhat")],
+        [("Nagaon", "dist:Nagaon"), ("Kamrup", "dist:Kamrup")],
+    ],
+    "Uttar Pradesh": [
+        [("Lucknow", "dist:Lucknow"), ("Kanpur Nagar", "dist:Kanpur Nagar")],
+        [("Varanasi", "dist:Varanasi"), ("Prayagraj", "dist:Prayagraj")],
+        [("Agra", "dist:Agra"), ("Gautam Buddha Nagar", "dist:Gautam Buddha Nagar")],
+        [("Meerut", "dist:Meerut"), ("Ghaziabad", "dist:Ghaziabad")],
+    ],
+    "Delhi": [
+        [("New Delhi", "dist:New Delhi"), ("Central Delhi", "dist:Central Delhi")],
+        [("South Delhi", "dist:South Delhi"), ("North Delhi", "dist:North Delhi")],
+        [("East Delhi", "dist:East Delhi"), ("West Delhi", "dist:West Delhi")],
     ],
 }
+
+# District aliases for common informal names across pilot states
+DISTRICT_ALIASES = {
+    "trichy": "Tiruchirappalli",
+    "tiruchi": "Tiruchirappalli",
+    "tanjore": "Thanjavur",
+    "madras": "Chennai",
+    "tuticorin": "Thoothukudi",
+    "vizag": "Visakhapatnam",
+    "waltair": "Visakhapatnam",
+    "vijayawada": "NTR",
+    "bezawada": "NTR",
+    "calicut": "Kozhikode",
+    "cochin": "Ernakulam",
+    "trivandrum": "Thiruvananthapuram",
+    "bangalore": "Bengaluru Urban",
+    "bengaluru": "Bengaluru Urban",
+    "mysore": "Mysuru",
+    "mangalore": "Dakshina Kannada",
+    "bombay": "Mumbai City",
+    "mumbai": "Mumbai City",
+    "calcutta": "Kolkata",
+    "baroda": "Vadodara",
+    "banaras": "Varanasi",
+    "kashi": "Varanasi",
+    "allahabad": "Prayagraj",
+    "kanpur": "Kanpur Nagar",
+    "noida": "Gautam Buddha Nagar",
+    "greater noida": "Gautam Buddha Nagar",
+    "mohali": "Sahibzada Ajit Singh Nagar",
+    "sas nagar": "Sahibzada Ajit Singh Nagar",
+    "rangareddy": "Ranga Reddy",
+    "delhi": "New Delhi",
+}
+
+# Localized conversational prompts for all 13 languages (Tamil first)
+BOT_PROMPTS = {
+    "ta": {
+        "greeting": "வணக்கம்! Nexus VisBharat (@NexusVisBharatBot) மக்கள் உதவி மையத்திற்கு வரவேற்கிறோம்.\n\nதயவுசெய்து உங்கள் விருப்ப மொழியைத் தேர்ந்தெடுக்கவும்:\n\nWelcome to Nexus VisBharat. Please choose your preferred language:",
+        "select_state": "உங்கள் மாநிலம் அல்லது யூனியன் பிரதேசத்தைத் தேர்ந்தெடுக்கவும்:",
+        "select_district": "மாநிலம்: {state}\n\nகீழேயுள்ள பொத்தான்களில் உங்கள் மாவட்டத்தைத் தேர்ந்தெடுக்கவும், அல்லது மாவட்டத்தின் பெயரை நேரடியாக தட்டச்சு செய்யவும்:",
+        "district_not_found": "'{text}' என்ற மாவட்டம் {state} மாநிலத்தில் கண்டறியப்படவில்லை. தயவுசெய்து கீழேயுள்ள பொத்தான்களில் இருந்து தேர்வு செய்யவும் அல்லது சரியான மாவட்டப் பெயரை தட்டச்சு செய்யவும்:",
+        "enter_ward": "மாவட்டம்: {district}\n\nஉங்கள் வார்டு எண், கிராமம் அல்லது பகுதியின் பெயரை உள்ளிடவும் (அல்லது 'தவிர்க்கவும்' என்பதை அழுத்தவும்):",
+        "issue_label": "புகார் விவரம்",
+        "location_label": "இடம்",
+        "confirm_btn": "✓ உறுதிசெய்து சமர்ப்பிக்கவும்",
+        "edit_btn": "✏ திருத்து",
+        "cancel_btn": "✖ ரத்து செய்",
+        "skip_btn": "தவிர்க்கவும் (Skip)",
+        "consent_btn": "✓ ஒப்புதல் அளித்து சமர்ப்பிக்கவும்",
+        "track_btn": "🔍 நிலையை அறிய",
+        "new_btn": "➕ புதிய புகார்",
+        "track_tip": "உங்கள் புகாரின் தற்போதைய நிலையை எப்போது வேண்டுமானாலும் அறிய /status {ticket} என அனுப்பவும்.",
+        "cancelled_msg": "வரைவு ரத்து செய்யப்பட்டது. புதிய புகாரைப் பதிவு செய்ய /start என அனுப்பவும்.",
+        "help": "Nexus VisBharat மக்கள் உதவி மையம் (@NexusVisBharatBot):\n\n1. /start - உங்கள் மொழியைத் தேர்ந்தெடுத்து புதிய புகாரைப் பதிவு செய்யவும்.\n2. /status [குறிப்பு எண்] - உங்கள் புகாரின் நிலையை அறிய (எ.கா: /status NVB-XXXXXXXXXXXX).\n3. /language - மொழியை மாற்ற.\n4. /cancel - நடப்பு வரைவை ரத்து செய்ய.\n\nகுரல் பதிவு, புகைப்படம் அல்லது தட்டச்சு மூலம் புகாரைப் பதிவு செய்யலாம். உங்கள் தகவல்கள் DPDP சட்டத்தின்படி பாதுகாக்கப்படும்.",
+    },
+    "te": {
+        "greeting": "నమస్కారం! Nexus VisBharat సహాయ కేంద్రానికి స్వాగతం. దయచేసి మీ భాషను ఎంచుకోండి:",
+        "select_state": "దయచేసి మీ రాష్ట్రం లేదా కేంద్రపాలిత ప్రాంతాన్ని ఎంచుకోండి:",
+        "select_district": "రాష్ట్రం: {state}\n\nక్రింది బటన్లలో మీ జిల్లాను ఎంచుకోండి, లేదా మీ జిల్లా పేరును నేరుగా టైప్ చేయండి:",
+        "district_not_found": "'{text}' అనే జిల్లా {state} లో కనుగొనబడలేదు. దయచేసి క్రింది బటన్ల నుండి ఎంచుకోండి లేదా సరైన పేరును టైప్ చేయండి:",
+        "enter_ward": "జిల్లా: {district}\n\nదయచేసి మీ వార్డు నంబర్, గ్రామం లేదా ప్రాంతం పేరును నమోదు చేయండి (లేదా 'దాటవేయి' క్లిక్ చేయండి):",
+        "issue_label": "ఫిర్యాదు వివరాలు",
+        "location_label": "ప్రాంతం",
+        "confirm_btn": "✓ నిర్ధారించి సమర్పించండి",
+        "edit_btn": "✏ సవరించు",
+        "cancel_btn": "✖ రద్దు చేయి",
+        "skip_btn": "దాటవేయి (Skip)",
+        "consent_btn": "✓ సమ్మతి తెలిపి సమర్పించండి",
+        "track_btn": "🔍 స్థితిని తనిఖీ చేయండి",
+        "new_btn": "➕ కొత్త ఫిర్యాదు",
+        "track_tip": "మీ ఫిర్యాదు స్థితిని తెలుసుకోవడానికి ఎప్పుడైనా /status {ticket} అని పంపండి.",
+        "cancelled_msg": "డ్రాఫ్ట్ రద్దు చేయబడింది. కొత్త ఫిర్యాదు నమోదు చేయడానికి /start అని పంపండి.",
+        "help": "Nexus VisBharat సహాయ కేంద్రం:\n\n1. /start - కొత్త ఫిర్యాదు ప్రారంభించండి.\n2. /status [రిఫరెన్స్ ID] - ఫిర్యాదు స్థితిని తనిఖీ చేయండి.\n3. /language - భాషను మార్చండి.\n4. /cancel - రద్దు చేయండి.",
+    },
+    "hi": {
+        "greeting": "नमस्ते! Nexus VisBharat नागरिक सहायता केंद्र में आपका स्वागत है। कृपया अपनी भाषा चुनें:",
+        "select_state": "कृपया अपना राज्य या केंद्र शासित प्रदेश चुनें:",
+        "select_district": "राज्य: {state}\n\nकृपया नीचे दिए गए बटनों से अपना ज़िला चुनें, या सीधे अपने ज़िले का नाम टाइप करें:",
+        "district_not_found": "'{text}' ज़िला {state} में नहीं मिला। कृपया नीचे दिए गए बटनों में से चुनें या सही नाम टाइप करें:",
+        "enter_ward": "ज़िला: {district}\n\nकृपया अपना वार्ड नंबर, गाँव या क्षेत्र का नाम दर्ज करें (या 'छोड़ें' पर क्लिक करें):",
+        "issue_label": "शिकायत का विवरण",
+        "location_label": "स्थान",
+        "confirm_btn": "✓ पुष्टि करें और जमा करें",
+        "edit_btn": "✏ सुधारें",
+        "cancel_btn": "✖ रद्द करें",
+        "skip_btn": "छोड़ें (Skip)",
+        "consent_btn": "✓ सहमति दें और जमा करें",
+        "track_btn": "🔍 स्थिति देखें",
+        "new_btn": "➕ नई शिकायत",
+        "track_tip": "अपनी शिकायत की स्थिति कभी भी जानने के लिए /status {ticket} भेजें।",
+        "cancelled_msg": "प्रारूप रद्द कर दिया गया। नई शिकायत दर्ज करने के लिए /start भेजें।",
+        "help": "Nexus VisBharat नागरिक सहायता केंद्र:\n\n1. /start - नई शिकायत दर्ज करें।\n2. /status [रेफ़रेंस आईडी] - स्थिति ट्रैक करें।\n3. /language - भाषा बदलें।\n4. /cancel - प्रारूप रद्द करें।",
+    },
+    "bn": {
+        "greeting": "নমস্কার! Nexus VisBharat নাগরিক সহায়তা কেন্দ্রে আপনাকে স্বাগতম। আপনার ভাষা নির্বাচন করুন:",
+        "select_state": "অনুগ্রহ করে আপনার রাজ্য বা কেন্দ্রশাসিত অঞ্চল নির্বাচন করুন:",
+        "select_district": "রাজ্য: {state}\n\nঅনুগ্রহ করে নিচের বোতাম থেকে আপনার জেলা নির্বাচন করুন, অথবা সরাসরি জেলার নাম টাইপ করুন:",
+        "district_not_found": "'{text}' জেলা {state} এ পাওয়া যায়নি। অনুগ্রহ করে নিচের বোতাম থেকে নির্বাচন করুন:",
+        "enter_ward": "জেলা: {district}\n\nআপনার ওয়ার্ড নম্বর, গ্রাম বা এলাকার নাম লিখুন (বা 'এড়িয়ে যান' চাপুন):",
+        "issue_label": "অভিযোগের বিবরণ",
+        "location_label": "অবস্থান",
+        "confirm_btn": "✓ নিশ্চিত করুন ও জমা দিন",
+        "edit_btn": "✏ সংশোধন",
+        "cancel_btn": "✖ বাতিল",
+        "skip_btn": "এড়িয়ে যান (Skip)",
+        "consent_btn": "✓ সম্মতি দিয়ে জমা দিন",
+        "track_btn": "🔍 স্থিতি দেখুন",
+        "new_btn": "➕ নতুন অভিযোগ",
+        "track_tip": "স্থিতি জানতে যেকোনো সময় পাঠান: /status {ticket}",
+        "cancelled_msg": "খসড়া বাতিল করা হয়েছে। নতুন অভিযোগের জন্য /start পাঠান।",
+        "help": "Nexus VisBharat সহায়তা:\n\n1. /start - নতুন অভিযোগ।\n2. /status [টিকিট] - স্থিতি ট্র্যাক করুন।\n3. /language - ভাষা পরিবর্তন করুন।",
+    },
+    "mr": {
+        "greeting": "नमस्कार! Nexus VisBharat नागरी सहाय्यता केंद्रात आपले स्वागत आहे. कृपया आपली भाषा निवडा:",
+        "select_state": "कृपया आपले राज्य किंवा केंद्रशासित प्रदेश निवडा:",
+        "select_district": "राज्य: {state}\n\nकृपया खालील बटणांमधून आपला जिल्हा निवडा, किंवा जिल्ह्याचे नाव थेट टाईप करा:",
+        "district_not_found": "'{text}' हा जिल्हा {state} मध्ये सापडला नाही. कृपया खालील बटणांमधून निवडा:",
+        "enter_ward": "जिल्हा: {district}\n\nकृपया आपला प्रभाग क्रमांक, गाव किंवा परिसराचे नाव प्रविष्ट करा (किंवा 'वगळा' दाबा):",
+        "issue_label": "तक्रार तपशील",
+        "location_label": "स्थान",
+        "confirm_btn": "✓ पुष्टी करा आणि सादर करा",
+        "edit_btn": "✏ संपादन",
+        "cancel_btn": "✖ रद्द करा",
+        "skip_btn": "वगळा (Skip)",
+        "consent_btn": "✓ संमती द्या आणि सादर करा",
+        "track_btn": "🔍 स्थिती तपासा",
+        "new_btn": "➕ नवीन तक्रार",
+        "track_tip": "आपल्या तक्रारीची स्थिती जाणून घेण्यासाठी /status {ticket} पाठवा.",
+        "cancelled_msg": "मसुदा रद्द केला. नवीन तक्रारीसाठी /start पाठवा.",
+        "help": "Nexus VisBharat नागरी सहाय्यता केंद्र:\n\n1. /start - नवीन तक्रार नोंदवा.\n2. /status [तिकीट आयडी] - स्थिती तपासा.\n3. /language - भाषा बदला.",
+    },
+    "kn": {
+        "greeting": "ನಮಸ್ಕಾರ! Nexus VisBharat ನಾಗರಿಕ ಸಹಾಯ ಕೇಂದ್ರಕ್ಕೆ ಸುಸ್ವಾಗತ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ:",
+        "select_state": "ದಯವಿಟ್ಟು ನಿಮ್ಮ ರಾಜ್ಯ ಅಥವಾ ಕೇಂದ್ರಾಡಳಿತ ಪ್ರದೇಶವನ್ನು ಆಯ್ಕೆಮಾಡಿ:",
+        "select_district": "ರಾಜ್ಯ: {state}\n\nದಯವಿಟ್ಟು ಕೆಳಗಿನ ಬಟನ್‌ಗಳಿಂದ ನಿಮ್ಮ ಜಿಲ್ಲೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ, ಅಥವಾ ಜಿಲ್ಲೆಯ ಹೆಸರನ್ನು ಟೈಪ್ ಮಾಡಿ:",
+        "district_not_found": "'{text}' ಜಿಲ್ಲೆಯು {state} ನಲ್ಲಿ ಕಂಡುಬಂದಿಲ್ಲ. ದಯವಿಟ್ಟು ಬಟನ್‌ಗಳಿಂದ ಆಯ್ಕೆಮಾಡಿ:",
+        "enter_ward": "ಜಿಲ್ಲೆ: {district}\n\nದಯವಿಟ್ಟು ನಿಮ್ಮ ವಾರ್ಡ್ ಸಂಖ್ಯೆ, ಗ್ರಾಮ ಅಥವಾ ಪ್ರದೇಶದ ಹೆಸರನ್ನು ನಮೂದಿಸಿ (ಅಥವಾ 'ಬಿಟ್ಟುಬಿಡಿ' ಕ್ಲಿಕ್ ಮಾಡಿ):",
+        "issue_label": "ದೂರಿನ ವಿವರಗಳು",
+        "location_label": "ಸ್ಥಳ",
+        "confirm_btn": "✓ ದೃಢೀಕರಿಸಿ ಮತ್ತು ಸಲ್ಲಿಸಿ",
+        "edit_btn": "✏ ತಿದ್ದುಪಡಿ",
+        "cancel_btn": "✖ ರದ್ದುಮಾಡಿ",
+        "skip_btn": "ಬಿಟ್ಟುಬಿಡಿ (Skip)",
+        "consent_btn": "✓ ಸಮ್ಮತಿ ನೀಡಿ ಸಲ್ಲಿಸಿ",
+        "track_btn": "🔍 ಸ್ಥಿತಿ ಪರಿಶೀಲಿಸಿ",
+        "new_btn": "➕ ಹೊಸ ದೂರು",
+        "track_tip": "ಸ್ಥಿತಿ ತಿಳಿಯಲು ಯಾವುದೇ ಸಮಯದಲ್ಲಿ /status {ticket} ಕಳುಹಿಸಿ.",
+        "cancelled_msg": "ಕರಡು ರದ್ದುಗೊಂಡಿದೆ. ಹೊಸ ದೂರಿಗೆ /start ಕಳುಹಿಸಿ.",
+        "help": "Nexus VisBharat ಸಹಾಯ:\n\n1. /start - ಹೊಸ ದೂರು ದಾಖಲಿಸಿ.\n2. /status [ಟಿಕೆಟ್] - ಸ್ಥಿತಿ ಪರಿಶೀಲಿಸಿ.\n3. /language - ಭಾಷೆ ಬದಲಾಯಿಸಿ.",
+    },
+    "ml": {
+        "greeting": "നമസ്കാരം! Nexus VisBharat പൗരസഹായ കേന്ദ്രത്തിലേക്ക് സ്വാഗതം. നിങ്ങളുടെ ഭാഷ തിരഞ്ഞെടുക്കുക:",
+        "select_state": "ദയവായി നിങ്ങളുടെ സംസ്ഥാനം അല്ലെങ്കിൽ കേന്ദ്രഭരണ പ്രദേശം തിരഞ്ഞെടുക്കുക:",
+        "select_district": "സംസ്ഥാനം: {state}\n\nതാഴെയുള്ള ബട്ടണുകളിൽ നിന്ന് ജില്ല തിരഞ്ഞെടുക്കുക, അല്ലെങ്കിൽ പേര് ടൈപ്പ് ചെയ്യുക:",
+        "district_not_found": "'{text}' എന്ന ജില്ല {state} ൽ കണ്ടെത്തിയില്ല. താഴെ നിന്ന് തിരഞ്ഞെടുക്കുക:",
+        "enter_ward": "ജില്ല: {district}\n\nനിങ്ങളുടെ വാർഡ് നമ്പർ, ഗ്രാമം അല്ലെങ്കിൽ പ്രദേശം നൽകുക (അല്ലെങ്കിൽ 'ഒഴിവാക്കുക' അമർത്തുക):",
+        "issue_label": "പരാതി വിവരങ്ങൾ",
+        "location_label": "സ്ഥലം",
+        "confirm_btn": "✓ സ്ഥിരീകരിച്ച് സമർപ്പിക്കുക",
+        "edit_btn": "✏ തിരുത്തുക",
+        "cancel_btn": "✖ റദ്ദാക്കുക",
+        "skip_btn": "ഒഴിവാക്കുക (Skip)",
+        "consent_btn": "✓ സമ്മതിച്ച് സമർപ്പിക്കുക",
+        "track_btn": "🔍 സ്ഥിതി പരിശോധിക്കുക",
+        "new_btn": "➕ പുതിയ പരാതി",
+        "track_tip": "നില പരിശോധിക്കാൻ എപ്പോൾ വേണമെങ്കിലും /status {ticket} അയക്കുക.",
+        "cancelled_msg": "ഡ്രാഫ്റ്റ് റദ്ദാക്കി. പുതിയ പരാതിക്ക് /start അയക്കുക.",
+        "help": "Nexus VisBharat സഹായം:\n\n1. /start - പുതിയ പരാതി.\n2. /status [ടിക്കറ്റ്] - സ്ഥിതി അറിയുക.\n3. /language - ഭാഷ മാറ്റുക.",
+    },
+    "gu": {
+        "greeting": "નમસ્તે! Nexus VisBharat નાગરિક સહાય કેન્દ્રમાં આપનું સ્વાગત છે. કૃપા કરીને તમારી ભાષા પસંદ કરો:",
+        "select_state": "કૃપા કરીને તમારું રાજ્ય અથવા કેન્દ્રશાસિત પ્રદેશ પસંદ કરો:",
+        "select_district": "રાજ્ય: {state}\n\nનીચેના બટનોમાંથી તમારો જિલ્લો પસંદ કરો, અથવા સીધું નામ લખો:",
+        "district_not_found": "'{text}' જિલ્લો {state} માં મળ્યો નથી. કૃપા કરીને નીચેના બટનોમાંથી પસંદ કરો:",
+        "enter_ward": "જિલ્લો: {district}\n\nતમારો વોર્ડ નંબર, ગામ અથવા વિસ્તારનું નામ દાખલ કરો (અથવા 'છોડો' દબાવો):",
+        "issue_label": "ફરિયાદ વિગત",
+        "location_label": "સ્થળ",
+        "confirm_btn": "✓ પુષ્ટિ કરો અને સબમિટ કરો",
+        "edit_btn": "✏ સુધારો",
+        "cancel_btn": "✖ રદ કરો",
+        "skip_btn": "છોડો (Skip)",
+        "consent_btn": "✓ સંમતિ આપી સબમિટ કરો",
+        "track_btn": "🔍 સ્થિતિ તપાસો",
+        "new_btn": "➕ નવી ફરિયાદ",
+        "track_tip": "સ્થિતિ જાણવા માટે ગમે ત્યારે /status {ticket} મોકલો.",
+        "cancelled_msg": "ડ્રાફ્ટ રદ કરવામાં આવ્યો. નવી ફરિયાદ માટે /start મોકલો.",
+        "help": "Nexus VisBharat સહાય:\n\n1. /start - નવી ફરિયાદ નોંધાવો.\n2. /status [ટિકિટ] - સ્થિતિ તપાસો.\n3. /language - ભાષા બદલો.",
+    },
+    "pa": {
+        "greeting": "ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! Nexus VisBharat ਨਾਗਰਿਕ ਸਹਾਇਤਾ ਕੇਂਦਰ ਵਿੱਚ ਤੁਹਾਡਾ ਸਵਾਗਤ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਭਾਸ਼ਾ ਚੁਣੋ:",
+        "select_state": "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਰਾਜ ਜਾਂ ਕੇਂਦਰ ਸ਼ਾਸਿਤ ਪ੍ਰਦੇਸ਼ ਚੁਣੋ:",
+        "select_district": "ਰਾਜ: {state}\n\nਹੇਠਾਂ ਦਿੱਤੇ ਬਟਨਾਂ ਤੋਂ ਆਪਣਾ ਜ਼ਿਲ੍ਹਾ ਚੁਣੋ, ਜਾਂ ਸਿੱਧਾ ਜ਼ਿਲ੍ਹੇ ਦਾ ਨਾਮ ਟਾਈਪ ਕਰੋ:",
+        "district_not_found": "'{text}' ਜ਼ਿਲ੍ਹਾ {state} ਵਿੱਚ ਨਹੀਂ ਮਿਲਿਆ। ਹੇਠਾਂ ਦਿੱਤੇ ਬਟਨਾਂ ਵਿੱਚੋਂ ਚੁਣੋ:",
+        "enter_ward": "ਜ਼ਿਲ੍ਹਾ: {district}\n\nਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਵਾਰਡ ਨੰਬਰ, ਪਿੰਡ ਜਾਂ ਖੇਤਰ ਦਾ ਨਾਮ ਦਰਜ ਕਰੋ (ਜਾਂ 'ਛੱਡੋ' ਦਬਾਓ):",
+        "issue_label": "ਸ਼ਿਕਾਇਤ ਦਾ ਵੇਰਵਾ",
+        "location_label": "ਸਥਾਨ",
+        "confirm_btn": "✓ ਪੁਸ਼ਟੀ ਕਰੋ ਅਤੇ ਜਮ੍ਹਾਂ ਕਰੋ",
+        "edit_btn": "✏ ਸੋਧੋ",
+        "cancel_btn": "✖ ਰੱਦ ਕਰੋ",
+        "skip_btn": "ਛੱਡੋ (Skip)",
+        "consent_btn": "✓ ਸਹਿਮਤੀ ਦੇ ਕੇ ਜਮ੍ਹਾਂ ਕਰੋ",
+        "track_btn": "🔍 ਸਥਿਤੀ ਦੇਖੋ",
+        "new_btn": "➕ ਨਵੀਂ ਸ਼ਿਕਾਇਤ",
+        "track_tip": "ਸਥਿਤੀ ਜਾਣਨ ਲਈ ਕਿਸੇ ਵੀ ਸਮੇਂ /status {ticket} ਭੇਜੋ।",
+        "cancelled_msg": "ਡਰਾਫਟ ਰੱਦ ਕਰ ਦਿੱਤਾ ਗਿਆ। ਨਵੀਂ ਸ਼ਿਕਾਇਤ ਲਈ /start ਭੇਜੋ।",
+        "help": "Nexus VisBharat ਸਹਾਇਤਾ:\n\n1. /start - ਨਵੀਂ ਸ਼ਿਕਾਇਤ।\n2. /status [ਟਿਕਟ] - ਸਥਿਤੀ ਦੇਖੋ।\n3. /language - ਭਾਸ਼ਾ ਬਦਲੋ।",
+    },
+    "or": {
+        "greeting": "ନମସ୍କାର! Nexus VisBharat ନାଗରିକ ସହାୟତା କେନ୍ଦ୍ରକୁ ସ୍ୱାଗତ। ଦୟାକରି ଆପଣଙ୍କ ଭାଷା ଚୟନ କରନ୍ତୁ:",
+        "select_state": "ଦୟାକରି ଆପଣଙ୍କ ରାଜ୍ୟ କିମ୍ବା କେନ୍ଦ୍ରଶାସିତ ଅଞ୍ଚଳ ଚୟନ କରନ୍ତୁ:",
+        "select_district": "ରାଜ୍ୟ: {state}\n\nଦୟାକରି ତଳ ବଟନରୁ ଆପଣଙ୍କ ଜିଲ୍ଲା ଚୟନ କରନ୍ତୁ, କିମ୍ବା ସିଧାସଳଖ ଟାଇପ୍ କରନ୍ତୁ:",
+        "district_not_found": "'{text}' ଜିଲ୍ଲା {state} ରେ ମିଳିଲା ନାହିଁ। ଦୟାକରି ତଳ ବଟନରୁ ବାଛନ୍ତୁ:",
+        "enter_ward": "ଜିଲ୍ଲା: {district}\n\nଦୟାକରି ଆପଣଙ୍କ ୱାର୍ଡ ନମ୍ବର, ଗ୍ରାମ ବା ଅଞ୍ଚଳର ନାମ ଦିଅନ୍ତୁ (କିମ୍ବା 'ଛାଡ଼ନ୍ତୁ' ଦବାନ୍ତୁ):",
+        "issue_label": "ଅଭିଯୋଗ ବିବରଣୀ",
+        "location_label": "ସ୍ଥାନ",
+        "confirm_btn": "✓ ନିଶ୍ଚିତ କରନ୍ତୁ ଓ ଦାଖଲ କରନ୍ତୁ",
+        "edit_btn": "✏ ସଂଶୋଧନ",
+        "cancel_btn": "✖ ବାତିଲ",
+        "skip_btn": "ଛାଡ଼ନ୍ତୁ (Skip)",
+        "consent_btn": "✓ ସମ୍ମତି ଦେଇ ଦାଖଲ କରନ୍ତୁ",
+        "track_btn": "🔍 ସ୍ଥିତି ଯାଞ୍ଚ କରନ୍ତୁ",
+        "new_btn": "➕ ନୂତନ ଅଭିଯୋଗ",
+        "track_tip": "ସ୍ଥିତି ଜାଣିବା ପାଇଁ ଯେକୌଣସି ସମୟରେ /status {ticket} ପଠାନ୍ତୁ।",
+        "cancelled_msg": "ଡ୍ରାଫ୍ଟ ବାତିଲ କରାଗଲା। ନୂତନ ଅଭିଯୋଗ ପାଇଁ /start ପଠାନ୍ତୁ।",
+        "help": "Nexus VisBharat ସହାୟତା:\n\n1. /start - ନୂତନ ଅଭିଯୋଗ।\n2. /status [ଟିକେଟ୍] - ସ୍ଥିତି ଯାଞ୍ଚ।\n3. /language - ଭାଷା ପରିବର୍ତ୍ତନ।",
+    },
+    "as": {
+        "greeting": "নমস্কাৰ! Nexus VisBharat নাগৰিক সাহায্য কেন্দ্ৰলৈ স্বাগতম। অনুগ্ৰহ কৰি আপোনাৰ ভাষা বাছক:",
+        "select_state": "অনুগ্ৰহ কৰি আপোনাৰ ৰাজ্য বা কেন্দ্ৰীয় শাসিত অঞ্চল বাছক:",
+        "select_district": "ৰাজ্য: {state}\n\nতলৰ বুটামৰ পৰা আপোনাৰ জিলা বাছক, বা জিলাৰ নাম পোনপটীয়াকৈ টাইপ কৰক:",
+        "district_not_found": "'{text}' জিলাখন {state} ত পোৱা নগল। অনুগ্ৰহ কৰি তলৰ বুটামৰ পৰা বাছক:",
+        "enter_ward": "জিলা: {district}\n\nআপোনাৰ ৱাৰ্ড নম্বৰ, গাঁও বা অঞ্চলৰ নাম দিয়ক (বা 'বাদ দিয়ক' টিপক):",
+        "issue_label": "অভিযোগৰ বিৱৰণ",
+        "location_label": "স্থান",
+        "confirm_btn": "✓ নিশ্চিত কৰি দাখিল কৰক",
+        "edit_btn": "✏ সংশোধন",
+        "cancel_btn": "✖ বাতিল কৰক",
+        "skip_btn": "বাদ দিয়ক (Skip)",
+        "consent_btn": "✓ সন্মতি দি দাখিল কৰক",
+        "track_btn": "🔍 স্থিতি পৰীক্ষা কৰক",
+        "new_btn": "➕ নতুন অভিযোগ",
+        "track_tip": "স্থিতি জানিবলৈ যিকোনো সময়তে প্ৰেৰণ কৰক: /status {ticket}",
+        "cancelled_msg": "খচৰা বাতিল কৰা হ’ল। নতুন অভিযোগৰ বাবে /start প্ৰেৰণ কৰক।",
+        "help": "Nexus VisBharat সাহায্য:\n\n1. /start - নতুন অভিযোগ।\n2. /status [টিকিট] - স্থিতি পৰীক্ষা।\n3. /language - ভাষা সলনি কৰক।",
+    },
+    "ur": {
+        "greeting": "آداب! Nexus VisBharat شہری امدادی مرکز میں خوش آمدید۔ براہ کرم اپنی زبان منتخب کریں:",
+        "select_state": "براہ کرم اپنی ریاست یا مرکز کے زیر انتظام علاقہ منتخب کریں:",
+        "select_district": "ریاست: {state}\n\nبراہ کرم نیچے دیے گئے بٹنوں سے اپنا ضلع منتخب کریں، یا براہ راست ٹائپ کریں:",
+        "district_not_found": "ضلع '{text}' ریاست {state} میں نہیں ملا۔ براہ کرم نیچے دیے گئے بٹنوں سے منتخب کریں:",
+        "enter_ward": "ضلع: {district}\n\nبراہ کرم اپنا وارڈ نمبر، گاؤں یا علاقے کا نام درج کریں (یا 'چھوڑ دیں' پر کلک کریں):",
+        "issue_label": "شکایت کی تفصیل",
+        "location_label": "مقام",
+        "confirm_btn": "✓ تصدیق کریں اور جمع کریں",
+        "edit_btn": "✏ ترمیم",
+        "cancel_btn": "✖ منسوخ",
+        "skip_btn": "چھوڑ دیں (Skip)",
+        "consent_btn": "✓ رضامندی دیں اور جمع کریں",
+        "track_btn": "🔍 کیفیت دیکھیں",
+        "new_btn": "➕ نئی شکایت",
+        "track_tip": "اپنی شکایت کی کیفیت جاننے کے لیے کسی بھی وقت /status {ticket} بھیجیں۔",
+        "cancelled_msg": "مسودہ منسوخ کر دیا گیا۔ نئی شکایت کے لیے /start بھیجیں۔",
+        "help": "Nexus VisBharat شہری امداد:\n\n1. /start - نئی شکایت।\n2. /status [ٹکٹ] - کیفیت چیک کریں۔\n3. /language - زبان تبدیل کریں۔",
+    },
+    "en": {
+        "greeting": "Welcome to Nexus VisBharat (@NexusVisBharatBot) Citizen Intake.\n\nPlease choose your preferred language:",
+        "select_state": "Please select your State or Union Territory:",
+        "select_district": "State: {state}\n\nPlease select your District using the buttons below, or type your district name directly:",
+        "district_not_found": "District '{text}' was not recognized in {state}. Please select from the buttons below or type a valid district name:",
+        "enter_ward": "District: {district}\n\nPlease enter your local Ward number, Village, or Area name (or tap 'Skip'):",
+        "issue_label": "Grievance / Issue",
+        "location_label": "Location",
+        "confirm_btn": "✓ Confirm & Submit",
+        "edit_btn": "✏ Edit Report",
+        "cancel_btn": "✖ Cancel Draft",
+        "skip_btn": "Skip",
+        "consent_btn": "✓ I Consent & Submit",
+        "track_btn": "🔍 Track Status",
+        "new_btn": "➕ New Report",
+        "track_tip": "To track your report anytime, send /status {ticket}",
+        "cancelled_msg": "Draft cancelled. Send /start to begin a new report.",
+        "help": "Nexus VisBharat Citizen Intake (@NexusVisBharatBot):\n\n1. /start - Select language and begin a new public infrastructure report.\n2. /status [ticket ID] - Track the status of a registered report (e.g. /status NVB-XXXXXXXXXXXX).\n3. /language - Change your active language anytime.\n4. /cancel - Discard the current report draft.\n\nYou can report issues using text, voice notes, or photos. All personal data is governed under the DPDP Act 2023.",
+    },
+}
+
+
+def _find_matching_district(state, text):
+    if not text:
+        return None
+    raw = str(text).strip()
+    valid_districts = PILOT_STATE_TO_DISTRICTS.get(state, [])
+    # 1. Exact case-insensitive match
+    for d in valid_districts:
+        if d.lower() == raw.lower():
+            return d
+    # 2. Known aliases
+    cleaned = raw.lower()
+    if cleaned in DISTRICT_ALIASES:
+        canonical = DISTRICT_ALIASES[cleaned]
+        if canonical in valid_districts:
+            return canonical
+    # 3. Substring match
+    for d in valid_districts:
+        if cleaned in d.lower() or d.lower() in cleaned:
+            return d
+    return None
 
 
 def _now():
@@ -134,8 +525,6 @@ def _queue_text(chat_id, text, reply_markup=None, message_key=None):
     payload = {"chat_id": chat_id, "text": str(text or "")[:4096]}
     if reply_markup:
         payload["reply_markup"] = reply_markup
-    # Repeated prompts (for example /help or a missing district) are valid
-    # separate replies; deduplication belongs to the inbound update ledger.
     _queue(message_key or f"chat:{chat_id}:message:{uuid4().hex}",
            chat_id, "sendMessage", payload)
 
@@ -251,8 +640,20 @@ def _clear(chat_id):
 
 
 def _lang(session):
-    value = str(session.get("language") or "en").lower()
-    return value if value in LANGUAGES else "en"
+    """Strictly return selected language with Tamil ('ta') as default priority."""
+    value = str((session or {}).get("language") or "ta").lower()
+    return value if value in ORDERED_LANG_CODES else "ta"
+
+
+def _prompt(lang, key):
+    lang_map = BOT_PROMPTS.get(lang) or BOT_PROMPTS["ta"]
+    return lang_map.get(key) or BOT_PROMPTS["en"].get(key, "")
+
+
+def _i18n(lang, key):
+    strings = _get_strings()
+    lang_dict = strings.get(lang) or strings.get("ta") or {}
+    return lang_dict.get(key) or strings.get("en", {}).get(key, "")
 
 
 def _text(chat_id, text, reply_markup=None, key=None):
@@ -262,20 +663,49 @@ def _text(chat_id, text, reply_markup=None, key=None):
 def _start(chat_id):
     session = {"stage": "language", "nonce": uuid4().hex[:12]}
     _save(chat_id, session)
-    _text(chat_id, "Welcome to Nexus VisBharat. Choose your language:", _keyboard([[('Tamil', 'lang:ta'), ('Telugu', 'lang:te'), ('English', 'lang:en')]]), f"chat:{chat_id}:start:{session['nonce']}")
+    greeting = BOT_PROMPTS["ta"]["greeting"]
+    _text(chat_id, greeting, _keyboard(LANGUAGE_KEYBOARD), f"chat:{chat_id}:start:{session['nonce']}")
     return session
 
 
-def _help(chat_id):
-    _text(chat_id, "Choose Tamil, Telugu or English, describe an infrastructure issue, provide the district, review the draft, and consent before submitting. Use /status NVB-XXXXXXXXXXXX to track a saved request.")
+def _help(chat_id, session=None):
+    lang = _lang(session or _session(chat_id))
+    help_text = _prompt(lang, "help")
+    _text(chat_id, help_text)
 
 
-def _status(chat_id, ticket):
-    row = get_db().execute("SELECT status, district FROM citizen_requests WHERE request_id=?", (ticket.upper(),)).fetchone()
+def _status(chat_id, ticket, session=None):
+    lang = _lang(session or _session(chat_id))
+    clean_ticket = str(ticket or "").strip().upper()
+    db = get_db()
+    row = db.execute(
+        """SELECT request_id, status, district, state, category, urgency,
+                  routed_department, sla_due_at, created_at
+           FROM citizen_requests WHERE request_id=?""",
+        (clean_ticket,)
+    ).fetchone()
     if not row:
-        _text(chat_id, f"No request matches ticket {ticket.upper()}.")
+        not_found_msg = _i18n(lang, "not_found") or f"No request matches ticket {clean_ticket}."
+        _text(chat_id, not_found_msg)
         return
-    _text(chat_id, f"Ticket ID: {ticket.upper()}\nDistrict: {row['district']}\nStatus: {row['status']}")
+
+    status_val = row['status']
+    status_key = f"status_{status_val.lower().replace(' ', '_')}"
+    status_label = _i18n(lang, status_key) or status_val
+
+    due_str = row['sla_due_at'][:16].replace('T', ' ') if row['sla_due_at'] else 'Standard'
+    details = (
+        f"📋 Ticket: {row['request_id']}\n"
+        f"📍 Location: {row['district']}, {row['state']}\n"
+        f"🏷 Category: {row['category']} ({row['urgency']})\n"
+        f"🏛 Department: {row['routed_department'] or 'Grievance Redressal'}\n"
+        f"⚡ Status: {status_label}\n"
+        f"⏱ SLA Due: {due_str}"
+    )
+    track_btn = _prompt(lang, "track_btn")
+    new_btn = _prompt(lang, "new_btn")
+    kb = _keyboard([[ (track_btn, f"track:{clean_ticket}"), (new_btn, "new_report") ]])
+    _text(chat_id, details, kb)
 
 
 def _voice_text(file_id, language):
@@ -305,31 +735,46 @@ def _submit(chat_id, session, ingest_text):
             issue = _voice_text(session["voice_file_id"], language)
         except Exception as exc:
             LOGGER.exception("Failed to transcribe Telegram voice note for chat %s: %s", chat_id, exc)
-            _text(chat_id, "I could not transcribe that voice note. Please send it again or type the report; your draft is retained.")
+            retry_msg = _i18n(language, "asr_error") or "I could not transcribe that voice note. Please type your report; your draft is retained."
+            _text(chat_id, retry_msg)
             return
     if not issue:
-        _text(chat_id, LANGUAGES[language]["issue"])
+        _text(chat_id, _i18n(language, "issue"))
         return
+
+    state = session.get("state") or "Tamil Nadu"
     district = session.get("district") or session.get("location") or "Vellore"
+    ward = session.get("ward") or ""
+
     payload, error = ingest_text(
         channel="Telegram",
         text=issue,
         language=language,
         district=district,
+        state=state,
+        ward=ward,
         sender=str(chat_id),
         endpoint="/api/channels/telegram/conversation",
         idempotency_key=f"telegram:{chat_id}:{session.get('nonce', 'unknown')}",
     )
     if error or not payload.get("success"):
-        _text(chat_id, "The service is temporarily unavailable. Your draft is retained; please try again.")
+        fail_msg = _i18n(language, "failed") or "The service is temporarily unavailable. Your draft is retained; please try again."
+        _text(chat_id, fail_msg)
         return
     request_id = payload.get("request_id")
     if request_id:
         session.update(stage="complete", request_id=request_id, issue=issue)
         _save(chat_id, session)
-        _text(chat_id, LANGUAGES[language]["saved"].format(ticket=request_id), key=f"chat:{chat_id}:saved:{request_id}")
+        saved_template = _i18n(language, "saved") or "Your request has been registered. Reference: {ticket}"
+        saved_text = saved_template.format(ticket=request_id)
+        tip_text = _prompt(language, "track_tip").format(ticket=request_id)
+        full_ack = f"{saved_text}\n\n{tip_text}"
+        track_btn = _prompt(language, "track_btn")
+        new_btn = _prompt(language, "new_btn")
+        kb = _keyboard([[ (track_btn, f"track:{request_id}"), (new_btn, "new_report") ]])
+        _text(chat_id, full_ack, kb, key=f"chat:{chat_id}:saved:{request_id}")
     else:
-        _text(chat_id, "Your report was accepted for processing. Please try /status again shortly.")
+        _text(chat_id, "Your report was accepted for processing. Please check status shortly.")
 
 
 def _callback(update, chat_id, ingest_text):
@@ -337,48 +782,97 @@ def _callback(update, chat_id, ingest_text):
     action = str(callback.get("data") or "")
     _queue_callback_answer(callback.get("id"), f"callback:{callback.get('id') or hashlib.sha256(action.encode()).hexdigest()}")
     session = _session(chat_id)
-    if action.startswith("lang:") and action[5:] in LANGUAGES:
+
+    if action.startswith("lang:") and action[5:] in ORDERED_LANG_CODES:
         language = action[5:]
         session.update(language=language, stage="issue")
         _save(chat_id, session)
-        _text(chat_id, LANGUAGES[language]["welcome"])
+        welcome = _i18n(language, "welcome")
+        issue_p = _i18n(language, "issue")
+        _text(chat_id, f"{welcome}\n\n{issue_p}")
     elif action.startswith("state:"):
         state = action[6:]
         session.update(state=state, stage="district")
         _save(chat_id, session)
+        lang = _lang(session)
         keyboard = DISTRICT_KEYBOARDS.get(state, DISTRICT_KEYBOARDS["Tamil Nadu"])
-        _text(chat_id, f"State: {state}\n\nPlease select your District:", _keyboard(keyboard))
+        prompt_text = _prompt(lang, "select_district").format(state=state)
+        _text(chat_id, prompt_text, _keyboard(keyboard))
     elif action.startswith("dist:"):
         district = action[5:]
         session.update(district=district, location=district, stage="ward")
         _save(chat_id, session)
-        _text(chat_id, f"District: {district}\n\nPlease enter your local Ward, Village or Area name (or type 'Skip'):")
+        lang = _lang(session)
+        ward_prompt = _prompt(lang, "enter_ward").format(district=district)
+        skip_btn = _prompt(lang, "skip_btn")
+        _text(chat_id, ward_prompt, _keyboard([[ (skip_btn, "ward:skip") ]]))
+    elif action == "ward:skip" and session.get("stage") == "ward":
+        session.update(ward="", stage="review")
+        _save(chat_id, session)
+        _send_review(chat_id, session)
     elif action == "confirm" and session.get("stage") == "review":
         session["stage"] = "privacy"
         _save(chat_id, session)
-        language = _lang(session)
-        _text(chat_id, LANGUAGES[language]["notice"] + "\n\n" + LANGUAGES[language]["consent"], _keyboard([[('I consent', 'consent')], [('Cancel', 'cancel')]]))
+        lang = _lang(session)
+        notice = _i18n(lang, "notice")
+        consent = _i18n(lang, "consent")
+        consent_btn = _prompt(lang, "consent_btn")
+        cancel_btn = _prompt(lang, "cancel_btn")
+        _text(chat_id, f"{notice}\n\n{consent}", _keyboard([[ (consent_btn, 'consent') ], [ (cancel_btn, 'cancel') ]]))
     elif action == "consent" and session.get("stage") == "privacy":
         session["consent_granted"] = True
         _save(chat_id, session)
         _submit(chat_id, session, ingest_text)
     elif action == "edit":
+        lang = _lang(session)
         session["stage"] = "issue"
         _save(chat_id, session)
-        _text(chat_id, LANGUAGES[_lang(session)]["issue"])
+        _text(chat_id, _i18n(lang, "issue"))
     elif action == "cancel":
+        lang = _lang(session)
         _clear(chat_id)
-        _text(chat_id, "Draft cancelled. No report was submitted.")
+        _text(chat_id, _prompt(lang, "cancelled_msg"))
+    elif action.startswith("track:"):
+        ticket = action[6:]
+        _status(chat_id, ticket, session)
+    elif action == "new_report":
+        _start(chat_id)
+
+
+def _send_review(chat_id, session):
+    lang = _lang(session)
+    state = session.get("state", "Tamil Nadu")
+    district = session.get("district", "Vellore")
+    ward = session.get("ward", "")
+    loc_display = f"{district}, {state}" + (f" (Ward: {ward})" if ward else "")
+    review_head = _i18n(lang, "review")
+    issue_lbl = _prompt(lang, "issue_label")
+    loc_lbl = _prompt(lang, "location_label")
+    review_text = f"{review_head}\n\n📝 {issue_lbl}: {session.get('issue', '')}\n📍 {loc_lbl}: {loc_display}"
+    confirm_btn = _prompt(lang, "confirm_btn")
+    edit_btn = _prompt(lang, "edit_btn")
+    cancel_btn = _prompt(lang, "cancel_btn")
+    _text(chat_id, review_text, _keyboard([[ (confirm_btn, 'confirm'), (edit_btn, 'edit') ], [ (cancel_btn, 'cancel') ]]))
 
 
 def _message(update, chat_id, ingest_text):
     message = update.get("message") or update.get("edited_message") or {}
     text = str(message.get("text") or "").strip()
+
     if text.startswith("/start"):
         _start(chat_id)
         return
     if text.startswith("/help"):
         _help(chat_id)
+        return
+    if text.startswith("/language") or text.startswith("/lang"):
+        _start(chat_id)
+        return
+    if text.startswith("/cancel") or text.startswith("/reset"):
+        session = _session(chat_id)
+        lang = _lang(session)
+        _clear(chat_id)
+        _text(chat_id, _prompt(lang, "cancelled_msg"))
         return
     if text.startswith("/status"):
         parts = text.split(maxsplit=1)
@@ -390,50 +884,66 @@ def _message(update, chat_id, ingest_text):
 
     session = _session(chat_id)
     stage = session.get("stage")
+    lang = _lang(session)
+
     if stage == "language":
         _start(chat_id)
     elif stage == "issue":
         voice_id = (message.get("voice") or {}).get("file_id")
+        photos = message.get("photo")
+        caption = str(message.get("caption") or "").strip()
         if voice_id:
             try:
-                transcription = _voice_text(voice_id, _lang(session))
+                transcription = _voice_text(voice_id, lang)
                 session.update(issue=transcription, voice_file_id=voice_id, stage="state")
             except Exception as exc:
-                LOGGER.warning("Immediate voice transcription failed: %s; using placeholder", exc)
+                LOGGER.warning("Voice transcription deferred: %s", exc)
                 session.update(issue="Voice report", voice_file_id=voice_id, stage="state")
+        elif photos:
+            photo_file_id = photos[-1].get("file_id")
+            issue_desc = caption or "Civic hazard photo attached"
+            session.update(issue=issue_desc, photo_file_id=photo_file_id, stage="state")
         elif text:
             session.update(issue=text, stage="state")
         else:
-            _text(chat_id, LANGUAGES[_lang(session)]["issue"])
+            _text(chat_id, _i18n(lang, "issue"))
             return
         _save(chat_id, session)
-        _text(chat_id, "Please select your State:", _keyboard(STATE_KEYBOARD))
+        _text(chat_id, _prompt(lang, "select_state"), _keyboard(STATE_KEYBOARD))
     elif stage == "state":
-        _text(chat_id, "Please select your State using the buttons below:", _keyboard(STATE_KEYBOARD))
+        _text(chat_id, _prompt(lang, "select_state"), _keyboard(STATE_KEYBOARD))
     elif stage == "district":
         state = session.get("state", "Tamil Nadu")
-        keyboard = DISTRICT_KEYBOARDS.get(state, DISTRICT_KEYBOARDS["Tamil Nadu"])
-        _text(chat_id, f"Please select your District ({state}) using the buttons below:", _keyboard(keyboard))
+        if text:
+            matched = _find_matching_district(state, text)
+            if matched:
+                session.update(district=matched, location=matched, stage="ward")
+                _save(chat_id, session)
+                ward_prompt = _prompt(lang, "enter_ward").format(district=matched)
+                skip_btn = _prompt(lang, "skip_btn")
+                _text(chat_id, ward_prompt, _keyboard([[ (skip_btn, "ward:skip") ]]))
+            else:
+                err_text = _prompt(lang, "district_not_found").format(text=text, state=state)
+                keyboard = DISTRICT_KEYBOARDS.get(state, DISTRICT_KEYBOARDS["Tamil Nadu"])
+                _text(chat_id, err_text, _keyboard(keyboard))
+        else:
+            keyboard = DISTRICT_KEYBOARDS.get(state, DISTRICT_KEYBOARDS["Tamil Nadu"])
+            prompt_text = _prompt(lang, "select_district").format(state=state)
+            _text(chat_id, prompt_text, _keyboard(keyboard))
     elif stage == "ward":
-        ward = "" if text.lower() == "skip" else text
+        lowered = text.lower()
+        ward = "" if lowered in ("skip", "தவிர்க்கவும்", "விட்டுவிடுக", "దాటవేయి", "छोड़ें", "वगळा", "वाद দিয়ক", "ଛାଡ଼ନ୍ତୁ") else text
         session.update(ward=ward, stage="review")
         _save(chat_id, session)
-        language = _lang(session)
-        state = session.get("state", "Tamil Nadu")
-        district = session.get("district", "Vellore")
-        loc_display = f"{district}, {state}" + (f" (Ward / Area: {ward})" if ward else "")
-        review = f"{LANGUAGES[language]['review']}\n\nIssue: {session.get('issue', '')}\nLocation: {loc_display}"
-        _text(chat_id, review, _keyboard([[('Confirm & submit', 'confirm'), ('Edit report', 'edit')], [('Cancel', 'cancel')]]))
+        _send_review(chat_id, session)
     elif stage == "location":
         session.update(location=text, district="Vellore", state="Tamil Nadu", stage="review")
         _save(chat_id, session)
-        language = _lang(session)
-        review = f"{LANGUAGES[language]['review']}\n\nIssue: {session.get('issue', '')}\nLocation: {text}"
-        _text(chat_id, review, _keyboard([[('Confirm & submit', 'confirm'), ('Edit report', 'edit')], [('Cancel', 'cancel')]]))
+        _send_review(chat_id, session)
     elif stage in {"review", "privacy"}:
-        _text(chat_id, "Please use the buttons above to confirm, edit, or cancel.")
+        _text(chat_id, "Please use the interactive buttons above to continue or cancel.")
     else:
-        _text(chat_id, "This report is already registered. Use /status <ticket ID>, or /start for a new report.")
+        _text(chat_id, "Your previous report is registered. Use /status <ticket ID> to track it, or /start to begin a new report.")
 
 
 def handle_update(update, ingest_text):

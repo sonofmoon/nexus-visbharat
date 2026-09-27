@@ -49,15 +49,16 @@ def admin_programme():
 @pilot_bp.route('/pilot/dashboard')
 @pilot_bp.route('/pilot/settings')
 def page():
+    pid = configured_public_pilot(request.args.get('pilot_id', ''))
     tokens={}
     if current_app.config.get('DEMO_MODE'):
         tokens={r:current_app.config.get(r.upper()+'_API_TOKEN','') for r in ('admin','analyst','auditor')}
-        for district in ('Vellore','Tirupati'):
+        for district in ('Vellore','Tirupati','Bengaluru Urban'):
             users=work.rows('SELECT api_token FROM users WHERE name=?',(district+' demo officer',))
-            if users:tokens[district.lower()]=users[0]['api_token']
+            if users:tokens[district.lower().replace(' ','_')]=users[0]['api_token']
     session.setdefault('pilot_csrf',secrets.token_urlsafe(24))
-    pid=current_app.config.get('PILOT_ID') or work.PILOT_ID
     p=work.programme(pid)
+    p['config'].setdefault('category_routing', work.DISTRICT_CATEGORY_ROUTING)
     from ..services.pilot_portal import public_ai_status, public_channels, configuration
     page_name={'/pilot':'home','/pilot/submit':'submit','/pilot/dashboard':'dashboard','/pilot/settings':'settings'}[request.path]
     if page_name in ('dashboard','settings') and not current_app.config.get('DEMO_MODE'):
@@ -77,7 +78,9 @@ def page():
             if should_apply_dp():
                 count['reports']=max(0,privatize_count(int(count['reports']),epsilon=float(dp_metadata().get('epsilon') or 0.75)))
                 count['resolved']=max(0,privatize_count(int(count['resolved'] or 0),epsilon=float(dp_metadata().get('epsilon') or 0.75)))
+    from ..services.pilot_examples import available_examples
     return render_template('pilot_home.html' if page_name=='home' else 'submit.html' if page_name=='submit' else 'pilot.html',pilot_id=pid,
+        prepared_examples=available_examples(p,locations),
         pilot_page=page_name,pilot_public=page_name in ('home','submit'),programme=p,channels=public_channels(p),locations=locations,public_counts=counts,
         languages={k:v for k,v in current_app.config['LANGUAGES'].items() if k in p['config']['languages']},
         categories=p['config'].get('categories',current_app.config['CATEGORIES']),portal_config=portal_config,
@@ -95,6 +98,7 @@ def public_config():
     from ..services.pilot_portal import public_ai_status,public_channels,configuration
     return jsonify(success=True,pilot_id=pid,title=p['title'],status=p['status'],data_mode=p['data_mode'],
         languages=p['config']['languages'],notice=configuration(p)['privacy']['consent_notice'],locations=locations,
+        routing=p['config'].get('routing',{}),
         categories=p['config'].get('categories',current_app.config['CATEGORIES']),channels=public_channels(p),ai_preview=public_ai_status())
 
 
@@ -208,8 +212,18 @@ def review(rid):
     metadata=json.loads(row['ai_metadata_json']);metadata.update(processing_status='human_reviewed',
         human_review={'actor':g.current_user['name'],'at':work.now(),'reason':reason,'completion_reference':data.get('completion_reference')},
         translation_status='human_reviewed')
-    db.execute('UPDATE citizen_requests SET original_text=?,translated_text=?,category=?,urgency=?,status=?,ai_metadata_json=? WHERE request_id=?',
-        (original,translated,data['category'],data['urgency'],state,json.dumps(metadata),rid))
+    # If this record was quarantined as a synthetic reconstruction awaiting rehearsal review,
+    # promote it now that an officer has confirmed the content. This makes it eligible for
+    # project screening (the exclusion clause checks reconstruction_status via json_extract).
+    if metadata.get('reconstruction_status') == 'synthetic_reconstructed_unreviewed':
+        metadata['reconstruction_status'] = 'synthetic_rehearsal_reviewed'
+        metadata['rehearsal_review_note'] = reason
+        metadata['reviewed_at'] = work.now()
+        metadata['reviewer'] = g.current_user['name']
+    prog = work.programme(row['pilot_id'])
+    new_dept = work.resolve_department(row['district'], data['category'], prog.get('config'))
+    db.execute('UPDATE citizen_requests SET original_text=?,translated_text=?,category=?,urgency=?,status=?,routed_department=?,ai_metadata_json=? WHERE request_id=?',
+        (original,translated,data['category'],data['urgency'],state,new_dept,json.dumps(metadata),rid))
     db.execute("UPDATE pilot_requests SET processing_status='human_reviewed',assigned_to=?,version=version+1,updated_at=? WHERE request_id=?",
         (assigned,work.now(),rid))
     db.execute("UPDATE pilot_outbox SET status='superseded',updated_at=? WHERE request_id=? AND kind='process_intake' AND status<>'completed'",(work.now(),rid))

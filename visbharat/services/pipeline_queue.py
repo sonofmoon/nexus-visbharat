@@ -29,15 +29,24 @@ def _generate_request_id():
             return rid
 
 
-def _resolve_canonical_district_and_geo(repo, district):
-    row = repo.get_district_row(district) if district else None
+def _resolve_canonical_district_and_geo(repo, district, state=None):
+    row = repo.get_district_row(district, state=state) if district else None
     if row is None and district:
         clean = str(district).strip().lower()
-        for _, d_row in repo.df_districts.iterrows():
+        candidates = repo.df_districts
+        if state:
+            state_candidates = candidates[candidates['state'] == state]
+            if not state_candidates.empty:
+                candidates = state_candidates
+        for _, d_row in candidates.iterrows():
             d_name = str(d_row['district']).strip().lower()
             if d_name == clean or d_name in clean or clean in d_name:
                 row = d_row
                 break
+    if row is None and state:
+        state_rows = repo.df_districts[repo.df_districts['state'] == state]
+        if not state_rows.empty:
+            row = state_rows.iloc[0]
     if row is None:
         row = repo.get_district_row('Vellore')
     if row is None:
@@ -48,8 +57,8 @@ def _resolve_canonical_district_and_geo(repo, district):
     return round(lat, 4), round(lng, 4), str(row['state']), str(row['district'])
 
 
-def _district_geo(repo, district):
-    lat, lng, state, _ = _resolve_canonical_district_and_geo(repo, district)
+def _district_geo(repo, district, state=None):
+    lat, lng, state, _ = _resolve_canonical_district_and_geo(repo, district, state=state)
     return lat, lng, state
 
 
@@ -226,7 +235,7 @@ def process_ingestion_payload(payload: dict):
     else:
         translation = _run_translation(normalized_text, language)
         classification = _run_classification(normalized_text, language)
-    lat, lng, state, canonical_district = _resolve_canonical_district_and_geo(repo, district)
+    lat, lng, state, canonical_district = _resolve_canonical_district_and_geo(repo, district, state=payload.get('state'))
     if district != canonical_district:
         if not payload.get('ward'):
             payload['ward'] = district

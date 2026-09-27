@@ -442,7 +442,7 @@ def build_pdf(output_path: Path):
     metrics12 = [[
         make_metric("341 / 341", "Passing Automated Unit & Integration Tests (100%)", metric_val_style, "#eff6ff", "#bfdbfe"),
         make_metric("13 / 13", "Passing Live Cloud Run Authenticated Acceptance Checks", metric_val_green, "#f0fdf4", "#bbf7d0"),
-        make_metric("97", "Southern Grid Districts (TN: 38, AP: 26, TS: 33)", metric_val_purple, "#faf5ff", "#e9d5ff"),
+        make_metric("408", "National Grid Districts across 13 States and UTs", metric_val_purple, "#faf5ff", "#e9d5ff"),
     ]]
     story.append(Table(metrics12, colWidths=[237, 237, 237]))
     story.append(Spacer(1, 10))

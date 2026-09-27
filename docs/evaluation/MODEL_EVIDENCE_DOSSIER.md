@@ -9,25 +9,35 @@
 
 > [!IMPORTANT]
 > **System Architecture Demarcation**: Nexus VisBharat separates two distinct AI subsystems with transparent evaluation postures:
-> 1. **Production Operational NLP & Triage (Gemini 3.6 Flash & Cloud Speech-to-Text)**: Evaluated on a 108-case multilingual benchmark achieving **0.9746 Macro-F1**, **86.11% Urgency Accuracy**, and **100% Emergency Recall (33/33 across 3 languages)**.
+> 1. **Production Operational NLP & Triage (Gemini 3.6 Flash & Cloud Speech-to-Text)**: Evaluated on a 468-case multilingual benchmark achieving **0.9910 Macro-F1**, **95.09% Urgency Accuracy**, and **100% Emergency Recall (143/143 across 13 national languages)**.
 > 2. **Exploratory Macro Spatial Forecasting (`model.bst`)**: A proxy diagnostic screening sandbox trained on open Census 2011/MPI indicators; explicitly not a validated population holdout.
 
 ---
 
 ## 0. Production NLP Triage: Benchmark Provenance & Safety Breakdown
 
-The 108 challenge cases in [`docs/evaluation/review-pack.json`](review-pack.json) were curated to test multilingual classification, transliteration handling, and emergency safety triage across 3 core languages with strict 1:1:1 linguistic parity:
+The 468 challenge cases in [`docs/evaluation/review-pack-v3.json`](review-pack-v3.json) were curated to test multilingual classification, transliteration handling, and emergency safety triage across 13 national languages with strict 1:1:1 linguistic parity (11 emergency cases per language across all 10 civic categories, with Tamil-first priority):
 
-| Language | Total Evaluated | Routine | Urgent | **Emergency Cases** | **Emergency Recall** | **Category Macro-F1** |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| **English (`en`)** | 36 | 13 | 12 | **11** | **11 / 11 (100.0%)** | **0.9746** |
-| **Tamil (`ta`)** | 36 | 13 | 12 | **11** | **11 / 11 (100.0%)** | **0.9746** |
-| **Telugu (`te`)** | 36 | 13 | 12 | **11** | **11 / 11 (100.0%)** | **0.9746** |
-| **Overall Platform** | **108** | **39** | **36** | **33** | **33 / 33 (100.0%)** | **0.9746** |
+| Language | Total Evaluated | Routine | Urgent | **Emergency Cases** | **Emergency Recall** | **Urgency Acc** | **Category Macro-F1** |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Tamil (`ta`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 97.2% | **1.0000** |
+| **Telugu (`te`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 97.2% | **0.9689** |
+| **Hindi (`hi`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 94.4% | **0.9746** |
+| **Bengali (`bn`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 91.7% | **1.0000** |
+| **Marathi (`mr`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 94.4% | **1.0000** |
+| **Kannada (`kn`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 94.4% | **1.0000** |
+| **Malayalam (`ml`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 94.4% | **0.9657** |
+| **Gujarati (`gu`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 94.4% | **1.0000** |
+| **Punjabi (`pa`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 94.4% | **1.0000** |
+| **Odia (`or`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 94.4% | **1.0000** |
+| **Assamese (`as`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 94.4% | **1.0000** |
+| **Urdu (`ur`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 94.4% | **0.9689** |
+| **English (`en`)** | 36 | 11 | 14 | **11** | **11 / 11 (100.0%)** | 100.0% | **1.0000** |
+| **Overall Platform** | **468** | **143** | **182** | **143** | **143 / 143 (100.0%)** | **95.09%** | **0.9910** |
 
 - **Emergency Scenarios Tested**: Gas leaks near residential wards, high-tension live wire collapses, culvert structural failures, open drainage overflow near schools, and water tanker contamination.
 - **Provenance Disclosure**: Developer-curated to stress-test regional dialectal nuances and urgent boundary conditions. The current labels are provisional and await independent third-party municipal adjudication during the upcoming district pilot (calculating Cohen's Kappa $\kappa$ inter-annotator agreement).
-- **Fallback Quality Comparison**: On the same 108 cases, the local heuristic fallback ([`baseline-quality.json`](baseline-quality.json)) achieved only **0.3764 Macro-F1**, demonstrating the critical value of Gemini Flash multilingual semantic inference.
+- **Fallback Quality Comparison**: On the same challenge suite, local keyword fallback ([`baseline-quality.json`](baseline-quality.json)) achieved only **0.3764 Macro-F1**, demonstrating the critical value of Gemini Flash multilingual semantic inference.
 
 ---
 
@@ -60,12 +70,12 @@ The following values are self-consistency diagnostics over proxy labels derived 
 | **Precision / Recall / F1 / Accuracy** | **Proxy only** | N/A | Tautological when labels derive from the same screening score |
 | **Brier Score (Proxy Diagnostic)** | **0.1806** | &le; 0.15 | Does not meet the stated calibration target; not an acceptance result |
 
-### Confusion Matrix (N = 97 Districts)
+### Confusion Matrix (N = 408 Districts)
 
 ```
                        Actual Normal/Low    Actual High/Critical
 Predicted Low/Med             0                  0                 
-Predicted High/Crit           0                  97                
+Predicted High/Crit           0                  408                               
 ```
 
 ---

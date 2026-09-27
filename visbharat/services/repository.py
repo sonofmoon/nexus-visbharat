@@ -39,7 +39,11 @@ class ReferenceDataRepository:
                     self.df_projects['district'].isin(allowed_districts)
                 ].copy()
 
-    def get_district_row(self, district_name: str):
+    def get_district_row(self, district_name: str, state: str = None):
+        if state:
+            rows = self.df_districts[(self.df_districts['district'] == district_name) & (self.df_districts['state'] == state)]
+            if not rows.empty:
+                return rows.iloc[0]
         rows = self.df_districts[self.df_districts['district'] == district_name]
         return None if rows.empty else rows.iloc[0]
 

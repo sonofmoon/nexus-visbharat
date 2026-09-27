@@ -30,7 +30,7 @@ GROUPS = [
 INTEGRATIONS = [
     ('gemini','Gemini on Vertex AI','Translation, classification and policy assistance','google_ai_client',['VERTEX_PROJECT_ID','VERTEX_LOCATION','PILOT_MODEL_NAME']),
     ('vertex','Vertex AI predictions','Demand and development scenarios','google_vertex_client',['VERTEX_ENDPOINT_ID']),
-    ('speech','Speech-to-Text','Tamil, Telugu and English voice intake','pilot_regional_stt',['PILOT_SPEECH_LOCATION','PILOT_SPEECH_MODEL']),
+    ('speech','Speech-to-Text','Tamil, Telugu, Kannada, Hindi and English voice intake','pilot_regional_stt',['PILOT_SPEECH_LOCATION','PILOT_SPEECH_MODEL']),
     ('tts','Text-to-Speech','Spoken citizen responses','google_tts_client',['GOOGLE_TTS_LANGUAGE_CODE']),
     ('translation','Cloud Translation','Optional configured translation provider','google_translation_client',['USE_REAL_GOOGLE_TRANSLATION']),
     ('dialogflow','Dialogflow CX','Guided conversations and IVR','google_dialogflow_client',['DIALOGFLOW_PROJECT_ID','DIALOGFLOW_AGENT_ID']),
@@ -133,22 +133,40 @@ def public_channels(p):
     settings=configuration(p)['channels'];result=[]
     for key,title in CHANNELS.items():
         c=settings[key];built_in=key in ('web','dialogflow')
-        # A configured address is not proof of a working webhook or outbound provider.
         evidence=p['config'].get('channel_tests',{}).get(key,{})
-        tested=evidence.get('config_hash')==pilot.digest(c) and evidence.get('status')=='passed'
-        available=c['enabled'] and (built_in or tested)
-        if available:
-            status=('Rehearsal' if p['data_mode']=='synthetic' else 'Available') + (' - receipt verified' if tested else '')
-        elif built_in:
-            status='Paused in settings'
+        tested=evidence.get('config_hash')==pilot.digest(c) and evidence.get('status') in ('passed', 'local_connector_passed', 'provider_delivery_verified')
+        is_live_provider = (tested and evidence.get('status') == 'provider_delivery_verified'
+                            and evidence.get('verification_method') == 'separate_gateway_receipt_signature_v1'
+                            and bool(evidence.get('provider_message_id')) and bool(evidence.get('receipt_id')))
+        raw_address = c.get('address', '')
+        is_demo_placeholder = any(placeholder in raw_address.lower() for placeholder in ('9876543210', '1234567890', 'example', 'demo'))
+        if built_in:
+            href = '/pilot/submit' if key == 'web' else '#dialogflow'
+            available = c['enabled']
+            status = 'Paused in settings' if not available else 'Rehearsal' if p['data_mode']=='synthetic' else 'Available'
         else:
-            status='Awaiting signed test + receipt'
-        result.append({'id':key,'title':title,'available':available,'status':status,
-                       'connection_status':'verified_receipt' if tested else 'built_in' if built_in else 'not_verified',
+            if not is_demo_placeholder and raw_address:
+                try:
+                    href = channel_link(key, raw_address)
+                except Exception:
+                    href = ''
+            else:
+                href = ''
+            available = c['enabled'] and is_live_provider and bool(href)
+            if not c['enabled']:
+                status = 'Paused in settings'
+            elif is_live_provider and href:
+                status = 'Gateway delivery receipt verified'
+            elif tested:
+                status = 'Local connector rehearsal'
+            else:
+                status = 'Awaiting signed test + receipt'
+        result.append({'id':key,'title':title,'available':available,'connector_tested':tested,'status':status,
+                       'connection_status':'provider_verified' if is_live_provider else 'local_test_verified' if tested else 'built_in' if built_in else 'not_verified',
                        'verified_at':evidence.get('verified_at'),'last_test_event_id':evidence.get('event_id'),
-                       'operator_action':'No provider gateway required' if built_in else ('Provider receipt verified' if tested else 'Connect gateway, send signed test and confirm receipt'),
-                       'href':('/pilot/submit' if key=='web' else '#dialogflow' if key=='dialogflow' else channel_link(key,c['address'])) if available else '',
-                       'address':c['address'] if available else ''})
+                       'operator_action':'No provider gateway required' if built_in else ('Gateway attested provider delivery; retain original provider receipt' if is_live_provider else 'Local connector test passed; live provider delivery pending' if tested else 'Connect gateway, send signed test and confirm receipt'),
+                       'href':href if available else '',
+                       'address':c['address'] if (available or tested) else ''})
     return result
 
 

@@ -87,7 +87,7 @@ def preview(feature):
             if not stt:raise ValueError('Regional speech is not connected; submit the recording for manual transcription')
             raw=base64.b64decode(data.get('audio_base64',''),validate=True)
             if not 1<=len(raw)<=3*1024*1024:raise ValueError('Audio limit is 3 MiB')
-            result=stt.transcribe_bytes(raw,{'ta':'ta-IN','te':'te-IN','en':'en-IN'}[language],data.get('audio_mime_type','audio/webm'))
+            result=stt.transcribe_bytes(raw,{'ta':'ta-IN','te':'te-IN','kn':'kn-IN','hi':'hi-IN','en':'en-IN'}[language],data.get('audio_mime_type','audio/webm'))
             return jsonify(success=True,transcript=result['transcript'],stt_mode=result['provider_mode'])
         message=work.text(data.get('text'),'request text',1,4000)
         result=portal.translate(p,ai,message,language) if feature=='translate' else ai.classify_request(message,language,p['config'].get('categories',current_app.config['CATEGORIES']))
@@ -192,7 +192,7 @@ def channel_webhook(channel):
         action=data['action'];client=current_app.extensions.get({'conversation':'google_dialogflow_client','speak':'google_tts_client','transcribe':'pilot_regional_stt'}[action])
         if not client:raise ValueError('Configure the corresponding Google service first')
         key='channel:'+work.digest([pid(),channel,event])
-        lang={'ta':'ta-IN','te':'te-IN','en':'en-IN'}[language]
+        lang={'ta':'ta-IN','te':'te-IN','kn':'kn-IN','hi':'hi-IN','en':'en-IN'}[language]
         def invoke():
             if action=='conversation':
                 return client.detect_intent(work.digest([pid(),channel,data.get('conversation_id',event)])[:32],work.text(data.get('text'),'message',1,4000),language,
@@ -211,10 +211,36 @@ def channel_webhook(channel):
         if not prior or data.get('delivered') is not True:raise ValueError('A delivered receipt for a recorded inbound event is required')
         get_db().execute('UPDATE auditor_chain_state SET head_seq=head_seq WHERE id=1')
         p=work.programme(pid());config=p['config']
-        config.setdefault('channel_tests',{})[channel]={'status':'passed','config_hash':work.digest(settings),'verified_at':work.now(),'event_id':event}
+        # Inbound credentials (and a payload boolean) cannot attest provider delivery.
+        # A trusted gateway validates the provider receipt then signs this same body
+        # with a separately provisioned receipt key, bound to the current settings.
+        receipt_signature=request.headers.get('X-Pilot-Receipt-Signature','')
+        is_live=False
+        proof={}
+        if receipt_signature:
+            receipt_secret=current_app.config.get('PILOT_CHANNEL_'+channel.upper()+'_RECEIPT_SECRET') or os.environ.get('PILOT_CHANNEL_'+channel.upper()+'_RECEIPT_SECRET','')
+            expected_receipt=hmac.new(str(receipt_secret).encode(),stamp.encode()+b'.'+request.get_data(),hashlib.sha256).hexdigest()
+            if not receipt_secret or receipt_secret==secret or not hmac.compare_digest(expected_receipt,receipt_signature):
+                raise PermissionError('Invalid independent gateway receipt signature')
+            if data.get('config_hash')!=work.digest(settings):raise ValueError('Receipt must match the current channel settings')
+            proof={key:work.text(data.get(key),key,3,200) for key in ('provider','provider_message_id','receipt_id')}
+            proof['verification_method']='separate_gateway_receipt_signature_v1'
+            is_live=True
+        test_status='provider_delivery_verified' if is_live else 'local_connector_passed'
+        existing=config.get('channel_tests',{}).get(channel,{})
+        if not is_live and existing.get('config_hash')==work.digest(settings) and existing.get('verification_method')=='separate_gateway_receipt_signature_v1':
+            return jsonify(success=True,status='Local connector receipt accepted; existing gateway evidence retained',channel_status=existing['status'])
+        config.setdefault('channel_tests',{})[channel]={
+            'status':test_status,
+            'test_mode':'live_provider' if is_live else 'local_connector_test',
+            'config_hash':work.digest(settings),
+            'verified_at':work.now(),
+            'event_id':event,
+            **proof
+        }
         get_db().execute('UPDATE pilot_programmes SET config_json=?,version=version+1,updated_at=? WHERE pilot_id=?',(json.dumps(config),work.now(),pid()))
-        write_audit_log('channel:'+channel,'pilot_channel_receipt_verified','pilot',pid(),{'channel':channel,'event_id':event},commit=False)
-        get_db().commit();return jsonify(success=True,status='Receipt delivery verified')
+        write_audit_log('channel:'+channel,'pilot_channel_receipt_verified','pilot',pid(),{'channel':channel,'event_id':event,'status':test_status},commit=False)
+        get_db().commit();return jsonify(success=True,status='Gateway receipt verified' if is_live else 'Local connector rehearsal passed; provider delivery unverified',channel_status=test_status)
     result=work.intake(pid(),{**data,'source_id':channel+':'+event},'channel:'+work.digest([channel,event]),source_channel=portal.SOURCES[channel])
     get_db().execute('''INSERT INTO pilot_channel_events(pilot_id,channel,event_id,payload_hash,request_id,created_at)
         VALUES(?,?,?,?,?,?) ON CONFLICT(pilot_id,channel,event_id) DO NOTHING''',(pid(),channel,event,work.digest(data),result['request_id'],work.now()))

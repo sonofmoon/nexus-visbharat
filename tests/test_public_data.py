@@ -154,3 +154,24 @@ def test_geo_paths_handle_explicit_text_and_polygon_locations():
     assert resolve_geo_ward_context('Vellore',text='Water issue in Ward 12')['ward']=='12'
     polygons={'Vellore':[{'ward':'Test ward','points':[{'lat':0,'lng':0},{'lat':2,'lng':0},{'lat':2,'lng':2},{'lat':0,'lng':2}]}]}
     assert resolve_geo_ward_context('Vellore',lat=1,lng=1,ward_polygons=polygons)['ward_source']=='ward_polygon'
+
+
+def test_new_public_sources_cpcb_and_agmarknet(app, monkeypatch):
+    app.config['DATA_GOV_IN_AQI_RESOURCE'] = RESOURCE
+    app.config['DATA_GOV_IN_AGMARKNET_RESOURCE'] = RESOURCE
+
+    # Test CPCB AQI
+    aqi_rows = [{'state':'Delhi','city':'Delhi','station':'Anand Vihar','pollutant_id':'PM2.5','pollutant_avg':185.0}]
+    refresh(monkeypatch, 'cpcb_aqi', aqi_rows)
+    aqi_res = work.get_official_cpcb_aqi(state='Delhi', city='Delhi')
+    assert len(aqi_res['records']) == 1
+    assert data.value('cpcb_aqi', aqi_res['records'][0], 'pollutant') == 'PM2.5'
+
+    # Test AGMARKNET
+    mandi_rows = [{'state':'Punjab','district':'Ludhiana','market':'Khanna','commodity':'Wheat','modal_price':2275}]
+    refresh(monkeypatch, 'agmarknet', mandi_rows)
+    mandi_res = work.get_official_agmarknet_prices(state='Punjab', district='Ludhiana', commodity='Wheat')
+    assert len(mandi_res['records']) == 1
+    assert data.value('agmarknet', mandi_res['records'][0], 'commodity') == 'Wheat'
+    assert data.value('agmarknet', mandi_res['records'][0], 'modal_price') == 2275
+

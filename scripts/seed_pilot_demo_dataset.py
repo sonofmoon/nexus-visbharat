@@ -1,4 +1,4 @@
-﻿import json
+import json
 import random
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -213,7 +213,7 @@ def _make_rows(app):
 
 def _seed_local_db(rows):
     db = get_db()
-    db.execute('DELETE FROM citizen_requests')
+    db.execute('DELETE FROM citizen_requests WHERE request_id NOT IN (SELECT request_id FROM pilot_requests)')
 
     sql = '''
     INSERT INTO citizen_requests (

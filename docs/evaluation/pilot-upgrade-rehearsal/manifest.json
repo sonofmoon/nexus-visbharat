@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-09-27T05:31:43.047929+00:00",
+  "data_mode": "synthetic",
+  "execution": "local Flask API rehearsal in a newly created isolated SQLite database",
+  "source_database_modified": false,
+  "database": "C:\\Users\\ELCOT\\antigravity\\nexus-visbharath\\scratch\\judging-522cdc48a3ae\\rehearsal.db",
+  "google_provider_calls": 0,
+  "real_messages_sent": 0,
+  "voice_recording": "pending team-recorded Tamil or Telugu fictional request",
+  "government_participation": false,
+  "deployment_verified": false,
+  "scenarios": [
+    {
+      "example": "vellore-water",
+      "district": "Vellore",
+      "category": "Water Supply",
+      "request_id": "NVB-20260927C033",
+      "project_id": "NVB-P-0FF8E35EC21FB6C6",
+      "decision_id": "PD-NVB-C180AF4E663F50A1D394810A",
+      "cross_district_review_denied": true,
+      "existing_commitment_recognised": true,
+      "private_receipt_and_verbatim_request_redacted": true,
+      "dashboard_route": "/pilot/dashboard?pilot_id=vellore-tirupati-water&demo_ticket=NVB-20260927C033"
+    },
+    {
+      "example": "tirupati-sanitation",
+      "district": "Tirupati",
+      "category": "Sanitation",
+      "request_id": "NVB-20260927B103",
+      "project_id": "NVB-P-359AB4CDECC771E9",
+      "decision_id": "PD-NVB-F48AF9CE9422835835475FB0",
+      "cross_district_review_denied": true,
+      "existing_commitment_recognised": true,
+      "private_receipt_and_verbatim_request_redacted": true,
+      "dashboard_route": "/pilot/dashboard?pilot_id=vellore-tirupati-water&demo_ticket=NVB-20260927B103"
+    },
+    {
+      "example": "bengaluru-road",
+      "district": "Bengaluru Urban",
+      "category": "Road",
+      "request_id": "NVB-20260927BC8F",
+      "project_id": "NVB-P-D8C8FDA2AB2AB039",
+      "decision_id": "PD-NVB-0DBB2E9133DEB2D372337724",
+      "cross_district_review_denied": true,
+      "existing_commitment_recognised": true,
+      "private_receipt_and_verbatim_request_redacted": true,
+      "dashboard_route": "/pilot/dashboard?pilot_id=vellore-tirupati-water&demo_ticket=NVB-20260927BC8F"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "vellore-water-redacted-dossier.json",
+      "sha256": "cefaed09869921fafb47fcccdbc8c88a1ed4caf65996a660c5c85ee74b26d081"
+    },
+    {
+      "file": "tirupati-sanitation-redacted-dossier.json",
+      "sha256": "7cd4994ea09ddf0564f104ec7e3d2997331f07a8347f95e25e85f014a071e145"
+    },
+    {
+      "file": "bengaluru-road-redacted-dossier.json",
+      "sha256": "8464e1eddd53f8abdb79d4a3824b19ab2b579dd67cb980d879abcc4fb08a3c18"
+    }
+  ],
+  "limitations": [
+    "Automated role actions are not independent human or government review.",
+    "Commitment recognition demonstrates internal overlap only, not a live government investment-plan join.",
+    "Costs, beneficiaries, locations and requests are illustrative.",
+    "Google AI and real messaging execution need separate provider evidence."
+  ]
+}

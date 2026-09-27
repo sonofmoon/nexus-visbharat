@@ -289,10 +289,10 @@ Translate the citizen request below from {source_lang} to English with exact sem
 
 CRITICAL RULES:
 1. Preserve the exact civic issue. Key terms:
-   - "??????? ????" / "?????" -> sewage water (never drinking water)
-   - "????????" -> drinking water supply
-   - "???????????" -> street light
-   - "????" / "????" -> road
+   - "சாக்கடை நீர்" / "கழிவுநீர்" / "మురుగునీరు" / "ಕೊಳಚೆ ನೀರು" / "सीवर का पानी" -> sewage water (never drinking water)
+   - "குடிநீர்" / "తాగునీరు" / "ಕುಡಿಯುವ ನೀರು" / "पीने का पानी" / "पेयजल" -> drinking water supply
+   - "தெருவிளக்கு" / "వీధి దీపాలు" / "ಬೀದಿ ದೀಪ" / "स्ट्रीट लाइट" -> street light
+   - "சாலை" / "ரோடு" / "రహదారి" / "రోడ్డు" / "ರಸ್ತೆ" / "सड़क" -> road
 2. Do not add, remove, or substitute problems.
 3. Output ONLY the English translation text. No JSON, no labels, no quotes, no explanation.
 

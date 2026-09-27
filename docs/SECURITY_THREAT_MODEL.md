@@ -8,7 +8,7 @@
 
 ## 1. System Scope & Architecture Overview
 
-Nexus-Visbharath (NVB) provides civic intake, multilingual AI triage, spatial demand forecasting, and resource allocation across southern Indian municipalities. Because the platform processes sensitive citizen grievances (which may include location details, infrastructure failures, and emergency reports), it requires a rigorous threat analysis to protect citizen privacy, maintain administrative integrity, and defend against malicious actors.
+Nexus-Visbharath (NVB) provides civic intake, multilingual AI triage, spatial demand forecasting, and resource allocation across 408 canonical districts spanning 13 Indian States & UTs. Because the platform processes sensitive citizen grievances (which may include location details, infrastructure failures, and emergency reports), it requires a rigorous threat analysis to protect citizen privacy, maintain administrative integrity, and defend against malicious actors.
 
 ### 1.1 Trust Boundaries & Data Flow Diagram (DFD)
 

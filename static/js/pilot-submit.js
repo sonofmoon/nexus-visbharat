@@ -18,17 +18,28 @@
   }
   window.pilotInitialLocation=async()=>{
     const params=new URLSearchParams(location.search);
-    const district=params.get('district');
-    const language=params.get('language');
+    const example=(cfg.examples||[]).find(item=>item.id===params.get('example'));
+    const district=example?.district||params.get('district');
+    const language=example?.language||params.get('language');
     if(language&&Object.hasOwn(cfg.languages,language)){
       const chip=document.querySelector('[data-lang="'+language+'"]');
       if(chip)chip.click();
       const select=$('language');
       if(select&&select.value!==language){select.value=language;select.dispatchEvent(new Event('change'));}
     }
-    if(!['Vellore','Tirupati'].includes(district))return;
-    const state=district==='Vellore'?'Tamil Nadu':'Andhra Pradesh';$('state').value=state;
+    if(!['Vellore','Tirupati','Bengaluru Urban'].includes(district))return;
+    const state=district==='Vellore'?'Tamil Nadu':district==='Tirupati'?'Andhra Pradesh':'Karnataka';$('state').value=state;
     await loadDistrictsForState(state);$('district').value=district;communities();
+    if(example){
+      $('pilotLocation').value=example.location_id;
+      $('pilotLocation').dispatchEvent(new Event('change'));
+      $('complaint-text').value=example.text;
+      $('translated-text-box').value=example.translation;
+      $('category').value=example.category;
+      $('category').dispatchEvent(new Event('change'));
+      $('requestTextHint').textContent='Prepared fictional request. The English text is a team-prepared translation, not a Google AI result. Review it and give consent before submitting.';
+      updateRoutedDepartment();
+    }
   };
   window.pilotReadEvidence=async(photos,files,captures)=>{
     if(photos.length+files.length+captures.length>15)throw new Error('Use no more than 15 evidence files');
@@ -55,8 +66,10 @@
     $('state').addEventListener('change',()=>{$('pilotLocation').replaceChildren(new Option('Select your district first',''));});
     $('pilotLocation').addEventListener('change',()=>{const l=cfg.locations.find(l=>l.location_id===$('pilotLocation').value);if(l){$('ward').value=l.ward;$('wardStatus').textContent='Enrolled community mapping. Add a landmark in your description.';}});
     for(const option of [...$('category').options])if(!cfg.categories.includes(option.value))option.remove();
-    for(const chip of document.querySelectorAll('[data-lang]'))if(!Object.hasOwn(cfg.languages,chip.dataset.lang))chip.hidden=true;
-    const language=new URLSearchParams(location.search).get('language')||Object.keys(cfg.languages)[0];
+    for(const chip of document.querySelectorAll('[data-lang]'))if(!Object.hasOwn(cfg.languages,chip.dataset.lang)){chip.hidden=true;chip.style.display='none';}
+    const params=new URLSearchParams(location.search);
+    const example=(cfg.examples||[]).find(item=>item.id===params.get('example'));
+    const language=example?.language||params.get('language')||Object.keys(cfg.languages)[0];
     if(language&&Object.hasOwn(cfg.languages,language)){
       setTimeout(()=>{
         document.querySelector('[data-lang="'+language+'"]')?.click();

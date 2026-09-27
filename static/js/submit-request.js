@@ -81,7 +81,7 @@
     if(window.NVBPilotPublic){
       element('pilotReceiptSecret').textContent=data.tracking_secret||'This request was already received. Use the private code from its original receipt.';
       element('trackSecret').value=data.tracking_secret||'';
-      element('successDept').textContent=window.NVBPilotPublic.routing[payload.district]||'District review team';
+      element('successDept').textContent=data.routed_department || (window.NVBPilotPublic.category_routing?.[payload.district]?.[payload.category]) || window.NVBPilotPublic.routing[payload.district] || 'District review team';
     }
     if (payload.attachment_count > 0 && !window.NVBPilotPublic) {
       pendingEvidence = {

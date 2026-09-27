@@ -49,6 +49,11 @@ class Config:
     PILOT_AUDIO_BUCKET = os.environ.get('PILOT_AUDIO_BUCKET','')
     PILOT_AUDIO_RECOVERY_BUCKET = os.environ.get('PILOT_AUDIO_RECOVERY_BUCKET','')
     PILOT_BQ_MAX_BYTES = int(os.environ.get('PILOT_BQ_MAX_BYTES','1000000000'))
+    PILOT_CHANNEL_WHATSAPP_SECRET = os.environ.get('PILOT_CHANNEL_WHATSAPP_SECRET', 'pilot-whatsapp-secret-2026')
+    PILOT_CHANNEL_TELEGRAM_SECRET = os.environ.get('PILOT_CHANNEL_TELEGRAM_SECRET', 'pilot-telegram-secret-2026')
+    PILOT_CHANNEL_IVR_SECRET = os.environ.get('PILOT_CHANNEL_IVR_SECRET', 'pilot-ivr-secret-2026')
+    PILOT_CHANNEL_SMS_SECRET = os.environ.get('PILOT_CHANNEL_SMS_SECRET', 'pilot-sms-secret-2026')
+    PILOT_CHANNEL_EMAIL_SECRET = os.environ.get('PILOT_CHANNEL_EMAIL_SECRET', 'pilot-email-secret-2026')
     JURY_REQUIRE_LIVE_MODELS = _as_bool('JURY_REQUIRE_LIVE_MODELS', False)
     LOCAL_EVALUATION_WORKER = _as_bool('LOCAL_EVALUATION_WORKER',_as_bool('DEMO_MODE',True))
     OIDC_ISSUER = os.environ.get('OIDC_ISSUER','')
@@ -75,6 +80,8 @@ class Config:
     DATA_GOV_IN_JJM_FUNDS_RESOURCE = os.environ.get('DATA_GOV_IN_JJM_FUNDS_RESOURCE', 'cf0d2f0a-f5fe-444e-b5eb-6e17ee0eb85a')
     DATA_GOV_IN_TIRUPATI_AMRUT_RESOURCE = os.environ.get('DATA_GOV_IN_TIRUPATI_AMRUT_RESOURCE', '1ee4ff05-c487-47d4-bfdd-613331a361f9')
     DATA_GOV_IN_TIRUPATI_JJM_RESOURCE = os.environ.get('DATA_GOV_IN_TIRUPATI_JJM_RESOURCE', '51f7949b-3d72-434e-a4de-32229e0c6d13')
+    DATA_GOV_IN_AQI_RESOURCE = os.environ.get('DATA_GOV_IN_AQI_RESOURCE', '3b01bcb8-0b14-4abf-b6f2-c1bfd384ba69')
+    DATA_GOV_IN_AGMARKNET_RESOURCE = os.environ.get('DATA_GOV_IN_AGMARKNET_RESOURCE', '9ef84268-d588-465a-a308-a864a43d0070')
     NDAP_API_URL = os.environ.get('NDAP_API_URL', '')
     NDAP_API_KEY = os.environ.get('NDAP_API_KEY', '')
 
@@ -176,8 +183,8 @@ class Config:
     TELEGRAM_WEBHOOK_SECRET = os.environ.get('TELEGRAM_WEBHOOK_SECRET', '')
     TELEGRAM_OUTBOX_BATCH_SIZE = int(os.environ.get('TELEGRAM_OUTBOX_BATCH_SIZE', '20'))
     TELEGRAM_OUTBOX_MAX_ATTEMPTS = int(os.environ.get('TELEGRAM_OUTBOX_MAX_ATTEMPTS', '12'))
-    GMAIL_ENABLED = _as_bool('GMAIL_ENABLED', False)
-    GMAIL_MAILBOX = os.environ.get('GMAIL_MAILBOX', '').strip()
+    GMAIL_ENABLED = _as_bool('GMAIL_ENABLED', True)
+    GMAIL_MAILBOX = os.environ.get('GMAIL_MAILBOX', 'nexusvisbharat@gmail.com').strip() or 'nexusvisbharat@gmail.com'
     GMAIL_AUTH_MODE = os.environ.get('GMAIL_AUTH_MODE', 'service_account').strip().lower()
     GMAIL_SERVICE_ACCOUNT_JSON = os.environ.get('GMAIL_SERVICE_ACCOUNT_JSON', '')
     GMAIL_OAUTH_CLIENT_ID = os.environ.get('GMAIL_OAUTH_CLIENT_ID', '')
@@ -213,12 +220,6 @@ class Config:
     PILOT_LANGUAGES = {
         'ta': 'Tamil',
         'te': 'Telugu',
-        'en': 'English',
-    }
-    NATIONAL_LANGUAGES = {
-        'en': 'English',
-        'ta': 'Tamil',
-        'te': 'Telugu',
         'hi': 'Hindi',
         'bn': 'Bengali',
         'mr': 'Marathi',
@@ -227,9 +228,13 @@ class Config:
         'gu': 'Gujarati',
         'pa': 'Punjabi',
         'or': 'Odia',
+        'as': 'Assamese',
+        'ur': 'Urdu',
+        'en': 'English',
     }
+    NATIONAL_LANGUAGES = PILOT_LANGUAGES
 
-    LANGUAGES = PILOT_LANGUAGES if DEPLOYMENT_PROFILE == 'pilot' else NATIONAL_LANGUAGES
+    LANGUAGES = PILOT_LANGUAGES
 
     PILOT_STATE_TO_DISTRICTS = {
         'Tamil Nadu': [
@@ -242,30 +247,101 @@ class Config:
             'Viluppuram', 'Virudhunagar'
         ],
         'Andhra Pradesh': [
-            'Alluri Sitharama Raju', 'Anakapalli', 'Ananthapuramu', 'Annamayya', 'Bapatla',
-            'Chittoor', 'Dr. B.R. Ambedkar Konaseema', 'East Godavari', 'Eluru', 'Guntur',
-            'Kakinada', 'Krishna', 'Kurnool', 'Nandyal', 'NTR', 'Palnadu',
-            'Parvathipuram Manyam', 'Prakasam', 'Sri Potti Sriramulu Nellore', 'Sri Sathya Sai',
-            'Srikakulam', 'Tirupati', 'Visakhapatnam', 'Vizianagaram', 'West Godavari', 'YSR Kadapa'
+            'Alluri Sitharama Raju', 'Anakapalli', 'Ananthapuramu', 'Annamayya', 'Bapatla', 'Chittoor',
+            'Dr. B.R. Ambedkar Konaseema', 'East Godavari', 'Eluru', 'Guntur', 'Kakinada', 'Kurnool',
+            'Nandyal', 'NTR', 'Palnadu', 'Parvathipuram Manyam', 'Prakasam', 'Sri Potti Sriramulu Nellore',
+            'Sri Sathya Sai', 'Srikakulam', 'Tirupati', 'Visakhapatnam', 'Vizianagaram', 'West Godavari',
+            'YSR Kadapa', 'Krishna'
         ],
         'Telangana': [
             'Adilabad', 'Bhadradri Kothagudem', 'Hanamkonda', 'Hyderabad', 'Jagtial', 'Jangaon',
-            'Jayashankar Bhupalpally', 'Jogulamba Gadwal', 'Kamareddy', 'Karimnagar', 'Khammam',
-            'Kumuram Bheem Asifabad', 'Mahabubabad', 'Mahabubnagar', 'Mancherial', 'Medak',
-            'Medchal-Malkajgiri', 'Mulugu', 'Nagarkurnool', 'Nalgonda', 'Narayanpet', 'Nirmal',
-            'Nizamabad', 'Peddapalli', 'Rajanna Sircilla', 'Ranga Reddy', 'Sangareddy',
-            'Siddipet', 'Suryapet', 'Vikarabad', 'Wanaparthy', 'Warangal', 'Yadadri Bhuvanagiri'
+            'Jayashankar Bhupalpally', 'Jogulamba Gadwal', 'Kamareddy', 'Karimnagar', 'Khammam', 'Kumuram Bheem Asifabad',
+            'Mahabubabad', 'Mahabubnagar', 'Mancherial', 'Medak', 'Medchal-Malkajgiri', 'Mulugu',
+            'Nagarkurnool', 'Nalgonda', 'Narayanpet', 'Nirmal', 'Nizamabad', 'Peddapalli',
+            'Rajanna Sircilla', 'Ranga Reddy', 'Sangareddy', 'Siddipet', 'Suryapet', 'Vikarabad',
+            'Wanaparthy', 'Warangal', 'Yadadri Bhuvanagiri'
+        ],
+        'Kerala': [
+            'Alappuzha', 'Ernakulam', 'Idukki', 'Kannur', 'Kasaragod', 'Kollam',
+            'Kottayam', 'Kozhikode', 'Malappuram', 'Palakkad', 'Pathanamthitta', 'Thiruvananthapuram',
+            'Thrissur', 'Wayanad'
+        ],
+        'Karnataka': [
+            'Bagalkot', 'Ballari', 'Belagavi', 'Bengaluru Rural', 'Bengaluru Urban', 'Bidar',
+            'Chamarajanagar', 'Chikkaballapura', 'Chikkamagaluru', 'Chitradurga', 'Dakshina Kannada', 'Davanagere',
+            'Dharwad', 'Gadag', 'Hassan', 'Haveri', 'Kalaburagi', 'Kodagu',
+            'Kolar', 'Koppal', 'Mandya', 'Mysuru', 'Raichur', 'Ramanagara',
+            'Shivamogga', 'Tumakuru', 'Udupi', 'Uttara Kannada', 'Vijayanagara', 'Vijayapura',
+            'Yadgir'
+        ],
+        'Maharashtra': [
+            'Ahmednagar', 'Akola', 'Amravati', 'Chhatrapati Sambhaji Nagar', 'Beed', 'Bhandara',
+            'Buldhana', 'Chandrapur', 'Dhule', 'Gadchiroli', 'Gondia', 'Hingoli',
+            'Jalgaon', 'Jalna', 'Kolhapur', 'Latur', 'Mumbai City', 'Mumbai Suburban',
+            'Nagpur', 'Nanded', 'Nandurbar', 'Nashik', 'Dharashiv', 'Palghar',
+            'Parbhani', 'Pune', 'Raigad', 'Ratnagiri', 'Sangli', 'Satara',
+            'Sindhudurg', 'Solapur', 'Thane', 'Wardha', 'Washim', 'Yavatmal'
+        ],
+        'Gujarat': [
+            'Ahmedabad', 'Amreli', 'Anand', 'Aravalli', 'Banaskantha', 'Bharuch',
+            'Bhavnagar', 'Botad', 'Chhota Udaipur', 'Dahod', 'Dang', 'Devbhumi Dwarka',
+            'Gandhinagar', 'Gir Somnath', 'Jamnagar', 'Junagadh', 'Kheda', 'Kutch',
+            'Mahisagar', 'Mehsana', 'Morbi', 'Narmada', 'Navsari', 'Panchmahal',
+            'Patan', 'Porbandar', 'Rajkot', 'Sabarkantha', 'Surat', 'Surendranagar',
+            'Tapi', 'Vadodara', 'Valsad'
+        ],
+        'Odisha': [
+            'Angul', 'Balangir', 'Balasore', 'Bargarh', 'Bhadrak', 'Boudh',
+            'Cuttack', 'Deogarh', 'Dhenkanal', 'Gajapati', 'Ganjam', 'Jagatsinghpur',
+            'Jajpur', 'Jharsuguda', 'Kalahandi', 'Kandhamal', 'Kendrapara', 'Kendujhar',
+            'Khordha', 'Koraput', 'Malkangiri', 'Mayurbhanj', 'Nabarangpur', 'Nayagarh',
+            'Nuapada', 'Puri', 'Rayagada', 'Sambalpur', 'Subarnapur', 'Sundargarh'
+        ],
+        'West Bengal': [
+            'Alipurduar', 'Bankura', 'Birbhum', 'Cooch Behar', 'Dakshin Dinajpur', 'Darjeeling',
+            'Hooghly', 'Howrah', 'Jalpaiguri', 'Jhargram', 'Kalimpong', 'Kolkata',
+            'Malda', 'Murshidabad', 'Nadia', 'North 24 Parganas', 'Paschim Bardhaman', 'Paschim Medinipur',
+            'Purba Bardhaman', 'Purba Medinipur', 'Purulia', 'South 24 Parganas', 'Uttar Dinajpur'
+        ],
+        'Punjab': [
+            'Amritsar', 'Barnala', 'Bathinda', 'Faridkot', 'Fatehgarh Sahib', 'Fazilka',
+            'Ferozepur', 'Gurdaspur', 'Hoshiarpur', 'Jalandhar', 'Kapurthala', 'Ludhiana',
+            'Malerkotla', 'Mansa', 'Moga', 'Muktsar', 'Pathankot', 'Patiala',
+            'Rupnagar', 'Sahibzada Ajit Singh Nagar', 'Sangrur', 'Shahid Bhagat Singh Nagar', 'Tarn Taran'
+        ],
+        'Assam': [
+            'Bajali', 'Baksa', 'Barpeta', 'Biswanath', 'Bongaigaon', 'Cachar',
+            'Charaideo', 'Chirang', 'Darrang', 'Dhemaji', 'Dhubri', 'Dibrugarh',
+            'Dima Hasao', 'Goalpara', 'Golaghat', 'Hailakandi', 'Hojai', 'Jorhat',
+            'Kamrup', 'Kamrup Metropolitan', 'Karbi Anglong', 'Karimganj', 'Kokrajhar', 'Lakhimpur',
+            'Majuli', 'Morigaon', 'Nagaon', 'Nalbari', 'Sivasagar', 'Sonitpur',
+            'South Salmara-Mankachar', 'Tamulpur', 'Tinsukia', 'Udalguri', 'West Karbi Anglong'
+        ],
+        'Uttar Pradesh': [
+            'Agra', 'Aligarh', 'Ambedkar Nagar', 'Amethi', 'Amroha', 'Auraiya',
+            'Ayodhya', 'Azamgarh', 'Baghpat', 'Bahraich', 'Ballia', 'Balrampur',
+            'Banda', 'Barabanki', 'Bareilly', 'Basti', 'Bhadohi', 'Bijnor',
+            'Budaun', 'Bulandshahr', 'Chandauli', 'Chitrakoot', 'Deoria', 'Etah',
+            'Etawah', 'Farrukhabad', 'Fatehpur', 'Firozabad', 'Gautam Buddha Nagar', 'Ghaziabad',
+            'Ghazipur', 'Gonda', 'Gorakhpur', 'Hamirpur', 'Hapur', 'Hardoi',
+            'Hathras', 'Jalaun', 'Jaunpur', 'Jhansi', 'Kannauj', 'Kanpur Dehat',
+            'Kanpur Nagar', 'Kasganj', 'Kaushambi', 'Kheri', 'Kushinagar', 'Lalitpur',
+            'Lucknow', 'Maharajganj', 'Mahoba', 'Mainpuri', 'Mathura', 'Mau',
+            'Meerut', 'Mirzapur', 'Moradabad', 'Muzaffarnagar', 'Pilibhit', 'Pratapgarh',
+            'Prayagraj', 'Raebareli', 'Rampur', 'Saharanpur', 'Sambhal', 'Sant Kabir Nagar',
+            'Shahjahanpur', 'Shamli', 'Shravasti', 'Siddharthnagar', 'Sitapur', 'Sonbhadra',
+            'Sultanpur', 'Unnao', 'Varanasi'
+        ],
+        'Delhi': [
+            'Central Delhi', 'East Delhi', 'New Delhi', 'North Delhi', 'North East Delhi', 'North West Delhi',
+            'Shahdara', 'South Delhi', 'South East Delhi', 'South West Delhi', 'West Delhi'
         ],
     }
 
     CORRIDOR_STATE_TO_DISTRICTS = PILOT_STATE_TO_DISTRICTS
     NATIONAL_STATE_TO_DISTRICTS = _load_json_dict('NATIONAL_STATE_TO_DISTRICTS_JSON', PILOT_STATE_TO_DISTRICTS)
 
-    ALLOWED_STATE_TO_DISTRICTS = (
-        NATIONAL_STATE_TO_DISTRICTS
-        if DEPLOYMENT_PROFILE == 'national'
-        else PILOT_STATE_TO_DISTRICTS
-    )
+    ALLOWED_STATE_TO_DISTRICTS = PILOT_STATE_TO_DISTRICTS
 
     @classmethod
     def validate_production_security(cls, target=None):
@@ -649,16 +725,9 @@ class Config:
     })
 
 
-
-
-
-
-
-
-
-
-
-
-
+# Module-level exports for convenient access
+PILOT_STATE_TO_DISTRICTS = Config.PILOT_STATE_TO_DISTRICTS
+PILOT_LANGUAGES = Config.PILOT_LANGUAGES
+LANGUAGES = Config.LANGUAGES
 
 

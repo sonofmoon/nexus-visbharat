@@ -24,7 +24,10 @@ def provider_step(rid,step,inputs,call):
     existing=pilot.rows('SELECT * FROM pilot_provider_steps WHERE request_id=? AND step=? AND input_sha256=?',(rid,step,sha))
     if existing:
         db.commit()
-        if existing[0]['status']=='completed': return json.loads(existing[0]['result_json'])
+        if existing[0]['status'] == 'completed':
+            return json.loads(existing[0]['result_json'])
+        if existing[0]['status'] == 'fallback':
+            raise ReviewRequired('Provider returned a fallback; human review is required')
         raise ReviewRequired('Previous provider outcome is uncertain; a reviewer must reconcile it before another call')
     db.execute('''INSERT INTO pilot_provider_steps(request_id,step,input_sha256,status,started_at)
         VALUES(?,?,?,'started',?)''',(rid,step,sha,pilot.now()));db.commit()
@@ -32,13 +35,21 @@ def provider_step(rid,step,inputs,call):
     try:
         result=call()
         if not isinstance(result,dict): raise ReviewRequired('Provider returned an invalid result')
-        if result.get('fallback_used') or result.get('provider_mode') in ('simulation','local_fallback'):
-            raise ReviewRequired('Provider returned a fallback; human review is required')
-        db.execute('''UPDATE pilot_provider_steps SET status='completed',provider=?,model=?,result_json=?,
+        is_fallback=bool(result.get('fallback_used') or result.get('provider_mode') in ('simulation','local_fallback','synthetic_test_harness'))
+        step_status='fallback' if is_fallback else 'completed'
+        provider=result.get('provider_mode') or ('simulation' if is_fallback else 'unknown_provider')
+        model=result.get('model') or ('simulated-rules' if is_fallback else 'unknown_model')
+        latency=round((time.perf_counter()-began)*1000,2)
+        db.execute('''UPDATE pilot_provider_steps SET status=?,provider=?,model=?,result_json=?,
             latency_ms=?,usage_json=?,completed_at=? WHERE request_id=? AND step=? AND input_sha256=?''',
-            (result.get('provider_mode','google_speech_live'),result.get('model'),json.dumps(result),
-             round((time.perf_counter()-began)*1000,2),json.dumps(result.get('usage') or {'tokens':'not_reported'}),pilot.now(),rid,step,sha))
-        db.commit();return result
+            (step_status,provider,model,json.dumps(result),
+             latency,json.dumps(result.get('usage') or {'tokens':'not_reported'}),pilot.now(),rid,step,sha))
+        db.commit()
+        if is_fallback:
+            raise ReviewRequired('Provider returned a fallback; human review is required')
+        return result
+    except ReviewRequired:
+        raise
     except Exception:
         db.rollback()
         db.execute("UPDATE pilot_provider_steps SET status='uncertain',completed_at=? WHERE request_id=? AND step=? AND input_sha256=?",
@@ -101,7 +112,7 @@ def run_one(job_id=None):
             audio=read_audio(data)
             import hashlib
             speech=provider_step(rid,'speech',{'sha256':hashlib.sha256(audio).hexdigest(),'language':data['language']},
-                lambda:stt.transcribe_bytes(audio,{'ta':'ta-IN','te':'te-IN','en':'en-IN'}[data['language']],data['mime_type']))
+                lambda:stt.transcribe_bytes(audio,{'ta':'ta-IN','te':'te-IN','kn':'kn-IN','hi':'hi-IN','en':'en-IN'}[data['language']],data['mime_type']))
             original=pilot.text(speech.get('transcript'),'transcript',1,4000);metadata['speech']=speech
         if not original: raise ReviewRequired('A transcript is needed before classification')
         translation={'translated_text':original,'provider_mode':'no_translation_required','model':None}
@@ -122,8 +133,10 @@ def run_one(job_id=None):
         if not active_lease(job): db.rollback();return {'status':'lease_lost'}
         if pilot.rows("SELECT request_id FROM auditor_processing_restrictions WHERE request_id=? AND purpose='request_processing' AND state='restricted'",(rid,)):
             db.rollback();raise ReviewRequired('Processing was restricted during inference; output is held for review')
-        db.execute('UPDATE citizen_requests SET original_text=?,translated_text=?,category=?,urgency=?,sentiment=?,ai_metadata_json=? WHERE request_id=?',
-            (original,translated,category['category'],category['urgency'],category.get('sentiment','Unknown'),json.dumps(metadata),rid))
+        cat = category['category']
+        dept = pilot.resolve_department(raw['district'], cat, p.get('config'))
+        db.execute('UPDATE citizen_requests SET original_text=?,translated_text=?,category=?,urgency=?,sentiment=?,routed_department=?,ai_metadata_json=? WHERE request_id=?',
+            (original,translated,cat,category['urgency'],category.get('sentiment','Unknown'),dept,json.dumps(metadata),rid))
     except ReviewRequired as exc:
         db.rollback();error=str(exc);result_status='manual_review'
     except Exception:

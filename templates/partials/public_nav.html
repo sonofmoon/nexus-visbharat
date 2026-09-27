@@ -1,9 +1,12 @@
 <header class="public-header">
   <div class="public-nav-wrap">
     <a class="public-brand" href="{{ '/pilot' if pilot_page else '/' }}" aria-label="Nexus VisBharat home">
-      <span class="public-brand-icon" aria-hidden="true"><i class="bi bi-broadcast-pin"></i></span>
-      <span>Nexus VisBharat<small>{{ 'MINISTRY PILOT' if pilot_page else 'CITIZEN PLATFORM' }}</small></span>
+      <span class="public-brand-icon" aria-hidden="true" style="{{ 'background:#0f766e;color:#fff;' if pilot_page else '' }}"><i class="bi bi-broadcast-pin"></i></span>
+      <span>Nexus VisBharat<small style="{{ 'color:#0f766e;font-weight:800;' if pilot_page else '' }}">{{ 'MINISTRY PILOT' if pilot_page else 'CITIZEN PLATFORM' }}</small></span>
     </a>
+    {% if pilot_page %}
+    <span class="pilot-badge-pill" style="display:inline-flex; align-items:center; gap:5px; background:#0f766e; color:#ffffff; font-size:10px; font-weight:800; padding:3px 10px; border-radius:999px; letter-spacing:0.8px; text-transform:uppercase; margin-left:-6px;"><i class="bi bi-bank"></i> Pilot Portal</span>
+    {% endif %}
     <nav class="public-nav" id="public-navigation" aria-label="Main navigation">
       {% if pilot_page %}
       {% for key, href, label in [('home','/pilot','Citizen Portal'),('submit','/pilot/submit','Citizen Request Submission'),('dashboard','/pilot/dashboard','State Policy Dashboard'),('settings','/pilot/settings','Settings')] %}

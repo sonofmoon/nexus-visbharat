@@ -18,10 +18,11 @@ class GoogleTextToSpeechClient:
             raise ValueError('text is required')
 
         lang = str(language_code or self.language_code).strip() or self.language_code
+        voice_lang = 'bn-IN' if lang in ('or-IN', 'as-IN', 'or', 'as') else lang
 
         synthesis_input = self.texttospeech.SynthesisInput(text=clean_text)
         voice_kwargs = {
-            'language_code': lang,
+            'language_code': voice_lang,
             'ssml_gender': self.texttospeech.SsmlVoiceGender.NEUTRAL,
         }
         if self.voice_name:

@@ -3,7 +3,7 @@ import re
 
 PHONE_RE = re.compile(r'(?<!\d)(?:\+?91[-\s]?)?[6-9]\d{9}(?!\d)')
 EMAIL_RE = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b')
-AADHAAR_RE = re.compile(r'(?<!\d)(?:\d\s*){12}(?!\d)')
+AADHAAR_RE = re.compile(r'(?<![A-Za-z0-9-])(?:\d\s*){12}(?![A-Za-z0-9])')
 PAN_RE = re.compile(r'\b[A-Z]{5}[0-9]{4}[A-Z]\b', re.IGNORECASE)
 PIN_RE = re.compile(r'(?<!\d)\d{6}(?!\d)')
 

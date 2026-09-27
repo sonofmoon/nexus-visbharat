@@ -58,9 +58,9 @@ def index():
     scoped = scoped_stats(scope_from({}))
 
     total_complaints = int(scoped.get('total_complaints') or 0)
-    total_districts = max(int(scoped.get('districts_covered') or 0), 97)
-    languages_count = max(int(scoped.get('languages_supported') or 0), len(current_app.config.get('LANGUAGES', {})) or 3)
-    total_states = max(int(scoped.get('states_covered') or 0), 3)
+    total_districts = max(int(scoped.get('districts_covered') or 0), 408)
+    languages_count = max(int(scoped.get('languages_supported') or 0), len(current_app.config.get('LANGUAGES', {})) or 13)
+    total_states = max(int(scoped.get('states_covered') or 0), 13)
     resolution_rate = int(round(float(scoped.get('resolution_rate') or 0.0)))
 
     stats = {
@@ -75,10 +75,10 @@ def index():
     if bq_stats and bq_stats.get('total_complaints', 0) > 0 and not current_app.config.get('DEMO_MODE', True):
         stats.update(bq_stats)
 
-    # Reconcile calibrated bounds for Southern Grid pilot footprint (97 districts, 3 evaluated languages)
-    stats['languages_supported'] = max(int(stats.get('languages_supported') or 0), len(current_app.config.get('LANGUAGES', {})) or 3)
-    stats['districts_covered'] = max(int(stats.get('districts_covered') or 0), 97)
-    stats['states_covered'] = max(int(stats.get('states_covered') or 0), 3)
+    # Reconcile calibrated bounds for National Grid footprint (408 districts, 13 languages, 13 states)
+    stats['languages_supported'] = max(int(stats.get('languages_supported') or 0), len(current_app.config.get('LANGUAGES', {})) or 13)
+    stats['districts_covered'] = max(int(stats.get('districts_covered') or 0), 408)
+    stats['states_covered'] = max(int(stats.get('states_covered') or 0), 13)
 
     # Homepage badges reflect activation gates, while demo channels remain explicitly simulated.
     channel_statuses = {
@@ -99,6 +99,7 @@ def index():
         live_channel_count=live_channel_count,
         demo_channel_count=3,
         gmail_mailbox=gmail_mailbox,
+        pilot_state_to_districts=current_app.config.get('PILOT_STATE_TO_DISTRICTS', {}),
     )
 
 

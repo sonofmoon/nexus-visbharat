@@ -195,7 +195,8 @@ class AnalystWorkbenchTest(unittest.TestCase):
         self.assertIsNone(work.get_official_tirupati_rural_jjm()['total_habitations'])
         evidence=self.call('/evidence')
         sources=[s for s in evidence['sources'] if s['source'].startswith('public_data_')]
-        self.assertEqual(len(sources),7)
+        from visbharat.services.public_data import SOURCES as PUBLIC_SOURCES
+        self.assertEqual(len(sources), len(PUBLIC_SOURCES))
         for source in sources:
             self.assertFalse(source['publisher_verified'])
             self.assertIsNone(source['sha256'])

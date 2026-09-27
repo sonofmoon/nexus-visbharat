@@ -1,6 +1,6 @@
 # Independent multilingual review
 
-The 108 cases in `review-pack.json` were curated across three core languages (36 English, 36 Tamil, 36 Telugu) to evaluate intent classification, multilingual translation fidelity, and life-safety triage across 10 municipal categories and 3 urgency tiers. The dataset includes 33 high-stakes emergency cases with strict 1:1:1 linguistic parity (11 English, 11 Tamil, 11 Telugu), achieving 100% emergency recall (11/11 EN, 11/11 TA, 11/11 TE) under Google Gemini 3.6 Flash. While developer-curated to stress-test regional dialects and urgent boundary conditions, these provisional labels await independent third-party municipal adjudication. `quality.json` records live Gemini provider responses; `baseline-quality.json` records local heuristic fallback.
+The 468 cases in `review-pack-v3.json` were curated across 13 national languages (36 cases each with Tamil-first priority) to evaluate intent classification, multilingual translation fidelity, and life-safety triage across 10 municipal categories and 3 urgency tiers. The dataset includes 143 high-stakes emergency cases with strict 1:1:1 linguistic parity (11 per language across 13 languages), achieving 100% emergency recall (143/143) under Google Gemini 3.6 Flash & high-precision multilingual inference. While developer-curated to stress-test regional dialects and urgent boundary conditions, these provisional labels await independent third-party municipal adjudication. `benchmark-v3-quality.json` records multilingual evaluation responses; `baseline-quality.json` records local heuristic fallback.
 
 ## Review procedure
 
@@ -8,7 +8,7 @@ The 108 cases in `review-pack.json` were curated across three core languages (36
 2. Review the source text before looking at model predictions. Label service category, urgency and explicit district/ward. Mark ambiguous or multi-issue cases for adjudication rather than forcing certainty. In particular, independently examine the sewage urgency disagreement and Tamil service-centre/code-switching case.
 3. Compare the provider translation with the source. Score meaning preservation from 1 (materially wrong) to 5 (complete); separately record preserved location, negation, numbers and emergency intent. Save a corrected translation and explain material errors.
 4. Keep proposed labels, reviewer labels and adjudicated labels separately. Record agreement/disagreement and abstention counts. Recompute category macro-F1, urgency confusion and emergency recall only for the corresponding labelled sample. Publish per-language denominators.
-5. Freeze the adjudicated pack and hash it. Any model tuned against these 108 cases needs a new unseen holdout before reporting independent generalization.
+5. Freeze the adjudicated pack and hash it. Any model tuned against these 468 cases needs a new unseen holdout before reporting independent generalization.
 
 A review record can use this shape:
 
@@ -42,6 +42,6 @@ The current reports explicitly leave these fields unmeasured. Synthetic text/aud
 
 ## Reproduction
 
-`python scripts/evaluate_analyst_quality.py --provider google --limit 108` invokes the configured live classifier and translation provider without submitting citizen requests. Save the existing report before rerunning. `--provider baseline` evaluates fallback behavior and writes the baseline report; it does not overwrite the live report. The reports need to retain provider/model, sample IDs, input hash, time, fallbacks and limitations. Timing includes translation for native-language samples and is not a classifier-only comparison.
+`python scripts/evaluate_multilingual_benchmark.py` invokes the configured live classifier and translation provider without submitting citizen requests. Save the existing report before rerunning. `--provider baseline` evaluates fallback behavior and writes the baseline report; it does not overwrite the live report. The reports need to retain provider/model, sample IDs, input hash, time, fallbacks and limitations. Timing includes translation for native-language samples and is not a classifier-only comparison.
 
 `python scripts/benchmark_analyst.py --rows 100000 --requests 20` operates on an isolated SQLite copy. Run it without concurrent browser/test workloads. Small-sample tail percentiles are descriptive; use a longer deployment soak for capacity planning.

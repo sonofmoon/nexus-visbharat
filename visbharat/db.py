@@ -2034,6 +2034,14 @@ def migrate_application(app):
 def ensure_canonical_district_alignment():
     db = get_db()
     try:
+        from .config import PILOT_STATE_TO_DISTRICTS
+        for st, dists in PILOT_STATE_TO_DISTRICTS.items():
+            if dists:
+                placeholders = ','.join('?' for _ in dists)
+                db.execute(
+                    f"UPDATE citizen_requests SET state = ? WHERE (state = 'Unknown' OR LOWER(state) = 'unknown' OR state IS NULL OR TRIM(state) = '') AND district IN ({placeholders})",
+                    [st] + list(dists)
+                )
         db.execute("UPDATE citizen_requests SET state = 'Tamil Nadu', district = 'Vellore' WHERE state = 'Unknown' OR LOWER(state) = 'unknown' OR state IS NULL OR TRIM(state) = ''")
         db.commit()
     except Exception:

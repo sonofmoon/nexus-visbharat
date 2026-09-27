@@ -75,3 +75,25 @@ def test_mobile_navigation_and_district_selection(browser_page):
     page.locator('.pilot-district-card').filter(has_text='Tirupati').click()
     expect(page.locator('#district')).to_have_value('Tirupati')
     expect(page.locator('#language')).to_have_value('te')
+
+
+def test_bengaluru_prepared_example_requires_consent_and_submits(browser_page):
+    from playwright.sync_api import expect
+    page,url,env=browser_page
+    page.goto(url+'/pilot')
+    page.get_by_role('link',name='Try Bengaluru Urban example',exact=True).click()
+    expect(page.locator('#district')).to_have_value('Bengaluru Urban')
+    expect(page.locator('#language')).to_have_value('kn')
+    expect(page.locator('#pilotLocation')).to_have_value('bengaluru_urban-1')
+    expect(page.locator('#category')).to_have_value('Road')
+    expect(page.locator('#complaint-text')).not_to_be_empty()
+    expect(page.locator('#requestTextHint')).to_contain_text('Prepared fictional request')
+    expect(page.locator('#consentGranted')).not_to_be_checked()
+    page.locator('#consentGranted').check()
+    page.locator('#submitBtn').click()
+    expect(page.locator('#successMessage')).to_be_visible(timeout=15000)
+    rid=page.locator('#complaintId').inner_text()
+    with env.app.app_context():
+        from visbharat.services import pilot
+        row=pilot.rows('SELECT district,input_language,category FROM citizen_requests WHERE request_id=?',(rid,))[0]
+    assert row=={'district':'Bengaluru Urban','input_language':'kn','category':'Road'}

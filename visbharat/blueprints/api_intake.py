@@ -168,7 +168,7 @@ def _submit_complaint(data, idempotency_key='', assistant_session_id=None):
     if data.get('urgency'):
         classification['urgency'] = str(data['urgency']).strip()
 
-    lat, lng, state = _district_geo(repo, district)
+    lat, lng, state = _district_geo(repo, district, state=data.get('state'))
     geo = resolve_geo_ward_context(
         district=district,
         text=normalized_text,
@@ -924,8 +924,9 @@ def transcribe_voice_endpoint():
     max_audio_bytes = int(current_app.config.get('VOICE_MAX_BYTES', 10 * 1024 * 1024))
     if data.get('assistant'):
         max_audio_bytes = min(max_audio_bytes, 3 * 1024 * 1024)
-    if language not in {'en','ta','te'}:
-        return jsonify(success=False, code='unsupported_language', error='Choose English, Tamil or Telugu before recording.'), 400
+    valid_langs = set(current_app.config.get('LANGUAGES', {}).keys()) or {'ta', 'te', 'hi', 'en'}
+    if language not in valid_langs:
+        return jsonify(success=False, code='unsupported_language', error='Choose a supported language before recording.'), 400
     if not audio_bytes:
         return jsonify(success=False, code='empty_audio', error='No audio was captured. Tap Record voice and try again.'), 400
     if len(audio_bytes) > max_audio_bytes:

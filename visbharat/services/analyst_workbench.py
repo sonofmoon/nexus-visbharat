@@ -93,6 +93,27 @@ def get_official_ndap_indicators(state_name=None,state_lgd_code=None):
         {'projects_count':'projects','area_protected_ha':'area','population_benefited':'beneficiaries','state_code':'state_code'})
 
 
+def get_official_cpcb_aqi(state=None, city=None):
+    filters = {}
+    if state:
+        filters['state'] = state
+    if city:
+        filters['city'] = city
+    return public_data.select('cpcb_aqi', **filters)
+
+
+def get_official_agmarknet_prices(state=None, district=None, commodity=None):
+    filters = {}
+    if state:
+        filters['state'] = state
+    if district:
+        filters['district'] = district
+    if commodity:
+        filters['commodity'] = commodity
+    return public_data.select('agmarknet', **filters)
+
+
+
 VERSION = 'nvb-decision-v1'
 WEIGHTS = {'demand': 0.40, 'equity': 0.35, 'gap': 0.25}
 INCLUSION_VERSION = 'nvb-observed-access-screen-v2'
@@ -594,12 +615,25 @@ def geography(state, district):
     }
 
 
-def candidates(scope, weights=None):
-    clause, params = where(scope)
+def capital_eligibility_clause():
+    """Shared eligibility for portfolio counts and the exported supporting tickets."""
+    if get_db().backend == 'postgres':
+        reconstruction = "(NULLIF(c.ai_metadata_json,'')::jsonb ->> 'reconstruction_status')"
+        valid_metadata = 'TRUE'  # Persisted metadata is JSON serialized by the application.
+    else:
+        valid_metadata = "(c.ai_metadata_json IS NULL OR c.ai_metadata_json='' OR json_valid(c.ai_metadata_json))"
+        reconstruction = "json_extract(CASE WHEN json_valid(c.ai_metadata_json) THEN c.ai_metadata_json ELSE '{}' END,'$.reconstruction_status')"
     # Keep retained audit records inspectable while honoring explicit withdrawal
     # or refusal in subsequent planning. This does not assert an external deletion.
-    clause += " AND NOT EXISTS (SELECT 1 FROM auditor_processing_restrictions pr WHERE pr.request_id=c.request_id AND pr.purpose IN ('request_processing','policy_analytics') AND pr.state='restricted')"
-    clause += " AND NOT EXISTS (SELECT 1 FROM pilot_requests pr WHERE pr.request_id=c.request_id AND pr.processing_status NOT IN ('ready','human_reviewed'))"
+    return ("c.urgency <> 'Emergency'"
+            " AND NOT EXISTS (SELECT 1 FROM auditor_processing_restrictions pr WHERE pr.request_id=c.request_id AND pr.purpose IN ('request_processing','policy_analytics') AND pr.state='restricted')"
+            " AND NOT EXISTS (SELECT 1 FROM pilot_requests pr WHERE pr.request_id=c.request_id AND pr.processing_status NOT IN ('ready','human_reviewed'))"
+            f" AND {valid_metadata} AND COALESCE({reconstruction},'') <> 'synthetic_reconstructed_unreviewed'")
+
+
+def candidates(scope, weights=None):
+    clause, params = where(scope)
+    clause += ' AND ' + capital_eligibility_clause()
     rows = query(f'''SELECT c.state,c.district,COALESCE(c.ward,'') AS ward,c.category,
         COUNT(*) AS reports,COUNT(DISTINCT COALESCE(m.cluster_id,c.request_id)) AS issues,
         MIN(c.routed_department) AS department,
@@ -833,9 +867,12 @@ def project_detail(project_id,scope):
         LEFT JOIN (SELECT request_id,MIN(cluster_id) AS cluster_id FROM cluster_members GROUP BY request_id) m ON m.request_id=c.request_id
         WHERE {clause} ORDER BY c.created_at DESC''',params)
     ids=[r['request_id'] for r in rows]
-    capital_ids=[r['request_id'] for r in rows if r['urgency']!='Emergency']
+    capital_ids=[r['request_id'] for r in query(
+        f'SELECT c.request_id FROM citizen_requests c WHERE {clause} AND {capital_eligibility_clause()} ORDER BY c.created_at DESC',params)]
     for r in rows:
-        meta=json.loads(r.pop('ai_metadata_json') or '{}')
+        try:meta=json.loads(r.pop('ai_metadata_json') or '{}')
+        except (ValueError,TypeError):meta={}
+        if not isinstance(meta,dict):meta={}
         r['is_synthetic']=bool(meta.get('is_synthetic'))
         r['cluster_basis']=meta.get('cluster_assignment','Operational clustering; requires review')
     events=query(f'''SELECT e.request_id,e.to_status,e.created_at,e.reason FROM request_lifecycle_events e
@@ -852,7 +889,9 @@ def project_detail(project_id,scope):
     review = next((d['review'] for d in decisions if d.get('review')), None)
     surveyed_beneficiaries = review['beneficiary_count'] if review else None
     return {'project_id':project_id,**found,'geography':geography(found['state'],found['district']),'scope':scope,'requests':rows[:100],'request_ids':ids,
-            'capital_request_ids':capital_ids,'excluded_emergency_request_ids':list(set(ids)-set(capital_ids)),
+            'capital_request_ids':capital_ids,
+            'excluded_emergency_request_ids':[r['request_id'] for r in rows if r['urgency']=='Emergency'],
+            'excluded_review_or_restriction_request_ids':[r['request_id'] for r in rows if r['urgency']!='Emergency' and r['request_id'] not in set(capital_ids)],
             'total_requests':len(rows),'request_preview_limit':100,'events':events,'decisions':decisions,
             'evidence':refs,'beneficiaries':surveyed_beneficiaries,
             'population_context':ulb_data if ulb_data.get('population') is not None else None,

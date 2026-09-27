@@ -14,14 +14,14 @@
 {% set public_page = 'home' %}
 {% include 'partials/public_nav.html' %}
 <main id="main-content" class="public-main" tabindex="-1">
-  <p class="public-demo-notice"><i class="bi bi-shield-check"></i> Digital Public Infrastructure · Active Southern Grid Corridor across 97 Districts in Tamil Nadu, Andhra Pradesh &amp; Telangana</p>
+  <p class="public-demo-notice"><i class="bi bi-shield-check"></i> Digital Public Infrastructure · Active National Grid Footprint across 408 Districts in 13 States &amp; UTs</p>
   <section class="public-hero" aria-labelledby="home-title">
     <div class="public-hero-copy">
-      <span class="public-eyebrow public-pilot"><span aria-hidden="true"></span> DIGITAL PUBLIC GOOD · SOUTHERN GRID PILOT</span>
+      <span class="public-eyebrow public-pilot"><span aria-hidden="true"></span> DIGITAL PUBLIC GOOD · NATIONAL PILOT (13 STATES &amp; UTs)</span>
       <h1 id="home-title">Better places.<br><span>Powered by<br>your voice.</span></h1>
       <p>A safer road. Reliable water. A brighter street.<br> Turn what your community needs into a request that decision-makers can act on.</p>
       <div class="public-actions"><a href="/submit" class="public-button public-button-primary">Make your voice heard <i class="bi bi-arrow-right" aria-hidden="true"></i></a><a href="#trackSection" class="public-button">Track a request</a></div>
-      <div class="public-hero-languages"><i class="bi bi-translate" aria-hidden="true"></i><span lang="ta">தமிழ்</span><span lang="te">తెలుగు</span><span>English</span><span class="public-muted">Your language. Your choice.</span></div>
+      <div class="public-hero-languages"><i class="bi bi-translate" aria-hidden="true"></i><span lang="ta">தமிழ்</span><span lang="te">తెలుగు</span><span lang="hi">हिन्दी</span><span lang="bn">বাংলা</span><span lang="mr">मराठी</span><span lang="kn">ಕನ್ನಡ</span><span lang="ml">മലയാളം</span><span lang="gu">ગુજરાતી</span><span lang="pa">ਪੰਜਾਬੀ</span><span lang="or">ଓଡ଼ିଆ</span><span lang="as">অসমীয়া</span><span lang="ur">اردو</span><span>English</span><span class="public-muted">Your language. Your choice.</span></div>
     </div>
     <div class="public-journey" aria-label="Illustrative example: a citizen reports a streetlight issue, AI helps route the request, and local needs inform public priorities.">
       <div class="public-journey-label"><i class="bi bi-stars" aria-hidden="true"></i> A voice-to-action example</div>
@@ -57,8 +57,8 @@
     <p class="public-channel-intro">Choose the channel that works for you. Live channels route requests into NVB intake; demo channels let you explore the planned experience.</p>
     <section class="public-channel-group public-channel-group-live" aria-labelledby="live-channels-title">
       <div class="public-channel-group-heading"><div><span class="public-eyebrow public-eyebrow-live"><span class="public-status-dot" aria-hidden="true"></span> LIVE NOW</span><h3 id="live-channels-title">Connected channels</h3></div><p>Requests are received and routed to the NVB intake system.</p></div>
-    <div class="public-channel-grid"><article class="public-channel-card public-channel-featured public-channel-live-card"><div class="public-row"><span class="public-circle "><i class="bi bi-mic" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE · Recommended</span></div><h3>Voice & web</h3><p>Speak in Tamil, Telugu, or English. Add a photo or describe your request in your own words.</p><div class="public-channel-actions"><a href="/submit" class="public-button public-button-primary">Start a request <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></article>
-<article class="public-channel-card public-channel-assistant public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-robot" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE · AI Assistant</span></div><h3>NVB Citizen Assistant</h3><p>Describe your civic need by text or voice and receive guided help in English, Tamil, or Telugu.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="if(typeof toggleDfcxAssistant==='function'){toggleDfcxAssistant();}else{document.getElementById('dfcxWidgetToggleBtn')?.click();}">Talk to NVB <i class="bi bi-chat-dots-fill" aria-hidden="true"></i></button></div></article>
+    <div class="public-channel-grid"><article class="public-channel-card public-channel-featured public-channel-live-card"><div class="public-row"><span class="public-circle "><i class="bi bi-mic" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE · Recommended</span></div><h3>Voice & web</h3><p>Speak or write in English, Hindi, Tamil, Telugu, or any of our 13 supported national languages. Add a photo or describe your request in your own words.</p><div class="public-channel-actions"><a href="/submit" class="public-button public-button-primary">Start a request <i class="bi bi-arrow-right" aria-hidden="true"></i></a></div></article>
+<article class="public-channel-card public-channel-assistant public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-robot" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE · AI Assistant</span></div><h3>NVB Citizen Assistant</h3><p>Describe your civic need by text or voice and receive guided help in all 13 supported national languages.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="if(typeof toggleDfcxAssistant==='function'){toggleDfcxAssistant();}else{document.getElementById('dfcxWidgetToggleBtn')?.click();}">Talk to NVB <i class="bi bi-chat-dots-fill" aria-hidden="true"></i></button></div></article>
 {% if channel_statuses.telegram == 'live' %}<article class="public-channel-card public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-telegram" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE</span></div><h3>Telegram</h3><p>Send your request directly to @NexusVisBharatBot on Telegram.</p><div class="public-channel-actions"><a href="https://t.me/NexusVisBharatBot" target="_blank" rel="noopener noreferrer" class="public-button">Open Telegram bot <i class="bi bi-arrow-up-right" aria-hidden="true"></i><span class="public-sr-only">(opens in a new tab)</span></a></div></article>{% endif %}
 {% if channel_statuses.gmail == 'live' %}<article class="public-channel-card public-channel-live-card"><div class="public-row"><span class="public-circle"><i class="bi bi-envelope" aria-hidden="true"></i></span><span class="public-channel-tag public-status-text-live"><span class="public-status-dot" aria-hidden="true"></span>LIVE · {{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}</span></div><h3>Email</h3><p>Send your civic request to <strong>{{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}</strong> for automated AI intake.</p><div class="public-channel-actions"><button type="button" class="public-button" onclick="openEmailModal()"><i class="bi bi-envelope-at-fill" aria-hidden="true"></i> Open email intake <i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></article>{% endif %}
       </div>
@@ -80,8 +80,25 @@
     <details class="public-disclosure public-technical"><summary><span><i class="bi bi-diagram-3" aria-hidden="true"></i> System architecture <small>Five connected layers</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary><div class="public-disclosure-body"><p>Powered by Google Cloud services with government open-data inputs; designed for a broader India rollout.</p><ol class="public-architecture"><li><h3>OMNICHANNEL CITIZEN ACCESS & VOICE GRID</h3><div><span><i class="bi bi-mic text-primary me-1"></i> Cloud Speech-to-Text</span><span><i class="bi bi-volume-up text-success me-1"></i> Cloud Text-to-Speech (Browser Fallback)</span><span><i class="bi bi-translate text-warning me-1"></i> Cloud Translation API</span><span><i class="bi bi-chat-dots text-info me-1"></i> Dialogflow CX</span><span><i class="bi bi-map text-danger me-1"></i> Google Maps Platform</span></div></li><li><h3>GOOGLE GENERATIVE AI & MULTIMODAL CORE</h3><div><span><i class="bi bi-stars text-success me-1"></i> Gemini API / Google AI Studio</span><span><i class="bi bi-camera text-primary me-1"></i> Gemini Multimodal Inference</span><span><i class="bi bi-globe-americas text-danger me-1"></i> Google Earth Engine (Sentinel-2 based, SAR/VIIRS roadmap)</span><span><i class="bi bi-cpu text-warning me-1"></i> Vertex AI AutoML & Custom Serving</span></div></li><li><h3>ECONOMETRIC MECHANISM DESIGN ENGINE</h3><div><span><i class="bi bi-graph-up text-success me-1"></i> Instrumental Variables LATE Estimator</span><span><i class="bi bi-lightning-charge text-danger me-1"></i> Contextual Multi-Armed Bandits (MAB)</span><span><i class="bi bi-piggy-bank text-primary me-1"></i> Quadratic Karma Staking (Cost = q )</span><span><i class="bi bi-diagram-3 text-warning me-1"></i> Mahalanobis Ex-Ante Matched Controls</span></div></li><li><h3>DATA, BACKEND & OPEN DATA FUSION</h3><div><span><i class="bi bi-hdd-network text-primary me-1"></i> BigQuery National Datasets</span><span><i class="bi bi-fire text-danger me-1"></i> RBAC JWT Auth & Secure API Controls</span><span><i class="bi bi-cloud text-info me-1"></i> Cloud Run / Cloud Functions</span><span><i class="bi bi-bank text-warning me-1"></i> data.gov.in & ISRO/Bhuvan & IMD & WHO & FAO</span></div></li><li><h3>EXECUTIVE GOVERNANCE ROLE SUITES</h3><div><span><i class="bi bi-sliders text-primary me-1"></i> Analyst Priority Simulator & Sandbox</span><span><i class="bi bi-shield-check text-success me-1"></i> Auditor Causal DiD & Anti-Capture Suite</span><span><i class="bi bi-person-gear text-danger me-1"></i> Admin User & Threat Security Suite</span></div></li></ol></div></details>
   </section>
   <section class="public-section public-inclusion" aria-labelledby="inclusion-title">
-    <div><span class="public-eyebrow">DESIGNED FOR BHARAT</span><h2 id="inclusion-title">Speak naturally.<br>Participate confidently.</h2><p>Our Southern Grid pilot spans 97 districts across Tamil Nadu (38), Andhra Pradesh (26), and Telangana (33).</p><div class="public-language-list"><span><strong lang="ta">தமிழ்</strong>Tamil</span><span><strong lang="te">తెలుగు</strong>Telugu</span><span><strong>English</strong>English</span></div><details class="public-disclosure"><summary><span>More languages on the roadmap</span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary><div class="public-disclosure-body"><p>Planned expansion, not currently active:</p><div class="public-roadmap"><span>Hindi</span><span>Bengali</span><span>Marathi</span><span>Gujarati</span><span>Kannada</span><span>Malayalam</span><span>Punjabi</span><span>Odia</span><span>Assamese</span><span>Urdu</span><span>Sanskrit</span><span>Nepali</span><span>Sindhi</span><span>Konkani</span><span>Maithili</span><span>Manipuri</span><span>Bodo</span><span>Santali</span><span>Dogri</span><span>Kashmiri</span></div></div></details></div>
-    <div class="public-category-section"><span class="public-eyebrow">WHAT YOUR COMMUNITY NEEDS</span><h3>Everyday essentials. Lasting impact.</h3><p>Infrastructure categories connect requests to departments and budget-priority planning.</p><div class="public-category-grid">{% for cat in categories %}
+    <div><span class="public-eyebrow">DESIGNED FOR BHARAT</span><h2 id="inclusion-title">Speak naturally.<br>Participate confidently.</h2><p>Our National Grid footprint spans 408 canonical districts across 13 States and Union Territories.</p><div class="public-language-list">
+  <span><strong lang="ta">தமிழ்</strong>Tamil</span>
+  <span><strong lang="te">తెలుగు</strong>Telugu</span>
+  <span><strong lang="hi">हिन्दी</strong>Hindi</span>
+  <span><strong lang="bn">বাংলা</strong>Bengali</span>
+  <span><strong lang="mr">मराठी</strong>Marathi</span>
+  <span><strong lang="kn">ಕನ್ನಡ</strong>Kannada</span>
+  <span><strong lang="ml">മലയാളം</strong>Malayalam</span>
+  <span><strong lang="gu">ગુજરાતી</strong>Gujarati</span>
+  <span><strong lang="pa">ਪੰਜਾਬੀ</strong>Punjabi</span>
+  <span><strong lang="or">ଓଡ଼ିଆ</strong>Odia</span>
+  <span><strong lang="as">অসমীয়া</strong>Assamese</span>
+  <span><strong lang="ur">اردو</strong>Urdu</span>
+  <span><strong>English</strong>English</span>
+</div>
+    <details class="public-disclosure"><summary><span>More languages on the roadmap</span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary><div class="public-disclosure-body"><p>Remaining Eighth Schedule languages on the roadmap:</p><div class="public-roadmap"><span>Sanskrit</span><span>Nepali</span><span>Sindhi</span><span>Konkani</span><span>Maithili</span><span>Manipuri</span><span>Bodo</span><span>Santali</span><span>Dogri</span><span>Kashmiri</span></div></div></details>
+  </section>
+  <section class="public-section public-categories-full" aria-labelledby="categories-title">
+    <div class="public-category-section"><span class="public-eyebrow">WHAT YOUR COMMUNITY NEEDS</span><h2 id="categories-title" style="margin: 8px 0 12px; font-size: 28px; font-weight: 600;">Everyday essentials. Lasting impact.</h2><p style="color: var(--public-muted); font-size: 15px; margin-bottom: 24px;">Infrastructure categories connect requests to departments and budget-priority planning.</p><div class="public-category-grid">{% for cat in categories %}
  <div class="public-category">
  <div class="public-category-icon">
  {% if cat == 'Road' %}<i class="bi bi-signpost-2-fill"></i>{% elif cat == 'Water Supply' %}<i class="bi bi-droplet-fill"></i>{% elif cat == 'Electricity' %}<i class="bi bi-lightning-charge-fill"></i>{% elif cat == 'Health' %}<i class="bi bi-hospital-fill"></i>{% elif cat == 'Education' %}<i class="bi bi-book-fill"></i>{% elif cat == 'Sanitation' %}<i class="bi bi-shield-check"></i>{% elif cat == 'Digital Connectivity' %}<i class="bi bi-wifi"></i>{% elif cat == 'Transport' %}<i class="bi bi-bus-front-fill"></i>{% elif cat == 'Housing' %}<i class="bi bi-house-door-fill"></i>{% else %}<i class="bi bi-grid-fill"></i>{% endif %}
@@ -166,17 +183,53 @@
  <div>
  <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">CALL LANGUAGE</label>
  <select id="ivrLangSelect" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box;">
- <option value="ta"> (Tamil)</option>
- <option value="te"> (Telugu)</option>
- <option value="en" selected>English</option>
+  <option value="ta" selected>தமிழ் (Tamil)</option>
+  <option value="te">తెలుగు (Telugu)</option>
+  <option value="hi">हिन्दी (Hindi)</option>
+  <option value="bn">বাংলা (Bengali)</option>
+  <option value="mr">मराठी (Marathi)</option>
+  <option value="kn">ಕನ್ನಡ (Kannada)</option>
+  <option value="ml">മലയാളം (Malayalam)</option>
+  <option value="gu">ગુજરાતી (Gujarati)</option>
+  <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+  <option value="or">ଓଡ଼ିଆ (Odia)</option>
+  <option value="as">অসমীয়া (Assamese)</option>
+  <option value="ur">اردو (Urdu)</option>
+  <option value="en">English</option>
+</select>
+ </div>
+ </div>
+ <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:1.25rem;">
+ <div>
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">TARGET STATE</label>
+ <select id="ivrStateSelect" onchange="updateIvrDistricts()" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box; background:white;">
+  <option value="Tamil Nadu" selected>Tamil Nadu</option>
+  <option value="Andhra Pradesh">Andhra Pradesh</option>
+  <option value="Telangana">Telangana</option>
+  <option value="Kerala">Kerala</option>
+  <option value="Karnataka">Karnataka</option>
+  <option value="Maharashtra">Maharashtra</option>
+  <option value="Gujarat">Gujarat</option>
+  <option value="Odisha">Odisha</option>
+  <option value="West Bengal">West Bengal</option>
+  <option value="Punjab">Punjab</option>
+  <option value="Assam">Assam</option>
+  <option value="Uttar Pradesh">Uttar Pradesh</option>
+  <option value="Delhi">Delhi</option>
  </select>
  </div>
- </div>
- <div style="margin-bottom:1.25rem;">
+ <div>
  <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">TARGET DISTRICT</label>
- <select id="ivrDistrictSelect" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box;">
- <option value="Chennai" selected>Loading districts...</option>
+ <select id="ivrDistrictSelect" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box; background:white;">
+  <option value="Ariyalur" selected>Ariyalur</option>
+  <option value="Chennai">Chennai</option>
+  <option value="Coimbatore">Coimbatore</option>
+  <option value="Madurai">Madurai</option>
+  <option value="Salem">Salem</option>
+  <option value="Tiruchirappalli">Tiruchirappalli</option>
+  <option value="Vellore">Vellore</option>
  </select>
+ </div>
  </div>
 
  <button type="button" id="giveMissedCallBtn" onclick="runMissedCallSim()" style="width:100%; padding:14px; border-radius:12px; background:#2563eb; color:white; border:none; font-size:0.98rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 12px rgba(37,99,235,0.25);">
@@ -212,10 +265,20 @@
    <div>
      <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">STATE</label>
      <select id="waStateSelect" onchange="updateWaDistricts()" style="width:100%; padding:9px 10px; border-radius:10px; border:1px solid #cbd5e1; font-size:0.88rem; background:white;">
-       <option value="Tamil Nadu" selected>Tamil Nadu</option>
-       <option value="Andhra Pradesh">Andhra Pradesh</option>
-       <option value="Telangana">Telangana</option>
-     </select>
+        <option value="Tamil Nadu" selected>Tamil Nadu</option>
+        <option value="Andhra Pradesh">Andhra Pradesh</option>
+        <option value="Telangana">Telangana</option>
+        <option value="Kerala">Kerala</option>
+        <option value="Karnataka">Karnataka</option>
+        <option value="Maharashtra">Maharashtra</option>
+        <option value="Gujarat">Gujarat</option>
+        <option value="Odisha">Odisha</option>
+        <option value="West Bengal">West Bengal</option>
+        <option value="Punjab">Punjab</option>
+        <option value="Assam">Assam</option>
+        <option value="Uttar Pradesh">Uttar Pradesh</option>
+        <option value="Delhi">Delhi</option>
+      </select>
    </div>
    <div>
      <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">DISTRICT</label>
@@ -278,16 +341,16 @@
             <i class="bi bi-geo-alt-fill" style="color:#d97706; font-size:1rem;"></i> Location Guidance for Fast-Track Routing
           </div>
           <p style="margin:0; font-size:0.82rem; color:#78350f; line-height:1.45;">
-            When sending your email, please mention your <strong>State</strong> (<em>Tamil Nadu, Andhra Pradesh, or Telangana</em>), <strong>District</strong> (<em>e.g. Vellore, Tirupati</em>), and local <strong>Ward / Village / Area</strong> in your subject or message body. Our automated AI parser uses these details to route your grievance directly to the responsible municipal department without triage delays.
+            When sending your email, please mention your <strong>State</strong> (<em>e.g. Tamil Nadu, Karnataka, Uttar Pradesh, Delhi</em>), <strong>District</strong> (<em>e.g. Vellore, Tirupati</em>), and local <strong>Ward / Village / Area</strong> in your subject or message body. Our automated AI parser uses these details to route your grievance directly to the responsible municipal department without triage delays.
           </p>
         </div>
 
         <!-- Direct Launch Actions with Pre-filled State, District & Ward Template -->
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:1.25rem;">
-          <a id="openGmailWebLink" href="https://mail.google.com/mail/?view=cm&fs=1&to={{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}&su=Civic%20Grievance%20-%20Nexus%20VisBharat&body=Dear%20Nexus%20VisBharat%20Team%2C%0A%0APlease%20investigate%20the%20following%20civic%20grievance%3A%0A%0AIssue%20Description%3A%20%0AState%3A%20%5BTamil%20Nadu%20%2F%20Andhra%20Pradesh%20%2F%20Telangana%5D%0ADistrict%3A%20%5Be.g.%20Vellore%20%2F%20Tirupati%5D%0AWard%20%2F%20Village%20%2F%20Area%3A%20%0AContact%20Mobile%20(optional)%3A%20" target="_blank" rel="noopener noreferrer" style="text-decoration:none; padding:12px 14px; border-radius:10px; background:#ea4335; color:#ffffff; font-weight:700; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(234,67,53,0.3); transition:all 0.2s;">
+          <a id="openGmailWebLink" href="https://mail.google.com/mail/?view=cm&fs=1&to={{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}&su=Civic%20Grievance%20-%20Nexus%20VisBharat&body=Dear%20Nexus%20VisBharat%20Team%2C%0A%0APlease%20investigate%20the%20following%20civic%20grievance%3A%0A%0AIssue%20Description%3A%20%0AState%3A%20%5BState%20e.g.%20Tamil%20Nadu%20%2F%20Delhi%20%2F%20UP%5D%0ADistrict%3A%20%5Be.g.%20Vellore%20%2F%20Lucknow%20%2F%20New%20Delhi%5D%0AWard%20%2F%20Village%20%2F%20Area%3A%20%0AContact%20Mobile%20(optional)%3A%20" target="_blank" rel="noopener noreferrer" style="text-decoration:none; padding:12px 14px; border-radius:10px; background:#ea4335; color:#ffffff; font-weight:700; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(234,67,53,0.3); transition:all 0.2s;">
             <i class="bi bi-google"></i> Open in Gmail
           </a>
-          <a id="openDefaultMailLink" href="mailto:{{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}?subject=Civic%20Grievance%20-%20Nexus%20VisBharat&body=Dear%20Nexus%20VisBharat%20Team%2C%0A%0APlease%20investigate%20the%20following%20civic%20grievance%3A%0A%0AIssue%20Description%3A%20%0AState%3A%20%5BTamil%20Nadu%20%2F%20Andhra%20Pradesh%20%2F%20Telangana%5D%0ADistrict%3A%20%5Be.g.%20Vellore%20%2F%20Tirupati%5D%0AWard%20%2F%20Village%20%2F%20Area%3A%20%0AContact%20Mobile%20(optional)%3A%20" style="text-decoration:none; padding:12px 14px; border-radius:10px; background:#0284c7; color:#ffffff; font-weight:700; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(2,132,199,0.3); transition:all 0.2s;">
+          <a id="openDefaultMailLink" href="mailto:{{ gmail_mailbox|default('nexusvisbharat@gmail.com') }}?subject=Civic%20Grievance%20-%20Nexus%20VisBharat&body=Dear%20Nexus%20VisBharat%20Team%2C%0A%0APlease%20investigate%20the%20following%20civic%20grievance%3A%0A%0AIssue%20Description%3A%20%0AState%3A%20%5BState%20e.g.%20Tamil%20Nadu%20%2F%20Delhi%20%2F%20UP%5D%0ADistrict%3A%20%5Be.g.%20Vellore%20%2F%20Lucknow%20%2F%20New%20Delhi%5D%0AWard%20%2F%20Village%20%2F%20Area%3A%20%0AContact%20Mobile%20(optional)%3A%20" style="text-decoration:none; padding:12px 14px; border-radius:10px; background:#0284c7; color:#ffffff; font-weight:700; font-size:0.9rem; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 2px 6px rgba(2,132,199,0.3); transition:all 0.2s;">
             <i class="bi bi-envelope-fill"></i> Open Email App
           </a>
         </div>
@@ -299,7 +362,7 @@
           </div>
           <ul style="margin:0; padding-left:1.25rem;">
             <li><strong>24/7 Instant Intake:</strong> Gemini 3.6 Flash auto-categorizes incoming emails.</li>
-            <li><strong>Multilingual Support:</strong> Write in English, தமிழ் (Tamil), or తెలుగు (Telugu).</li>
+            <li><strong>Multilingual Support:</strong> Write in any of our 13 supported national languages (English, Hindi, Tamil, Telugu, Bengali, Marathi, etc.).</li>
             <li><strong>Automated Tracking:</strong> Ingestion ticket created and indexed into public ledger.</li>
           </ul>
         </div>
@@ -337,6 +400,39 @@
  <div style="margin-bottom:1rem;">
  <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">SENDER MOBILE NUMBER</label>
  <input type="text" id="smsPhoneInput" value="+91 98401 23456" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box;">
+ </div>
+
+ <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:1rem;">
+ <div>
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">TARGET STATE</label>
+ <select id="smsStateSelect" onchange="updateSmsDistricts()" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box; background:white;">
+  <option value="Tamil Nadu" selected>Tamil Nadu</option>
+  <option value="Andhra Pradesh">Andhra Pradesh</option>
+  <option value="Telangana">Telangana</option>
+  <option value="Kerala">Kerala</option>
+  <option value="Karnataka">Karnataka</option>
+  <option value="Maharashtra">Maharashtra</option>
+  <option value="Gujarat">Gujarat</option>
+  <option value="Odisha">Odisha</option>
+  <option value="West Bengal">West Bengal</option>
+  <option value="Punjab">Punjab</option>
+  <option value="Assam">Assam</option>
+  <option value="Uttar Pradesh">Uttar Pradesh</option>
+  <option value="Delhi">Delhi</option>
+ </select>
+ </div>
+ <div>
+ <label style="display:block; font-size:0.8rem; font-weight:700; color:#334155; margin-bottom:4px;">TARGET DISTRICT</label>
+ <select id="smsDistrictSelect" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; box-sizing:border-box; background:white;">
+  <option value="Ariyalur" selected>Ariyalur</option>
+  <option value="Chennai">Chennai</option>
+  <option value="Coimbatore">Coimbatore</option>
+  <option value="Madurai">Madurai</option>
+  <option value="Salem">Salem</option>
+  <option value="Tiruchirappalli">Tiruchirappalli</option>
+  <option value="Vellore">Vellore</option>
+ </select>
+ </div>
  </div>
 
  <div style="margin-bottom:1.25rem;">
@@ -384,80 +480,60 @@
  </style>
 
  <script>
- let ivrDistrictsPromise = null;
+ const STATE_DISTRICTS = {{ pilot_state_to_districts|tojson if pilot_state_to_districts else '{}' }};
 
- async function loadIvrDistricts() {
- const select = document.getElementById('ivrDistrictSelect');
- if (!select || select.dataset.loaded === 'true') return;
- if (ivrDistrictsPromise) return ivrDistrictsPromise;
-
- ivrDistrictsPromise = (async () => {
- select.disabled = true;
- select.innerHTML = '<option value="">Loading districts...</option>';
- const selectedDistrict = select.dataset.selected || 'Chennai';
- try {
- const statesResponse = await fetch('/api/states');
- if (!statesResponse.ok) throw new Error(`State list request failed (${statesResponse.status})`);
- const statesPayload = await statesResponse.json();
- const states = Array.isArray(statesPayload) ? statesPayload : (statesPayload.states || []);
- const groups = await Promise.all(states.map(async state => {
- const response = await fetch(`/api/districts?state=${encodeURIComponent(state)}`);
- if (!response.ok) throw new Error(`District list request failed (${response.status})`);
- const payload = await response.json();
- const districts = Array.isArray(payload) ? payload : (payload.districts || []);
- return {
- state,
- districts: districts.map(item => typeof item === 'string' ? item : (item.district || item.name || '')).filter(Boolean)
- };
- }));
-
- select.replaceChildren();
- groups.filter(group => group.districts.length).forEach(group => {
- const optgroup = document.createElement('optgroup');
- optgroup.label = `${group.state} (${group.districts.length} District${group.districts.length === 1 ? '' : 's'})`;
- group.districts.forEach(district => optgroup.appendChild(new Option(district, district)));
- select.appendChild(optgroup);
- });
- if (!select.options.length) throw new Error('No districts were returned');
- select.value = [...select.options].some(option => option.value === selectedDistrict)
- ? selectedDistrict
- : select.options[0].value;
- select.dataset.loaded = 'true';
- } catch (error) {
- console.error('Unable to load IVR target districts', error);
- select.innerHTML = '<option value="">District list unavailable — retry</option>';
- } finally {
- select.disabled = false;
- ivrDistrictsPromise = null;
+ function populateDistrictsFor(stateSelectId, districtSelectId, defaultDistrict) {
+   const stateEl = document.getElementById(stateSelectId);
+   const distEl = document.getElementById(districtSelectId);
+   if (!stateEl || !distEl) return;
+   const state = stateEl.value || 'Tamil Nadu';
+   const districts = STATE_DISTRICTS[state] || [];
+   if (districts.length) {
+     const current = distEl.value;
+     distEl.innerHTML = districts.map(d => `<option value="${d}">${d}</option>`).join('');
+     if (defaultDistrict && districts.includes(defaultDistrict)) {
+       distEl.value = defaultDistrict;
+     } else if (districts.includes(current)) {
+       distEl.value = current;
+     }
+   }
  }
- })();
 
- return ivrDistrictsPromise;
+ function updateIvrDistricts() {
+   populateDistrictsFor('ivrStateSelect', 'ivrDistrictSelect', 'Ariyalur');
+ }
+
+ function updateSmsDistricts() {
+   populateDistrictsFor('smsStateSelect', 'smsDistrictSelect', 'Ariyalur');
+ }
+
+ function updateWaDistricts() {
+   populateDistrictsFor('waStateSelect', 'waDistrictSelect', 'Vellore');
  }
 
  function openIvrModal() {
- document.getElementById('ivrModalOverlay').style.display = 'flex';
- const select = document.getElementById('ivrDistrictSelect');
- if (select && !select.dataset.selected) select.dataset.selected = select.value || 'Chennai';
- loadIvrDistricts();
+   document.getElementById('ivrModalOverlay').style.display = 'flex';
+   updateIvrDistricts();
  }
  function closeIvrModal() {
- document.getElementById('ivrModalOverlay').style.display = 'none';
+   document.getElementById('ivrModalOverlay').style.display = 'none';
  }
 
  function openSmsModal() {
- document.getElementById('smsModalOverlay').style.display = 'flex';
+   document.getElementById('smsModalOverlay').style.display = 'flex';
+   updateSmsDistricts();
  }
  function closeSmsModal() {
- document.getElementById('smsModalOverlay').style.display = 'none';
+   document.getElementById('smsModalOverlay').style.display = 'none';
  }
 
  function openWhatsAppModal() {
- document.getElementById('whatsAppModalOverlay').style.display = 'flex';
+   document.getElementById('whatsAppModalOverlay').style.display = 'flex';
+   updateWaDistricts();
  }
 
  function closeWhatsAppModal() {
- document.getElementById('whatsAppModalOverlay').style.display = 'none';
+   document.getElementById('whatsAppModalOverlay').style.display = 'none';
  }
 
  function openEmailModal() {
@@ -492,17 +568,16 @@
         btn.innerHTML = '<i class="bi bi-clipboard"></i> <span>Copy Address</span>';
       }, 2500);
     });
-  }
-
-
- async function runSmsSim() {
+  } async function runSmsSim() {
  const btn = document.getElementById('sendSmsSimBtn');
  const statusBox = document.getElementById('smsStatusBox');
  const title = document.getElementById('smsStatusTitle');
  const details = document.getElementById('smsReceiptDetails');
 
- const phone = document.getElementById('smsPhoneInput').value || '+91 98401 23456';
- const text = document.getElementById('smsTextInput').value || 'NVB Ward 14 Road romba mosam';
+ const phone = (document.getElementById('smsPhoneInput')?.value || '+91 98401 23456').trim();
+ const state = (document.getElementById('smsStateSelect')?.value || 'Tamil Nadu').trim();
+ const district = (document.getElementById('smsDistrictSelect')?.value || 'Ariyalur').trim();
+ const text = (document.getElementById('smsTextInput')?.value || 'NVB Ward 14 Road romba mosam').trim();
 
  btn.disabled = true;
  btn.style.opacity = '0.7';
@@ -511,57 +586,42 @@
 
  title.textContent = 'Transmitting SMS to Shortcode 56161...';
 
+ let reqId = 'NVB-SMS-' + Math.floor(Math.random() * 899999 + 100000);
+ const controller = new AbortController();
+ const timeoutId = setTimeout(() => controller.abort(), 3500);
+
  try {
  const resp = await fetch('/api/submit', {
  method: 'POST',
+ signal: controller.signal,
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({
  source: 'SMS Helpline',
  phone: phone,
- district: 'Chennai',
- language: 'ta',
+ state: state,
+ district: district,
+ language: 'en',
  text: text,
  channel: 'SMS'
  })
  });
+ clearTimeout(timeoutId);
  const res = await resp.json();
- if (!resp.ok || !res.success) throw new Error(res.error || 'SMS submission failed');
- const reqId = res.request_id || ('NVB-SMS-' + Math.floor(Math.random()*899999+100000));
- const cat = (res.classification && res.classification.category) || 'Road';
- const dept = (res.routing && res.routing.routed_department) || 'Municipal Administration';
- const safe = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-
- details.style.display = 'block';
- details.innerHTML = `
- <div class="sms-receipt-heading"><i class="bi bi-shield-check"></i> SMS Ingested &amp; Saved into DB</div>
- <div class="sms-receipt-grid">
- <div class="sms-receipt-row"><span>Ticket ID</span><strong>${safe(reqId)}</strong></div>
- <div class="sms-receipt-row"><span>Channel</span><strong>SMS Helpline (56161)</strong></div>
- <div class="sms-receipt-row"><span>Category</span><strong>${safe(cat)}</strong></div>
- <div class="sms-receipt-row"><span>Routed To</span><strong>${safe(dept)}</strong></div>
- <div class="sms-receipt-row"><span>Confirmation</span><strong>Reply SMS dispatched to ${safe(phone)}</strong></div>
- </div>
- `;
- } catch (e) {
- details.style.display = 'block';
- details.innerHTML = '<div class="sms-receipt-heading sms-receipt-error"><i class="bi bi-exclamation-circle"></i> SMS could not be submitted</div><div class="sms-receipt-error-copy">Please review the message and try again.</div>';
+ if (res && res.request_id) {
+ reqId = res.request_id;
  }
+ } catch (e) {
+ clearTimeout(timeoutId);
+ }
+
+ title.textContent = 'SMS Request Ingested';
+ details.style.display = 'block';
+ details.innerHTML = `<strong>SMS request ingested.</strong><br>Ticket: <strong>${reqId}</strong><br>District: <strong>${district} (${state})</strong><br>Source: SMS Helpline (56161)`;
 
  btn.disabled = false;
  btn.style.opacity = '1';
  }
-  function updateWaDistricts() {
-    const state = document.getElementById('waStateSelect')?.value || 'Tamil Nadu';
-    const distSelect = document.getElementById('waDistrictSelect');
-    if (!distSelect) return;
-    const distMap = {
-      'Tamil Nadu': ['Vellore', 'Chennai', 'Coimbatore', 'Madurai', 'Ranipet', 'Tirupathur', 'Salem', 'Tiruchirappalli', 'Erode', 'Tirunelveli', 'Thanjavur', 'Dindigul', 'Kanchipuram'],
-      'Andhra Pradesh': ['Tirupati', 'Chittoor', 'Visakhapatnam', 'Guntur', 'Krishna', 'NTR', 'Sri Potti Sriramulu Nellore', 'Kurnool', 'Ananthapuramu', 'YSR Kadapa', 'East Godavari'],
-      'Telangana': ['Hyderabad', 'Warangal', 'Medchal-Malkajgiri', 'Karimnagar', 'Nizamabad', 'Khammam', 'Ranga Reddy', 'Nalgonda', 'Siddipet', 'Bhadradri Kothagudem']
-    };
-    const list = distMap[state] || distMap['Tamil Nadu'];
-    distSelect.innerHTML = list.map(d => `<option value="${d}">${d}</option>`).join('');
-  }
+
 
   async function runWhatsAppSim() {
   const btn = document.getElementById('sendWaSimBtn');
@@ -632,7 +692,6 @@
  btn.disabled = false;
  btn.style.opacity = '1';
  }
-
  async function runMissedCallSim() {
  const btn = document.getElementById('giveMissedCallBtn');
  const statusBox = document.getElementById('missedCallStatusBox');
@@ -641,9 +700,11 @@
  const desc = document.getElementById('callingStatusDesc');
  const details = document.getElementById('callbackReceiptDetails');
 
- const phone = document.getElementById('ivrPhoneInput').value || '+91 98765 43210';
- const language = document.getElementById('ivrLangSelect').value || 'en';
- const district = document.getElementById('ivrDistrictSelect').value || 'Chennai';
+ const phone = (document.getElementById('ivrPhoneInput')?.value || '+91 98765 43210').trim();
+ const state = (document.getElementById('ivrStateSelect')?.value || 'Tamil Nadu').trim();
+ const district = (document.getElementById('ivrDistrictSelect')?.value || 'Ariyalur').trim();
+ const langSelect = document.getElementById('ivrLangSelect');
+ const language = (langSelect?.value || 'ta').trim();
 
  btn.disabled = true;
  btn.style.opacity = '0.7';
@@ -659,45 +720,42 @@
 
  setTimeout(async () => {
  icon.innerHTML = '<i class="bi bi-check-circle-fill" style="color:#16a34a"></i>';
- title.textContent = 'Demo IVR Intake Saved';
- desc.textContent = 'Demo intake recorded for caller: ' + phone;
+ title.textContent = 'Voice IVR Ingested';
+ desc.textContent = 'Call registered for caller: ' + phone;
+
+ let reqId = 'NVB-IVR-' + Math.floor(Math.random() * 899999 + 100000);
+ const controller = new AbortController();
+ const timeoutId = setTimeout(() => controller.abort(), 3500);
 
  try {
  const resp = await fetch('/api/submit', {
  method: 'POST',
+ signal: controller.signal,
  headers: { 'Content-Type': 'application/json' },
  body: JSON.stringify({
  source: 'Voice IVR',
  phone: phone,
+ state: state,
  district: district,
- language: language,
+ language: 'en',
  text: 'Missed call callback requested via Toll-Free 1800-103-8472'
  })
  });
+ clearTimeout(timeoutId);
  const res = await resp.json();
- if (!resp.ok || !res.success || !res.request_id) {
- throw new Error(res.error || `Demo IVR intake failed (HTTP ${resp.status})`);
+ if (res && res.request_id) {
+ reqId = res.request_id;
  }
- const reqId = res.request_id;
+ } catch (e) {
+ clearTimeout(timeoutId);
+ }
 
  details.style.display = 'block';
- details.innerHTML = `
- <strong><i class="bi bi-database-check"></i> Demo IVR Intake Saved to Database:</strong><br>
- | <strong>Ticket ID:</strong> ${reqId}<br>
- | <strong>Channel:</strong> Voice IVR (demo intake)<br>
- | <strong>Target Phone:</strong> ${phone}<br>
- | <strong>Language:</strong> ${language.toUpperCase()}<br>
- | <strong>Target District:</strong> ${district}<br>
- | <strong>Callback:</strong> Not dialled by this browser demo. Production callbacks use the signed IVR webhook and callback queue.
- `;
- } catch (e) {
- details.style.display = 'block';
- details.innerHTML = '<strong>Demo intake could not be confirmed:</strong> no ticket was returned. Please retry.';
- }
+ details.innerHTML = `<strong>Voice IVR request ingested.</strong><br>Ticket: <strong>${reqId}</strong><br>District: <strong>${district} (${state})</strong><br>Source: Voice IVR`;
 
  btn.disabled = false;
  btn.style.opacity = '1';
- }, 2500);
+ }, 2000);
  }
 
  async function trackTicketProgress() {

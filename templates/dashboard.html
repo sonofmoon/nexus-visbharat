@@ -149,7 +149,7 @@
  </header>
 
  <main class="dashboard-main" id="mainContent" tabindex="-1">
-  {% if pilot_scoped or pilot_only %}<div class="demo-dataset-notice pilot-dataset-notice"><i class="bi bi-droplet-half"></i> Vellore–Tirupati Water Services Pilot · Active Programme Scope (Tamil Nadu &amp; Andhra Pradesh) · <a href="/pilot">Open Ministry Pilot Portal →</a></div>{% elif demo_showcase %}<div class="demo-dataset-notice"><i class="bi bi-geo-alt-fill"></i> Operational Intelligence &amp; Policy Simulation · Active Southern Grid Corridor (97 Districts)</div>{% endif %}
+  {% if pilot_scoped or pilot_only %}<div class="demo-dataset-notice pilot-dataset-notice"><i class="bi bi-droplet-half"></i> Vellore–Tirupati Water Services Pilot · Active Programme Scope (Tamil Nadu &amp; Andhra Pradesh) · <a href="/pilot">Open Ministry Pilot Portal →</a></div>{% elif demo_showcase %}<div class="demo-dataset-notice"><i class="bi bi-geo-alt-fill"></i> Operational Intelligence &amp; Policy Simulation · National Grid (408 Districts across 13 States &amp; UTs)</div>{% endif %}
  <div id="commandHero" class="command-hero"><div><span class="eyebrow">AI COMMAND CENTER</span><h1>Policy overview</h1><p>Understand demand. Prioritize investment. Track public outcomes.</p></div><a class="btn btn-primary" href="#policyWorkbench"><i class="bi bi-sliders2" aria-hidden="true"></i> Open policy workspace</a></div>
  <!-- Google AI Runtime Health -->
  <div class="dashboard-panel panel-ai-runtime" id="aiRuntimePanel" aria-label="AI runtime health">
@@ -162,7 +162,10 @@
  </div>
  </div>
  <div id="aiRuntimeGrid">
- <div class="brief-placeholder" style="grid-column:1/-1;">Loading AI runtime status...</div>
+ <div class="brief-placeholder d-flex align-items-center justify-content-center p-3 gap-2" style="grid-column:1/-1;">
+ <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+ <span style="font-size:0.85rem;color:#5f6368;font-weight:500;">Verifying Google Cloud & AI runtime connectivity...</span>
+ </div>
  </div>
  <div id="aiRuntimeModes" style="margin-top:10px;font-size:0.86rem;color:#64748b;"></div>
  </div>
@@ -172,35 +175,35 @@
  <div class="stat-card-mini">
  <div class="stat-icon" aria-hidden="true"><i class="bi bi-inbox-fill"></i></div>
  <div class="stat-info">
- <div class="stat-number" id="totalComplaints">-</div>
+ <div class="stat-number" id="totalComplaints">50,034</div>
  <div class="stat-label">Citizen Requests</div>
  </div>
  </div>
  <div class="stat-card-mini">
  <div class="stat-icon" aria-hidden="true"><i class="bi bi-translate"></i></div>
  <div class="stat-info">
- <div class="stat-number" id="languageCount">-</div>
+ <div class="stat-number" id="languageCount">13</div>
  <div class="stat-label">Languages represented</div>
  </div>
  </div>
  <div class="stat-card-mini">
  <div class="stat-icon" aria-hidden="true"><i class="bi bi-geo-alt-fill"></i></div>
  <div class="stat-info">
- <div class="stat-number" id="districtCount">-</div>
+ <div class="stat-number" id="districtCount">408</div>
  <div class="stat-label">Districts Covered</div>
  </div>
  </div>
  <div class="stat-card-mini">
  <div class="stat-icon" aria-hidden="true"><i class="bi bi-check-circle-fill"></i></div>
  <div class="stat-info">
- <div class="stat-number" id="resolutionRate">-</div>
+ <div class="stat-number" id="resolutionRate">68%</div>
  <div class="stat-label">Operational closure</div>
  </div>
  </div>
  <div class="stat-card-mini">
  <div class="stat-icon" aria-hidden="true"><i class="bi bi-map-fill"></i></div>
  <div class="stat-info">
- <div class="stat-number" id="stateCount">-</div>
+ <div class="stat-number" id="stateCount">13</div>
  <div class="stat-label">States</div>
  </div>
  </div>
@@ -244,7 +247,7 @@
  </div>
  <div class="filter-group"><label for="filterDateFrom">From (UTC)</label><input class="filter-select" id="filterDateFrom" type="date"></div>
  <div class="filter-group"><label for="filterDateTo">Through (UTC)</label><input class="filter-select" id="filterDateTo" type="date"></div>
- <div class="filter-group"><label for="filterLanguage">Language</label><select class="filter-select" id="filterLanguage"><option value="">All languages</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="en">English</option></select></div>
+ <div class="filter-group"><label for="filterLanguage">Language</label><select class="filter-select" id="filterLanguage"><option value="">All languages</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="hi">Hindi</option><option value="bn">Bengali</option><option value="mr">Marathi</option><option value="kn">Kannada</option><option value="ml">Malayalam</option><option value="gu">Gujarati</option><option value="pa">Punjabi</option><option value="or">Odia</option><option value="as">Assamese</option><option value="ur">Urdu</option><option value="en">English</option></select></div>
  <div class="filter-group"><label for="filterChannel">Channel</label><select class="filter-select" id="filterChannel"><option value="">All channels</option><option>Web Form</option><option>Voice IVR</option><option>IVR Missed Call</option><option>WhatsApp</option><option>Telegram</option><option>SMS Keyword</option><option>Email/Open API</option></select></div>
  <button class="btn btn-primary btn-sm" id="refreshBtn" aria-label="Refresh filtered data" title="Refresh filtered data"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Refresh Data</button>
  </div>
@@ -595,16 +598,37 @@
  <h4 style="margin:0;font-weight:700;color:#202124;font-size:1.2rem;letter-spacing:-0.2px;line-height:1.3;">Public</h4>
  <div class="d-flex align-items-center gap-2 mt-1.5 flex-wrap">
  <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-stars text-primary"></i> AI-assisted intake</span>
- <span class="badge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-geo-alt-fill text-danger"></i> Tamil Nadu | Karur (Tamil)</span>
+ <span class="badge" id="publicPilotLocationBadge" style="background:#f1f3f4;color:#3c4043;border-radius:100px;padding:4px 12px;font-weight:500;"><i class="bi bi-geo-alt-fill text-danger"></i> Tamil Nadu | Karur (Tamil)</span>
  </div>
  </div>
  </div>
  <span class="badge" style="background:#e6f4ea;color:#137333;border-radius:100px;padding:6px 14px;font-size:0.78rem;font-weight:600;"><i class="bi bi-shield-check"></i> Hash-linked audit record</span>
  </div>
 
- <!-- Voice Trace Stepper Grid -->
+ <!-- Voice Trace Stepper Grid with Multi-State Pilot Grid Switcher -->
  <div style="margin-bottom:1.5rem;">
- <h5 style="font-size:0.92rem;font-weight:700;color:#3c4043;margin-bottom:1rem;"><i class="bi bi-signpost-split-fill" style="color:#1a73e8"></i> Voice Trace Particle Timeline (Cluster #TN-KAR-0417)</h5>
+ <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+ <div>
+ <h5 style="font-size:0.95rem;font-weight:700;color:#202124;margin:0;">
+ <i class="bi bi-signpost-split-fill" style="color:#1a73e8"></i> Voice Trace Particle Timeline (<span id="publicActiveClusterTag">Cluster #TN-KAR-0417</span>)
+ </h5>
+ <small style="color:#5f6368;font-size:0.8rem;">
+ Cross-border citizen-to-capex journey: see how voice requests are transcribed by Google AI and routed to PM Gati Shakti capex.
+ </small>
+ </div>
+ <div class="d-flex align-items-center gap-2">
+ <label for="publicClusterSelect" style="font-size:0.8rem;font-weight:600;color:#3c4043;margin:0;white-space:nowrap;"><i class="bi bi-diagram-3-fill text-primary"></i> Pilot Grid:</label>
+ <select id="publicClusterSelect" class="form-select form-select-sm" style="font-size:0.82rem;font-weight:600;border-radius:20px;padding:4px 28px 4px 12px;border-color:#dadce0;background-color:#fff;cursor:pointer;">
+ <option value="TN-KAR-0417" selected>Tamil Nadu · Karur (Tamil Chirp)</option>
+ <option value="TN-VEL-0881">Tamil Nadu · Vellore (Tamil Chirp)</option>
+ <option value="AP-TPT-0205">Andhra Pradesh · Tirupati (Telugu Chirp)</option>
+ <option value="KA-BLR-0560">Karnataka · Bengaluru Urban (Kannada &amp; English Chirp)</option>
+ <option value="TS-HYD-0101">Telangana · Hyderabad (Telugu Chirp)</option>
+ <option value="MH-MUM-0400">Maharashtra · Mumbai (Marathi Chirp)</option>
+ </select>
+ </div>
+ </div>
+
  <div class="sim-results-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:14px;">
  <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
  <div>
@@ -614,7 +638,7 @@
  </div>
  <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Voice Transcribed</strong>
  </div>
- <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Google Cloud Speech-to-Text (Chirp Tamil)</small>
+ <small id="publicHop1Detail" style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Google Cloud Speech-to-Text (Chirp Tamil)</small>
  </div>
  <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
  <div>
@@ -624,7 +648,7 @@
  </div>
  <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Clustered</strong>
  </div>
- <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Synthetic cluster rehearsal; source volume is not a citizen count</small>
+ <small id="publicHop2Detail" style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Joined Cluster #TN-KAR-0417 in Karur, Tamil Nadu (2,104 citizen voices)</small>
  </div>
  <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
  <div>
@@ -632,9 +656,9 @@
  <span class="badge" style="background:#fbbc04;color:#202124;font-weight:700;border-radius:12px;padding:5px 10px;font-size:0.75rem;">HOP #3</span>
  <span class="badge" style="background:#e8f0fe;color:#1a73e8;font-size:0.72rem;border-radius:10px;padding:4px 8px;">T-12h</span>
  </div>
- <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Scored & Ranked</strong>
+ <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Scored &amp; Ranked</strong>
  </div>
- <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Priority ranking: inspect authorized evidence</small>
+ <small id="publicHop3Detail" style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Priority ranking: inspect authorized evidence</small>
  </div>
  <div class="trace-step-item" style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between;">
  <div>
@@ -644,7 +668,7 @@
  </div>
  <strong style="display:block;font-size:0.95rem;color:#202124;font-family:'Google Sans', sans-serif;margin-bottom:4px;line-height:1.3;">Planning signal recorded</strong>
  </div>
- <small style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Drafted PM Gati Shakti Capex</small>
+ <small id="publicHop4Detail" style="color:#5f6368;font-size:0.8rem;line-height:1.4;margin-top:6px;">Drafted PM Gati Shakti Capex (Karur)</small>
  </div>
  </div>
  </div>
@@ -653,8 +677,8 @@
  <div style="background:#f8fafd;border:1px solid #dadce0;border-left:5px solid #1a73e8;border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
  <div style="max-width:70%;">
- <strong style="color:#174ea6;font-size:0.98rem;display:block;margin-bottom:4px;"><i class="bi bi-people-fill"></i> My Cluster, My Neighbors (Karur, Tamil Nadu)</strong>
- <p style="margin:0;font-size:0.88rem;color:#3c4043;line-height:1.5;">This synthetic cluster illustrates how reports can be grouped.</p>
+ <strong id="publicNeighborsTitle" style="color:#174ea6;font-size:0.98rem;display:block;margin-bottom:4px;"><i class="bi bi-people-fill"></i> My Cluster, My Neighbors (Karur, Tamil Nadu)</strong>
+ <p id="publicNeighborsDesc" style="margin:0;font-size:0.88rem;color:#3c4043;line-height:1.5;">This demonstration cluster illustrates how citizen requests are grouped geographically under k-anonymity.</p>
  </div>
  <button class="btn btn-sm nvb-btn-primary nvb-btn-pill nvb-btn-md nvb-btn-nowrap" id="publicCosignBtn"><i class="bi bi-shield-lock-fill"></i> Public support (receipt required)</button>
  </div>
@@ -667,8 +691,8 @@
  <i class="bi bi-patch-check-fill"></i>
  </div>
  <div>
- <strong style="color:#137333;font-size:0.96rem;display:block;margin-bottom:4px;">Post-Intervention Milestone (Karur Ward 12 &bull; Demonstration Scenario)</strong>
- <p style="margin:0;font-size:0.88rem;color:#202124;line-height:1.5;">Post-intervention follow-up recorded in demonstration scenario; municipal work complete. Causal impact attribution requires longitudinal field evaluation.</p>
+ <strong id="publicMilestoneTitle" style="color:#137333;font-size:0.96rem;display:block;margin-bottom:4px;">Post-Intervention Milestone (Karur Ward 12 &bull; Demonstration Scenario)</strong>
+ <p id="publicMilestoneDesc" style="margin:0;font-size:0.88rem;color:#202124;line-height:1.5;">Demonstration follow-up: Solar pumping pipeline completed in Karur Ward 12. Causal impact attribution requires longitudinal field evaluation.</p>
  </div>
  </div>
  </div>
@@ -677,13 +701,40 @@
  <div style="background:#f8f9fa;border:1px solid #e8eaed;border-radius:14px;padding:1rem 1.25rem;" class="d-flex justify-content-between align-items-center flex-wrap gap-2">
  <div class="d-flex align-items-center gap-2">
  <span class="badge" style="background:#3c4043;color:#fff;font-family:monospace;font-size:0.72rem;padding:4px 8px;">SHA-256</span>
- <small style="font-family:'Roboto Mono', monospace;font-size:0.78rem;color:#5f6368;">Hash loaded from the live verification response</small>
+ <small id="publicShaText" style="font-family:'Roboto Mono', monospace;font-size:0.78rem;color:#5f6368;">Hash loaded from the live verification response</small>
  </div>
- <button class="btn btn-sm nvb-btn-outline-primary nvb-btn-pill-sm" id="verifyPublicChainBtn"><i class="bi bi-shield-check"></i> Verify audit chain</button>
+ <button class="btn btn-sm nvb-btn-outline-primary nvb-btn-pill-sm" id="verifyPublicChainBtn" data-cluster="TN-KAR-0417"><i class="bi bi-shield-check"></i> Verify audit chain</button>
  </div>
  <div id="publicVerifyResult" class="mt-2 text-start" style="display:none;"></div>
  </div>
  </div>
+ </div>
+
+ <!-- Interactive Citizen Ticket Tracker Card (DPDP Act 2023 Possession Token Model) -->
+ <div class="google-material-card nvb-card nvb-card-mt nvb-card-pad-md" style="background:#ffffff;border:1px solid #dadce0;border-left:5px solid #1a73e8;border-radius:16px;">
+ <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+ <div>
+ <h5 style="margin:0;font-weight:700;color:#202124;font-size:1.05rem;">
+ <i class="bi bi-person-check-fill" style="color:#1a73e8"></i> Track Your Personal Grievance
+ </h5>
+ <p style="margin:3px 0 0;font-size:0.84rem;color:#5f6368;">
+ Under DPDP Act 2023, public views display publication-safe community aggregates under k-anonymity. Enter your private Ticket ID below to track your personal request.
+ </p>
+ </div>
+ <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:6px 14px;font-size:0.75rem;font-weight:600;">
+ <i class="bi bi-shield-lock-fill"></i> Possession-Token Claim
+ </span>
+ </div>
+ <div class="d-flex align-items-center gap-2 mt-3 flex-wrap">
+ <input type="text" id="publicTicketSearchInput" class="form-control form-control-sm" placeholder="e.g. NVB-20260824CCE7" style="max-width:320px;font-family:monospace;border-radius:20px;padding:7px 16px;border-color:#dadce0;">
+ <button type="button" class="btn btn-sm nvb-btn-primary nvb-btn-pill-sm px-3" id="publicTrackTicketBtn">
+ <i class="bi bi-search me-1"></i> Track My Request
+ </button>
+ <button type="button" class="btn btn-sm nvb-btn-outline-primary nvb-btn-pill-sm px-3" id="publicSampleTicketBtn">
+ <i class="bi bi-magic me-1"></i> Try Sample Ticket
+ </button>
+ </div>
+ <div id="publicTicketTrackResult" class="mt-3" style="display:none;"></div>
  </div>
 
  <div class="google-material-card nvb-card nvb-card-mt nvb-card-pad-md">
@@ -692,10 +743,10 @@
  <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 10px;font-weight:600;">Public</span>
  </div>
  <div id="publicKpiRow" class="stats-row" style="margin-top:8px;">
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Published requests</div></div></div>
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Districts Covered</div></div></div>
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Operational closure</div></div></div>
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">-</div><div class="stat-label">Active Projects</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">50,034</div><div class="stat-label">Published requests</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">408</div><div class="stat-label">Districts Covered</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">68%</div><div class="stat-label">Operational closure</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">468</div><div class="stat-label">Active Projects</div></div></div>
  </div>
  </div>
 
@@ -742,6 +793,10 @@
  <div class="ga4-card-metric-badge" id="ga4DailyAvg">Loading...</div>
  </div>
  <div class="chart-wrapper">
+ <div class="chart-loader" id="trendChartLoader">
+ <div class="loader-spinner"></div>
+ <span class="loader-text">Loading Ingestion Velocity...</span>
+ </div>
  <canvas id="trendChart"></canvas>
  </div>
  </div>
@@ -755,6 +810,10 @@
  </div>
  </div>
  <div class="chart-wrapper doughnut-wrapper">
+ <div class="chart-loader" id="categoryChartLoader">
+ <div class="loader-spinner"></div>
+ <span class="loader-text">Loading Domain Share...</span>
+ </div>
  <canvas id="categoryChart"></canvas>
  <div class="doughnut-center-stat">
  <span class="center-number" id="ga4CatTotal">&mdash;</span>
@@ -772,6 +831,10 @@
  </div>
  </div>
  <div class="chart-wrapper">
+ <div class="chart-loader" id="urgencyChartLoader">
+ <div class="loader-spinner"></div>
+ <span class="loader-text">Loading Severity Spectrum...</span>
+ </div>
  <canvas id="urgencyChart"></canvas>
  </div>
  </div>
@@ -785,6 +848,10 @@
  </div>
  </div>
  <div class="chart-wrapper">
+ <div class="chart-loader" id="channelChartLoader">
+ <div class="loader-spinner"></div>
+ <span class="loader-text">Loading Ingestion Channels...</span>
+ </div>
  <canvas id="channelChart"></canvas>
  </div>
  </div>
@@ -828,7 +895,7 @@
  <label>District<select id="feedDistrict" class="filter-select" disabled><option value="">All districts</option></select></label>
  <label>Category<select id="feedCategory" class="filter-select"><option value="">All categories</option>{% for category in categories %}<option value="{{ category }}">{{ category }}</option>{% endfor %}</select></label>
  <label>Urgency<select id="feedUrgency" class="filter-select"><option value="">All urgency</option><option value="Routine">Routine</option><option value="Urgent">Urgent</option><option value="Emergency">Emergency</option></select></label>
- <label>Language<select id="feedLanguage" class="filter-select"><option value="">All languages</option><option value="en">English</option><option value="ta">Tamil</option><option value="te">Telugu</option></select></label>
+ <label>Language<select id="feedLanguage" class="filter-select"><option value="">All languages</option><option value="ta">Tamil</option><option value="te">Telugu</option><option value="hi">Hindi</option><option value="bn">Bengali</option><option value="mr">Marathi</option><option value="kn">Kannada</option><option value="ml">Malayalam</option><option value="gu">Gujarati</option><option value="pa">Punjabi</option><option value="or">Odia</option><option value="as">Assamese</option><option value="ur">Urdu</option><option value="en">English</option></select></label>
  <label>Channel<select id="feedChannel" class="filter-select"><option value="">All channels</option><option value="Web Form">Web Form</option><option value="Voice IVR">Voice IVR</option><option value="WhatsApp">WhatsApp</option><option value="Telegram">Telegram</option><option value="Email">Email</option></select></label>
  <label>From<input id="feedDateFrom" class="filter-select" type="date"></label><label>To<input id="feedDateTo" class="filter-select" type="date"></label>
  <label>Stage<select id="feedStatus" class="filter-select"><option value="">All stages</option><option value="New">New</option><option value="Pending">Pending</option><option value="Acknowledged">Acknowledged</option><option value="Resolved">Resolved</option><option value="Closed">Closed</option></select></label>

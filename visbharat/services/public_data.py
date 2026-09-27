@@ -27,6 +27,8 @@ SOURCES = {
     'amrut': ('DATA_GOV_IN_TIRUPATI_AMRUT_RESOURCE', 'AMRUT city project records', 'Ministry of Housing and Urban Affairs / Rajya Sabha', 'https://www.data.gov.in/resource/statecity-wise-details-projects-sanctioned-under-amrut', 'city', None),
     'jjm_rural': ('DATA_GOV_IN_TIRUPATI_JJM_RESOURCE', 'JJM rural habitation records', 'Ministry of Jal Shakti', 'https://www.data.gov.in/catalog/jal-jeevan-mission-jjm', 'habitation', None),
     'ndap': ('NDAP_API_URL', 'NDAP flood management indicators', 'NITI Aayog', 'https://ndap.niti.gov.in/', 'state', None),
+    'cpcb_aqi': ('DATA_GOV_IN_AQI_RESOURCE', 'Real time Air Quality Index from various locations', 'Central Pollution Control Board', 'https://data.gov.in/resource/real-time-air-quality-index-various-locations', 'city_station', None),
+    'agmarknet': ('DATA_GOV_IN_AGMARKNET_RESOURCE', 'Current Daily Price of Various Commodities from Various Markets (Mandi)', 'Directorate of Marketing & Inspection', 'https://data.gov.in/resource/current-daily-price-various-commodities-various-markets-mandi', 'market', None),
 }
 
 # Values are API field names, not invented rows. Override per source after
@@ -39,6 +41,8 @@ FIELDS = {
     'amrut': {'state':'state_name', 'city':'city_name', 'project_id':'project_id', 'cost':'total_project_cost_in_cr_'},
     'jjm_rural': {'state':'state_name', 'district':'district_name', 'mandal':'mandal_name', 'habitation':'habitation_name', 'connections':'fhtc_reported'},
     'ndap': {'state':'StateName', 'state_code':'StateCode', 'year':'Year', 'projects':'I1805_3', 'area':'I1805_4', 'beneficiaries':'I1805_5'},
+    'cpcb_aqi': {'state':'state', 'city':'city', 'station':'station', 'pollutant':'pollutant_id', 'avg_value':'pollutant_avg', 'min_value':'pollutant_min', 'max_value':'pollutant_max'},
+    'agmarknet': {'state':'state', 'district':'district', 'market':'market', 'commodity':'commodity', 'variety':'variety', 'arrival_date':'arrival_date', 'min_price':'min_price', 'max_price':'max_price', 'modal_price':'modal_price'},
 }
 
 

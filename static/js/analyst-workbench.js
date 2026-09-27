@@ -213,6 +213,9 @@
       new Chart(node,{type,data:{labels:Object.keys(data),datasets:[{label:'Requests',data:Object.values(data),backgroundColor:colors,borderColor:type==='line'?'#1a73e8':undefined,tension:.2}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:type==='doughnut'}},scales:type==='doughnut'?undefined:{y:{beginAtZero:true}}}});
     });
     if($('ga4CatTotal'))$('ga4CatTotal').textContent=num(s.total_complaints);
+    const avgVal = trend.length ? Math.round(trend.reduce((a, b) => a + Number(b[1] || 0), 0) / trend.length) : 0;
+    if($('ga4DailyAvg'))$('ga4DailyAvg').textContent='~'+avgVal+' req/day';
+    document.querySelectorAll('.chart-loader').forEach(el=>el.classList.add('loaded'));
   }
   async function refresh(resetProjects=true) {
     if(resetProjects)projectOffset=0;
@@ -338,10 +341,10 @@
   window.NVBAnalyst={refresh,selectTab,getSnapshot:()=>payload};
   // Replace independent legacy fetches with one atomic Analyst snapshot.
   const legacyRefresh=refreshAll;
-  refreshAll=function(){if(getActiveRole()==='analyst'){refresh();loadAiRuntimeStatus();loadComplaintFeed();loadHotspots();}else legacyRefresh();};
+  refreshAll=function(){if(getActiveRole()==='analyst'){refresh();loadAiRuntimeStatus();loadComplaintFeed();loadHotspots();if(typeof legacyCharts==='function')legacyCharts();}else legacyRefresh();};
   const legacyStats=loadStats,legacyCharts=loadCharts,legacyProjects=loadPriorityProjects,legacyPrediction=loadPrediction;
   loadStats=function(){if(getActiveRole()==='analyst')return loading;return legacyStats();};
-  loadCharts=function(){if(getActiveRole()==='analyst')return renderCharts();return legacyCharts();};
+  loadCharts=function(){if(getActiveRole()==='analyst' && payload)return renderCharts();return legacyCharts();};
   loadPrediction=function(){
     if(getActiveRole()==='analyst' && payload?.inclusion && window.NVBDemandScreening){
       window.NVBDemandScreening.render(payload.inclusion, payload.stats);

@@ -367,7 +367,7 @@ def _verify_replay_protection():
         return True
     except Exception:
         return False
-def _ingest_text_request(channel, text, language, district, sender='anonymous', endpoint='', idempotency_key=None):
+def _ingest_text_request(channel, text, language, district, sender='anonymous', endpoint='', idempotency_key=None, state=None, ward=None):
     raw_text = str(text or '').strip()
     language = (language or 'en').strip().lower() or 'en'
     district = (district or '').strip()
@@ -402,14 +402,19 @@ def _ingest_text_request(channel, text, language, district, sender='anonymous', 
         return None, ('text is required', 400)
 
     clean_sender = str(sender or 'anonymous').strip() or 'anonymous'
+    req_json = (request.get_json(silent=True) or {}) if request else {}
+    req_form = (request.form.to_dict() if hasattr(request, 'form') else {}) if request else {}
+    resolved_ward = ward or req_json.get('ward') or req_form.get('ward') or ''
+    resolved_state = state or req_json.get('state') or req_form.get('state') or None
 
     payload = {
         'channel': channel,
         'text': raw_text,
         'language': language,
         'district': district,
+        'state': resolved_state,
         'sender': clean_sender,
-        'ward': (request.get_json(silent=True) or request.form.to_dict() or {}).get('ward', ''),
+        'ward': resolved_ward,
         'pipeline': {'ingested_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')},
     }
 

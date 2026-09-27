@@ -41,8 +41,8 @@ def user_memberships():
     if not user: return []
     m = rows('SELECT * FROM pilot_memberships WHERE user_id=? AND active=1',(user['id'],))
     if not m and current_app.config.get('DEMO_MODE'):
-        state = 'Tamil Nadu' if 'Vellore' in user.get('name','') else 'Andhra Pradesh' if 'Tirupati' in user.get('name','') else ''
-        district = 'Vellore' if 'Vellore' in user.get('name','') else 'Tirupati' if 'Tirupati' in user.get('name','') else ''
+        state = 'Tamil Nadu' if 'Vellore' in user.get('name','') else 'Andhra Pradesh' if 'Tirupati' in user.get('name','') else 'Karnataka' if 'Bengaluru' in user.get('name','') else ''
+        district = 'Vellore' if 'Vellore' in user.get('name','') else 'Tirupati' if 'Tirupati' in user.get('name','') else 'Bengaluru Urban' if 'Bengaluru' in user.get('name','') else ''
         try:
             get_db().execute('INSERT INTO pilot_memberships(pilot_id,user_id,state,district,active) VALUES(?,?,?,?,1) ON CONFLICT(pilot_id,user_id) DO NOTHING',(PILOT_ID,user['id'],state,district))
             get_db().commit()
@@ -134,18 +134,86 @@ def request_row(rid,s=None):
     return found[0]
 
 
+DISTRICT_CATEGORY_ROUTING = {
+    'Vellore': {
+        'Water Supply': 'Vellore Municipal Water Supply & Drainage Board',
+        'Road': 'Vellore Municipal Roads & Works Division',
+        'Sanitation': 'Vellore Solid Waste Management & Public Health',
+        'Electricity': 'TANGEDCO (Vellore Distribution Circle)',
+        'Health': 'Vellore District Health Services & UPHC',
+        'Education': 'Vellore School Education Department',
+        'Transport': 'TNSTC (Vellore Regional Transport Office)',
+        'Housing': 'Tamil Nadu Urban Habitat Development Board (Vellore)',
+        'Digital Connectivity': 'TNeGA & Digital Services Cell (Vellore)',
+        'Other': 'Vellore District Collectorate Grievance Cell',
+    },
+    'Tirupati': {
+        'Water Supply': 'Tirupati Municipal Corporation Water Supply Engineering',
+        'Road': 'Tirupati Municipal Roads & Bridges Division',
+        'Sanitation': 'Tirupati Municipal Health & Sanitation Department',
+        'Electricity': 'APSPDCL (Tirupati Operation Circle)',
+        'Health': 'Tirupati District Medical & Health Office',
+        'Education': 'Tirupati District Education Office',
+        'Transport': 'APSRTC (Tirupati Regional Office)',
+        'Housing': 'AP Housing Board (Tirupati Division)',
+        'Digital Connectivity': 'AP Real Time Governance Society (RTGS Tirupati)',
+        'Other': 'Tirupati District Collectorate Spandana Cell',
+    },
+    'Bengaluru Urban': {
+        'Water Supply': 'BWSSB (Bangalore Water Supply and Sewerage Board)',
+        'Road': 'BBMP Road Infrastructure & Major Roads Division',
+        'Sanitation': 'BBMP Solid Waste Management (SWM) Division',
+        'Electricity': 'BESCOM (Bangalore Electricity Supply Company)',
+        'Health': 'BBMP Public Health & Primary Health Centers',
+        'Education': 'Bengaluru Urban Department of Public Instruction',
+        'Transport': 'BMTC & Bengaluru Transport Division',
+        'Housing': 'Karnataka Housing Board & Slum Development Board',
+        'Digital Connectivity': 'Centre for Smart Governance (CSG Karnataka)',
+        'Other': 'BBMP Central Control Room & District Grievance Cell',
+    }
+}
+
+
+def resolve_department(district, category='Water Supply', config=None):
+    """Resolve destination department by district and civic category with general fallback."""
+    cat = category or 'Other'
+    category_aliases = {
+        'Water': 'Water Supply',
+        'Water Supply & Drainage': 'Water Supply',
+        'Roads': 'Road',
+        'Solid Waste': 'Sanitation',
+        'Power': 'Electricity',
+        'Internet': 'Digital Connectivity',
+        'Connectivity': 'Digital Connectivity',
+    }
+    cat = category_aliases.get(cat, cat)
+    if config and isinstance(config.get('category_routing'), dict):
+        d_map = config['category_routing'].get(district, {})
+        if cat in d_map:
+            return d_map[cat]
+    dist_map = DISTRICT_CATEGORY_ROUTING.get(district, {})
+    if cat in dist_map:
+        return dist_map[cat]
+    if config and isinstance(config.get('routing'), dict) and district in config['routing']:
+        return config['routing'][district]
+    return f"{district} civic services review team (demo)"
+
+
 def create_default():
     if rows('SELECT pilot_id FROM pilot_programmes WHERE pilot_id=?',(PILOT_ID,)): return
-    stamp=now();config={'languages':['ta','te','en'],'category':'Water Supply','monthly_report_capacity':10000,
+    stamp=now();config={'languages':['ta','te','kn','hi','en'],'category':'Water Supply',
+        'categories':['Water Supply','Road','Sanitation','Electricity','Health','Education','Transport','Housing','Digital Connectivity','Other'],
+        'monthly_report_capacity':10000,
         'monthly_cloud_budget_inr':150000,'start_date':None,'review_days':2,
         'notice_version':'pilot-demo-v1','live_intake_enabled':False,
-        'routing':{'Vellore':'Vellore water services review team (demo)','Tirupati':'Tirupati water services review team (demo)'},
+        'routing':{'Vellore':'Vellore water services review team (demo)','Tirupati':'Tirupati water services review team (demo)','Bengaluru Urban':'Bengaluru Urban civic services review team (demo)'},
+        'category_routing':DISTRICT_CATEGORY_ROUTING,
         'notice':'Synthetic rehearsal. Communities, agency participation and historical boundary joins require review.'}
     get_db().execute('INSERT INTO pilot_programmes VALUES(?,?,?,?,?,1,?,?)',
-        (PILOT_ID,'Vellore–Tirupati Water Services Pilot','rehearsal','synthetic',json.dumps(config),stamp,stamp))
-    for district,state in [('Vellore','Tamil Nadu'),('Tirupati','Andhra Pradesh')]:
+        (PILOT_ID,'NVB Cross-State Development Pilot','rehearsal','synthetic',json.dumps(config),stamp,stamp))
+    for district,state in [('Vellore','Tamil Nadu'),('Tirupati','Andhra Pradesh'),('Bengaluru Urban','Karnataka')]:
         for i,kind in enumerate(['urban_ward','rural_panchayat','rural_panchayat'],1):
-            lid=f'{district.lower()}-{i}';ward=f'Demo catchment {i}'
+            lid=f'{district.lower().replace(" ","_")}-{i}';ward=f'Demo catchment {i}'
             get_db().execute('''INSERT INTO pilot_locations(location_id,pilot_id,state,district,local_body,ward,
                 location_kind,verification_status) VALUES(?,?,?,?,?,?,?,'proposed')''',
                 (lid,PILOT_ID,state,district,f'Proposed {kind.replace("_"," ")} {i}',ward,kind))
@@ -210,7 +278,7 @@ def settings_update(pid,data):
         if not isinstance(categories,list) or not categories or any(c not in current_app.config['CATEGORIES'] for c in categories):raise ValueError('Select valid service categories')
         config['categories']=list(dict.fromkeys(categories))
     if 'languages' in data:
-        if not isinstance(data['languages'],list) or not data['languages'] or any(l not in ('ta','te','en') for l in data['languages']):raise ValueError('Select Tamil, Telugu or English')
+        if not isinstance(data['languages'],list) or not data['languages'] or any(l not in ('ta','te','kn','hi','en') for l in data['languages']):raise ValueError('Select Tamil, Telugu, Kannada, Hindi or English')
         config['languages']=list(dict.fromkeys(data['languages']))
     if 'title' in data:
         get_db().execute('UPDATE pilot_programmes SET title=? WHERE pilot_id=?',(text(data['title'],'programme title',3,180),pid))
@@ -220,8 +288,20 @@ def settings_update(pid,data):
             if isinstance(n,bool) or not isinstance(n,int) or not 1<=n<=10000000: raise ValueError(f'Invalid {key}')
             config[key]=n
     if 'routing' in data:
-        for district in ('Vellore','Tirupati'):
-            config['routing'][district]=text(data['routing'].get(district),'review department',3,150)
+        config.setdefault('routing', {})
+        for district in ('Vellore','Tirupati','Bengaluru Urban'):
+            if district in data['routing']:
+                config['routing'][district]=text(data['routing'].get(district),'review department',3,150)
+    if 'category_routing' in data:
+        incoming_cr = data['category_routing']
+        if isinstance(incoming_cr, dict):
+            config.setdefault('category_routing', {})
+            for district in ('Vellore', 'Tirupati', 'Bengaluru Urban'):
+                if district in incoming_cr and isinstance(incoming_cr[district], dict):
+                    config['category_routing'].setdefault(district, {})
+                    for cat, dept_name in incoming_cr[district].items():
+                        if cat in current_app.config['CATEGORIES'] and dept_name:
+                            config['category_routing'][district][cat] = text(dept_name, f'{district} {cat} department', 2, 200)
     if 'start_date' in data:
         value=data['start_date']
         if value: datetime.strptime(value,'%Y-%m-%d')
@@ -263,9 +343,10 @@ def intake(pid,data,key,source_channel=None):
     if source_channel and source_channel not in SOURCES.values():raise ValueError('Unknown source channel')
     if source_channel:clean['source_channel']=source_channel
     if evidence:clean['evidence_manifest']=[{k:v for k,v in item.items() if k!='data'} for item in evidence]
-    if data.get('category'):
-        if data['category'] not in config.get('categories',current_app.config['CATEGORIES']):raise ValueError('Choose an enabled service category')
-        clean['citizen_category']=data['category']
+    cat_candidate = data.get('citizen_category') or data.get('category')
+    if cat_candidate:
+        if cat_candidate not in config.get('categories',current_app.config['CATEGORIES']):raise ValueError('Choose an enabled service category')
+        clean['citizen_category']=cat_candidate
     if data.get('translated_text'):clean['citizen_translation']=text(data['translated_text'],'citizen translation',0,6000)
     if data.get('tracking_secret'):clean['receipt_secret_hash']=digest(text(data['tracking_secret'],'private receipt code',32,128))
     if data.get('ward'):clean['citizen_ward']=text(data['ward'],'ward / landmark',0,200)
@@ -298,17 +379,21 @@ def intake(pid,data,key,source_channel=None):
     tracking=data.get('tracking_secret') or secrets.token_urlsafe(32)
     metadata={'is_synthetic':p['data_mode']=='synthetic','pilot_id':pid,'processing_status':'queued',
         'location_status':loc['verification_status'],'geolocation_status':'not_observed','provider_mode':'not_called'}
+    initial_cat = clean.get('citizen_category') or clean.get('category') or 'Other'
+    initial_dept = resolve_department(loc['district'], initial_cat, config)
     db.execute('''INSERT INTO citizen_requests(request_id,source_channel,input_language,district,state,ward,lat,lng,
         original_text,translated_text,category,urgency,sentiment,status,ai_metadata_json,created_at,routed_department)
-        VALUES(?,?,?,?,?,?,0,0,?,'','Other','Routine','Unknown','Pending',?,?,?)''',
+        VALUES(?,?,?,?,?,?,0,0,?,?,?,?,?,'Pending',?,?,?)''',
         (rid,source_channel or ('Voice IVR' if audio else 'Web Form'),language,loc['district'],loc['state'],loc['ward'],
-         message or 'Audio received; transcription pending',json.dumps(metadata),stamp,config['routing'][loc['district']]))
+         message or 'Audio received; transcription pending','',initial_cat,'Routine','Unknown',json.dumps(metadata),stamp,initial_dept))
     # Coordinates are explicitly unknown; do not interpret the schema's 0/0 placeholder as a location.
     db.execute('''INSERT INTO pilot_requests(request_id,pilot_id,location_id,source_id,idempotency_key,payload_sha256,
         payload_json,tracking_hash,processing_status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)''',
         (rid,pid,loc['location_id'],clean['source_id'],key,fingerprint,json.dumps(clean),digest(tracking),'queued',stamp,stamp))
     if clean.get('citizen_category'):
-        db.execute('UPDATE citizen_requests SET category=? WHERE request_id=?',(clean['citizen_category'],rid))
+        cat = clean['citizen_category']
+        dept = resolve_department(loc['district'], cat, config)
+        db.execute('UPDATE citizen_requests SET category=?, routed_department=? WHERE request_id=?',(cat,dept,rid))
     if clean.get('location'):
         metadata['geolocation_status']='citizen_supplied_unverified'
         db.execute('UPDATE citizen_requests SET lat=?,lng=?,ai_metadata_json=? WHERE request_id=?',

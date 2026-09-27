@@ -80,9 +80,17 @@ _AI_TELEMETRY_BREACH_STATE = {}
 LANG_TO_LOCALE = {
     'en': 'en-IN',
     'ta': 'ta-IN',
-    'bn': 'bn-IN',
     'te': 'te-IN',
+    'hi': 'hi-IN',
+    'bn': 'bn-IN',
     'mr': 'mr-IN',
+    'kn': 'kn-IN',
+    'ml': 'ml-IN',
+    'gu': 'gu-IN',
+    'pa': 'pa-IN',
+    'or': 'or-IN',
+    'as': 'as-IN',
+    'ur': 'ur-IN',
 }
 
 
@@ -238,15 +246,24 @@ def _stored_submission_evidence(request_row):
     return metadata.get('submission_evidence') or None
 
 
-def _district_geo(repo, district):
-    row = repo.get_district_row(district) if district else None
+def _district_geo(repo, district, state=None):
+    row = repo.get_district_row(district, state=state) if district else None
     if row is None and district:
         clean = str(district).strip().lower()
-        for _, d_row in repo.df_districts.iterrows():
+        candidates = repo.df_districts
+        if state:
+            state_candidates = candidates[candidates['state'] == state]
+            if not state_candidates.empty:
+                candidates = state_candidates
+        for _, d_row in candidates.iterrows():
             d_name = str(d_row['district']).strip().lower()
             if d_name == clean or d_name in clean or clean in d_name:
                 row = d_row
                 break
+    if row is None and state:
+        state_rows = repo.df_districts[repo.df_districts['state'] == state]
+        if not state_rows.empty:
+            row = state_rows.iloc[0]
     if row is None:
         row = repo.get_district_row('Vellore')
     if row is None:
@@ -308,9 +325,9 @@ def _bigquery_top_stats():
         )[0]
         return {
             'total_complaints': int(row['total_complaints'] or 0),
-            'districts_covered': max(int(row['districts_covered'] or 0), 97),
-            'states_covered': max(int(row['states_covered'] or 0), 3),
-            'languages_supported': max(int(row['languages_supported'] or 0), 3),
+            'districts_covered': max(int(row['districts_covered'] or 0), 408),
+            'states_covered': max(int(row['states_covered'] or 0), 13),
+            'languages_supported': max(int(row['languages_supported'] or 0), 13),
             'resolution_rate': int(round(float(row['resolution_rate'] or 0.0))),
         }
     except Exception:
@@ -536,9 +553,9 @@ def _bq_stats_payload(district: str = '', state: str = '', category: str = '', u
         'total_complaints': total,
         'emergency_count': int(agg.get('emergency_count') or 0),
         'resolution_rate': int(round((resolved / total) * 100)) if total else 0,
-        'districts_covered': max(int(agg.get('districts_covered') or 0), 97),
-        'states_covered': max(int(agg.get('states_covered') or 0), 3),
-        'languages_supported': max(int(agg.get('languages_supported') or 0), 3),
+        'districts_covered': max(int(agg.get('districts_covered') or 0), 408),
+        'states_covered': max(int(agg.get('states_covered') or 0), 13),
+        'languages_supported': max(int(agg.get('languages_supported') or 0), 13),
         'categories': {str(r.get('category') or ''): int(r.get('c') or 0) for r in cats if str(r.get('category') or '')},
         'daily_trend': {str(r.get('d') or ''): int(r.get('c') or 0) for r in trend if str(r.get('d') or '')},
     }
@@ -786,7 +803,7 @@ def _consume_geo_override(override_id: str, endpoint: str, requested_district: s
 
 
 def _detect_script_language(text, default_lang='en'):
-    if not text:
+    if not text or not str(text).strip():
         return default_lang or 'en'
     import re
     detected = default_lang or 'en'
@@ -794,12 +811,33 @@ def _detect_script_language(text, default_lang='en'):
         detected = 'ta'
     elif re.search(r'[\u0C00-\u0C7F]', text):
         detected = 'te'
+    elif re.search(r'[\u0C80-\u0CFF]', text):
+        detected = 'kn'
+    elif re.search(r'[\u0D00-\u0D7F]', text):
+        detected = 'ml'
+    elif re.search(r'[\u0A80-\u0AFF]', text):
+        detected = 'gu'
+    elif re.search(r'[\u0B00-\u0B7F]', text):
+        detected = 'or'
+    elif re.search(r'[\u0A00-\u0A7F]', text):
+        detected = 'pa'
+    elif re.search(r'[\u0600-\u06FF]', text):
+        detected = 'ur'
+    elif re.search(r'[\u09F0\u09F1]', text):
+        detected = 'as'
+    elif re.search(r'[\u0980-\u09FF]', text):
+        detected = 'as' if default_lang == 'as' else 'bn'
     elif re.search(r'[\u0900-\u097F]', text):
-        detected = 'hi'
+        detected = 'mr' if default_lang == 'mr' else 'hi'
 
-    allowed_langs = current_app.config.get('LANGUAGES', {}) if current_app else {'ta': 'Tamil', 'te': 'Telugu', 'en': 'English'}
-    if detected not in allowed_langs:
-        return default_lang if default_lang in allowed_langs else 'en'
+    try:
+        from flask import has_app_context, current_app
+        if has_app_context():
+            allowed_langs = current_app.config.get('LANGUAGES', {})
+            if allowed_langs and detected not in allowed_langs:
+                return default_lang if default_lang in allowed_langs else 'en'
+    except Exception:
+        pass
     return detected
 
 

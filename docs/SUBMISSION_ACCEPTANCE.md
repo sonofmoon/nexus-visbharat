@@ -41,7 +41,7 @@ Cloud Run rejects SQLite by default. `ALLOW_EPHEMERAL_SHOWCASE=true` is availabl
 
 - `/api/ai/status` distinguishes configured, verified, degraded and unavailable operations. Verification expires after 15 minutes by default. It is evidence of execution, not correctness or availability guarantees.
 - Provider evidence stores no citizen text, audio, credentials or provider error messages. Ticket metadata links operation traces to authorized requests.
-- The stored 108-case multilingual AI benchmark is developer-curated and awaits independent third-party adjudication. Read current values from `docs/evaluation/quality.json`; do not hard-code them into slides.
+- The stored 468-case multilingual AI benchmark is developer-curated across 13 national languages and awaits independent third-party adjudication. Read current values from `docs/evaluation/benchmark-v3-quality.json`; do not hard-code them into slides.
 - Missing measurements remain unknown. DPG candidacy, source hashes and a tamper-evident ledger are not certification, publisher authentication or immutable storage.
 - `docs/evaluation/load.json` is a local SQLite test-client benchmark excluding network/model latency.
 

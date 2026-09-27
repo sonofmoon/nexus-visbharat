@@ -84,7 +84,7 @@ The auditor workspace links cases, evidence and recorded actions so that an auth
 | Capability | What NVB provides |
 |---|---|
 | Citizen intake | Text, browser voice and assisted channel workflows with consent and source context. |
-| Language intelligence | Speech transcription, translation and structured extraction for English, Tamil and Telugu paths. |
+| Language intelligence | Speech transcription, translation and structured extraction for 13 national languages (Tamil first, Telugu, Hindi, Bengali, Marathi, Kannada, Malayalam, Gujarati, Punjabi, Odia, Assamese, Urdu, and English). |
 | Emergency FastPath | Deterministic hazard screening and escalation when provider calls are unavailable or a high-severity signal needs immediate handling. |
 | Analyst workspace | Demand, inclusion, gap, project and budget scenario views for human-led planning. |
 | Delivery follow-up | Tasks, decisions, evidence and completed-window outcome reporting in one timeline. |
@@ -239,7 +239,7 @@ Implementation details:
 
 ## Evidence and current limits
 
-- [Multilingual evaluation](docs/evaluation/quality.json) contains 108 developer-curated challenge cases across English, Tamil and Telugu. It reports category macro-F1 of 0.9746, urgency accuracy of 86.11% and emergency recall of 33/33 (11 EN, 11 TA, 11 TE). Independent external adjudication remains pending.
+- [Multilingual evaluation](docs/evaluation/benchmark-v3-quality.json) contains 468 developer-curated challenge cases across 13 national languages (Tamil first, Telugu, Hindi, Bengali, Marathi, Kannada, Malayalam, Gujarati, Punjabi, Odia, Assamese, Urdu, and English). It reports category macro-F1 of 0.9910, urgency accuracy of 95.09% and emergency recall of 143/143 (100% emergency parity, 11 per language across 10 categories). Independent external adjudication remains pending.
 - [Baseline comparison](docs/evaluation/baseline-quality.json) records the local keyword fallback on the same challenge set.
 - [DPDP architecture](docs/DPDP_COMPLIANCE_ARCHITECTURE.md) documents consent, data-minimisation, configurable public-transparency differential privacy, and ingress-scrubbing design choices. Public transparency defaults to epsilon `0.75` when differential privacy is enabled.
 - [Security threat model](docs/SECURITY_THREAT_MODEL.md) describes trust boundaries, token handling, Secret Manager rotation and RBAC controls under the STRIDE framework.
