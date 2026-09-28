@@ -12,6 +12,7 @@ This repository is the Code for Communities submission for [Build with AI: Code 
 
 - **Primary Live Cloud Run Deployment:** [nexus-visbharath-510474645723.asia-south1.run.app ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/)
 - **Interactive Visual Showcase App:** [nexusaitech.in/apps/nvb/index.html ↗](https://nexusaitech.in/apps/nvb/index.html)
+- **Official Telegram Citizen Bot:** [@NexusVisBharatBot ↗](https://t.me/NexusVisBharatBot) *(Live omnichannel citizen filing & tracking with Tamil-first multilingual support)*
 - **Source code:** [github.com/sonofmoon/nexus-visbharat ↗](https://github.com/sonofmoon/nexus-visbharat)
 
 The live deployment is a working demonstration environment. The showcase corpus is synthetic, and the evidence notes below describe what has been measured, what is provisional and what still requires a real municipal pilot.
@@ -105,8 +106,8 @@ The auditor workspace links cases, evidence and recorded actions so that an auth
 
 | Capability | What NVB provides |
 |---|---|
-| Citizen intake | Text, browser voice and assisted channel workflows with consent and source context. |
-| Language intelligence | The broader prototype includes configuration for 13 supported languages; the Pilot enables five (Tamil first, Telugu, Kannada, Hindi, English). Availability and evaluated quality vary by language, feature and provider. |
+| Citizen intake | Text, browser voice, "Talk to NVB" conversational assistant (Dialogflow CX & Speech-to-Text with multi-line voice dictation review), and official Telegram Bot (`@NexusVisBharatBot`) with consent and source context. |
+| Language intelligence | The broader prototype includes configuration for 13 supported languages (Tamil first, Telugu, Kannada, Hindi, English, etc.). Availability and evaluated quality vary by language, feature and provider. |
 | Emergency FastPath | Deterministic hazard screening and escalation routing; external delivery and responder acknowledgement require configured connectors and receipt evidence. |
 | Analyst workspace | Demand, inclusion, gap, project and budget scenario views for human-led planning. |
 | Delivery follow-up | Tasks, decisions, evidence and completed-window outcome reporting in one timeline. |
@@ -308,11 +309,19 @@ rate limiting, abuse detection and monitoring.
 
 - [Citizen voice intake ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/submit)
 - [Ticket journey and submission trace ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/submission)
-- [Policy Dashboard ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard)
-- [Pilot Portal ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/pilot)
+- [Policy Dashboard & Hotspot Map ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/dashboard)
+- [Pilot Portal (Three Districts Rehearsal) ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/pilot)
 - [Auditor workspace ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/auditor)
+- [Telegram Citizen Bot ↗](https://t.me/NexusVisBharatBot) *(Commands: `/start`, `/language`, `/status <ticket>`, `/cancel`, `/help`)*
 - [AI operation status ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/api/ai/status)
 - [Readiness endpoint ↗](https://nexus-visbharath-510474645723.asia-south1.run.app/readyz)
+
+### Evaluator Quick Access (Sample Dossiers)
+
+For immediate review without manually filing a grievance, use the pre-seeded sample tickets on the [Submission Evidence Inspector](https://nexus-visbharath-510474645723.asia-south1.run.app/submission):
+- **`NVB-202608271A54`** *(Chennai, Tamil Nadu)*: Drinking water pipeline fracture, emergency routing, and automated triage.
+- **`NVB-2026091007CD`** *(Karur, Tamil Nadu)*: Drainage blockage and public sanitation hazard resolution.
+- Tap **"Fill Token & Sample Ticket"** on the submission page for instant single-click authorization and full audit-trail inspection.
 
 ## Run locally
 
@@ -411,8 +420,16 @@ SQLite is intended for local development and disposable demonstrations. Cloud Ru
 
 ## Verification
 
+Run the core contract and workbench tests:
+
 ```sh
 python -m unittest tests.test_submission_readiness tests.test_ministry_pilot tests.test_analyst_workbench tests.test_auditor_workbench
+```
+
+Run the omnichannel intake, Telegram bot, and Citizen Assistant test suite:
+
+```sh
+python -m pytest tests/test_citizen_assistant.py tests/test_telegram_async.py tests/test_telegram_bot.py tests/test_channel_ingestion.py
 ```
 
 These tests use isolated data and disable external providers. Report local contract results separately from live provider demonstrations.
