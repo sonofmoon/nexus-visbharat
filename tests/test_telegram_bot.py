@@ -20,7 +20,7 @@ from visbharat import create_app
 from visbharat.config import Config
 from visbharat.services.telegram_jobs import process_one
 from visbharat.blueprints.api_channels import _ingest_text_request
-from visbharat.db import get_channel_session, get_db, init_db
+from visbharat.db import get_channel_session, get_db, init_db, save_channel_session
 from visbharat.services.telegram_gateway import (
     BOT_PROMPTS,
     DISTRICT_KEYBOARDS,
@@ -330,3 +330,132 @@ def test_telegram_update_idempotency(app):
         res2 = handle_update(update, _ingest_text_request)
         assert res2["success"]
         assert res2.get("duplicate") is True
+
+
+def test_default_language_is_english_before_selection(app):
+    """Verify default language is English initially until citizen selects another."""
+    from visbharat.services.telegram_gateway import _lang, _prompt, _help
+    with app.app_context():
+        assert _lang({}) == "en"
+        assert _lang(None) == "en"
+        assert _lang({"language": ""}) == "en"
+        assert _lang({"language": "invalid_code"}) == "en"
+
+        # Explicit selection works as expected
+        assert _lang({"language": "te"}) == "te"
+        assert _lang({"language": "ta"}) == "ta"
+
+        # /help before any language selection uses English
+        chat_id = 9905
+        _help(chat_id)
+        db = get_db()
+        out = db.execute("SELECT payload_json FROM telegram_outbox WHERE chat_id=? ORDER BY created_at DESC", (str(chat_id),)).fetchone()
+        assert "Nexus VisBharat" in out["payload_json"]
+        assert "DPDP Act" in out["payload_json"]
+
+
+def test_audio_file_and_document_accepted_as_grievance(app, monkeypatch):
+    """Verify Telegram audio tracks and audio documents (.mp3) are accepted as complaints."""
+    with app.app_context():
+        chat_id = 9906
+
+        # Start and pick Telugu
+        handle_update({"update_id": 5001, "message": {"chat": {"id": chat_id}, "text": "/start"}}, _ingest_text_request)
+        handle_update({"update_id": 5002, "callback_query": {"id": "cb_te", "message": {"chat": {"id": chat_id}}, "data": "lang:te"}}, _ingest_text_request)
+
+        sess = get_channel_session("telegram", str(chat_id))
+        assert sess["stage"] == "issue"
+        assert sess["language"] == "te"
+
+        # Send uploaded audio file (message.audio)
+        audio_up = {
+            "update_id": 5003,
+            "message": {
+                "chat": {"id": chat_id},
+                "audio": {
+                    "file_id": "telegram_audio_file_123",
+                    "file_name": "Telugu fictional request female.mp3",
+                    "mime_type": "audio/mpeg",
+                }
+            }
+        }
+        res_audio = handle_update(audio_up, _ingest_text_request)
+        assert res_audio["success"]
+
+        sess = get_channel_session("telegram", str(chat_id))
+        assert sess["stage"] == "transcribing"
+        assert sess["voice_file_id"] == "telegram_audio_file_123"
+
+        # Test document audio (.mp3 sent as file)
+        chat_id_doc = 9907
+        handle_update({"update_id": 6001, "message": {"chat": {"id": chat_id_doc}, "text": "/start"}}, _ingest_text_request)
+        handle_update({"update_id": 6002, "callback_query": {"id": "cb_te2", "message": {"chat": {"id": chat_id_doc}}, "data": "lang:te"}}, _ingest_text_request)
+
+        doc_up = {
+            "update_id": 6003,
+            "message": {
+                "chat": {"id": chat_id_doc},
+                "document": {
+                    "file_id": "telegram_doc_audio_456",
+                    "file_name": "grievance_audio.mp3",
+                    "mime_type": "audio/mp3",
+                }
+            }
+        }
+        res_doc = handle_update(doc_up, _ingest_text_request)
+        assert res_doc["success"]
+
+        sess_doc = get_channel_session("telegram", str(chat_id_doc))
+        assert sess_doc["stage"] == "transcribing"
+        assert sess_doc["voice_file_id"] == "telegram_doc_audio_456"
+
+
+def test_submission_suppresses_duplicate_confirmation(app):
+    """Verify that completing an intake removes the queued interim message, sending only one confirmation."""
+    with app.app_context():
+        chat_id = 9908
+        db = get_db()
+
+        # Set up a session ready for consent
+        session_data = {
+            "stage": "review",
+            "language": "en",
+            "issue": "Broken street lamp on 4th cross",
+            "state": "Tamil Nadu",
+            "district": "Vellore",
+            "ward": "Ward 12",
+            "nonce": "test-nonce-single-confirm",
+        }
+        save_channel_session("telegram", str(chat_id), session_data)
+
+        # Citizen confirms and consents
+        consent_up = {
+            "update_id": 7001,
+            "callback_query": {
+                "id": "cb_consent",
+                "message": {"chat": {"id": chat_id}},
+                "data": "consent",
+            }
+        }
+        handle_update(consent_up, _ingest_text_request)
+
+        # Before processing, the interim received message is queued in outbox
+        sess = get_channel_session("telegram", str(chat_id))
+        job_id = sess["job_id"]
+        interim_key = f"job:{job_id}:received"
+        interim_msg = db.execute("SELECT * FROM telegram_outbox WHERE message_key=?", (interim_key,)).fetchone()
+        assert interim_msg is not None
+        assert interim_msg["status"] == "queued"
+
+        # Worker processes the job to completion
+        assert process_one(_ingest_text_request)
+
+        # The interim message must be removed, leaving only the final saved confirmation
+        interim_after = db.execute("SELECT * FROM telegram_outbox WHERE message_key=?", (interim_key,)).fetchone()
+        assert interim_after is None, "Redundant interim received message must be purged from outbox"
+
+        saved_key = f"chat:{chat_id}:saved:{sess['request_id']}"
+        saved_msg = db.execute("SELECT * FROM telegram_outbox WHERE message_key=?", (saved_key,)).fetchone()
+        assert saved_msg is not None, "Final saved announcement must be present"
+        assert saved_msg["status"] == "queued"
+

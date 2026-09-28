@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>NVB · Jury walkthrough</title><link rel="stylesheet" href="/static/css/demo.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>NVB · Jury walkthrough</title><link rel="icon" type="image/png" href="/static/images/nvb-favi.png"><link rel="apple-touch-icon" href="/static/images/nvb-favi.png"><link rel="shortcut icon" href="/static/favicon.ico"><link rel="stylesheet" href="/static/css/demo.css"></head>
 <body>
-<header class="demo-nav"><a class="brand" href="/">Nexus <strong>VisBharat</strong></a><nav aria-label="Demo navigation"><a href="#cases">Explore requests</a><a href="/dashboard">Policy dashboard →</a></nav></header>
+<header class="demo-nav"><a class="brand" href="/" aria-label="Nexus VisBharat Home" style="display:inline-flex; align-items:center;"><img src="/static/images/nvb-logo.png" alt="Nexus VisBharat" height="34" style="height:34px; width:auto; vertical-align:middle;"></a><nav aria-label="Demo navigation"><a href="#cases">Explore requests</a><a href="/dashboard">Policy dashboard →</a></nav></header>
 <main>
 <div class="demo-label">SYNTHETIC DEMONSTRATION · BUILD WITH AI: CODE FOR COMMUNITIES · INNOVATION</div>
 {% if assistant_receipt %}<section class="closing" id="assistant-evidence"><h2>Your saved request → planning evidence</h2><p><strong>{{ assistant_receipt.request_id }}</strong> · {{ assistant_receipt.district }} · {{ assistant_receipt.category }} · {{ assistant_receipt.status }}</p><p>Assigned department: {{ assistant_receipt.routed_department or 'Pending review' }}. Issue cluster: {{ assistant_receipt.cluster_id or 'Not assigned yet' }}.</p><p>This record was read from NVB's request database. A saved request or cluster is not a project approval. In the analyst workspace, inspect the same ticket and its source evidence before assessing a proposal.</p><a class="button" href="/dashboard?demo_ticket={{ assistant_receipt.request_id }}">Inspect this ticket in the execution table →</a></section>{% endif %}

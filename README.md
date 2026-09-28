@@ -1,3 +1,15 @@
+<p align="center">
+  <a href="https://hack2skill.com/event/codeforcommunities2?utm_source=hack2skill&utm_medium=homepage&sectionid=6a7aeec965fbd7acf70c1764">
+    <img src="docs/screenshots/cfc.png" alt="Google Cloud Build with AI: Code for Communities 2nd Edition" width="100%">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://nexus-visbharath-510474645723.asia-south1.run.app/">
+    <img src="docs/screenshots/nvb-logo.png" alt="Nexus VisBharat Citizen Platform" width="360">
+  </a>
+</p>
+
 # Nexus VisBharat (NVB)
 
 ## Multilingual civic intelligence for better public services
@@ -14,6 +26,7 @@ This repository is the Code for Communities submission for [Build with AI: Code 
 - **Interactive Visual Showcase App:** [nexusaitech.in/apps/nvb/index.html ↗](https://nexusaitech.in/apps/nvb/index.html)
 - **Official Telegram Citizen Bot:** [@NexusVisBharatBot ↗](https://t.me/NexusVisBharatBot) *(Live omnichannel citizen filing & tracking with Tamil-first multilingual support)*
 - **Source code:** [github.com/sonofmoon/nexus-visbharat ↗](https://github.com/sonofmoon/nexus-visbharat)
+- **Official Project Pitch Deck (PDF):** [Nexus_VisBharat_Pitch_Deck.pdf ↗](docs/pitch/Nexus_VisBharat_Pitch_Deck.pdf)
 
 The live deployment is a working demonstration environment. The showcase corpus is synthetic, and the evidence notes below describe what has been measured, what is provisional and what still requires a real municipal pilot.
 
@@ -23,16 +36,7 @@ Public-service information often arrives as short messages, voice notes and loca
 
 NVB creates a shared operating picture:
 
-```mermaid
-flowchart LR
-    A[Citizen voice or text] --> B[Consent and PII scrubbing]
-    B --> C[Speech, translation and classification]
-    C --> D[Urgency, location and service routing]
-    D --> E[Related demand and evidence]
-    E --> F[Analyst review and prioritisation]
-    F --> G[Human decision and delivery follow-up]
-    G --> H[Auditable outcome history]
-```
+![Nexus VisBharat Operating Picture](docs/screenshots/operating_picture.png)
 
 The system keeps model-assisted interpretation separate from policy decisions. Immediate hazards use a deterministic FastPath, while capital and programme decisions remain subject to human review.
 
@@ -90,7 +94,7 @@ The bounded pilot rehearsal covers **Vellore, Tirupati and Bengaluru Urban**, wi
 
 These are synthetic rehearsal scenarios, not claims of participating government authorities or live citizen requests. The five pilot languages are Tamil, Telugu, Kannada, Hindi and English.
 
-![NVB pilot workspace](docs/screenshots/05_ministry_pilot_dashboard.png)
+![NVB pilot workspace](docs/screenshots/04_pilot_dashboard.png)
 
 *Pilot scenarios remain labelled as rehearsal data until an authority supplies approved operational data.*
 

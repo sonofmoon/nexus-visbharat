@@ -6,7 +6,9 @@
  <title>Policy Dashboard - Nexus VisBharat</title>
  <link rel="stylesheet" href="/static/css/style.css">
  <link rel="stylesheet" href="/static/css/dashboard.css?v=3">
- <link rel="icon" href="/favicon.ico">
+ <link rel="icon" type="image/png" href="/static/images/nvb-favi.png">
+ <link rel="apple-touch-icon" href="/static/images/nvb-favi.png">
+ <link rel="shortcut icon" href="/static/favicon.ico">
  <link rel="preconnect" href="https://fonts.googleapis.com">
  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -26,17 +28,13 @@
   <!-- Branded Console Splash Screen -->
   <div id="nvbConsoleSplash" aria-live="polite" aria-label="Loading Console" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(248,250,252,0.96); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); z-index:999999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.3s cubic-bezier(0.4,0,0.2,1), visibility 0.3s;">
     <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:24px; padding:2.5rem 3rem; box-shadow:0 20px 45px -10px rgba(15,23,42,0.15); display:flex; flex-direction:column; align-items:center; text-align:center; max-width:440px; width:90%; position:relative;">
-      <!-- Glowing Brand Symbol with Halo -->
-      <div style="position:relative; width:72px; height:72px; margin-bottom:1.25rem; display:flex; align-items:center; justify-content:center;">
-        <div style="position:absolute; inset:0; border-radius:50%; background:linear-gradient(135deg, #0284c7, #38bdf8); opacity:0.25; animation:nvbPulseRing 2s infinite;"></div>
-        <div style="width:58px; height:58px; border-radius:18px; background:linear-gradient(135deg, #0284c7, #0369a1); color:#ffffff; display:flex; align-items:center; justify-content:center; font-size:1.8rem; box-shadow:0 8px 20px rgba(2,132,199,0.35);">
-          <i class="bi bi-broadcast-pin"></i>
-        </div>
-      </div>
-
-      <!-- Title & Brand -->
-      <div style="font-size:1.35rem; font-weight:800; color:#0f172a; letter-spacing:-0.02em; margin-bottom:0.25rem;">
-        Nexus <span style="color:#0284c7;">VisBharat</span>
+      <!-- Glowing Brand Logo -->
+      <div style="margin-bottom:1rem; display:flex; align-items:center; justify-content:center;">
+        {% if pilot_scoped %}
+        <img src="/static/images/nvb-pilot-logo.png" alt="Nexus VisBharat Ministry Pilot" style="height:54px; width:auto; max-width:240px; object-fit:contain;">
+        {% else %}
+        <img src="/static/images/nvb-logo.png" alt="Nexus VisBharat Policy Console" style="height:54px; width:auto; max-width:240px; object-fit:contain;">
+        {% endif %}
       </div>
       <div style="font-size:0.75rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1.5rem;">
         Policy Console
@@ -116,7 +114,18 @@
 
  <a class="skip-link" href="#mainContent">Skip to dashboard</a>
  <aside class="console-sidebar" id="consoleSidebar" aria-label="Workspace navigation">
- <a class="console-brand" href="/"><span class="brand-symbol" aria-hidden="true"><i class="bi bi-broadcast-pin"></i></span><span class="rail-label">Nexus <strong>VisBharat</strong><small>{% if pilot_scoped %}PILOT SCOPE{% else %}POLICY CONSOLE{% endif %}</small></span></a>
+ <a class="console-brand" href="/" aria-label="Nexus VisBharat Home">
+   <span class="brand-symbol" aria-hidden="true" style="padding:0; overflow:hidden; background:transparent;">
+     <img src="/static/images/nvb-favi.png" alt="NVB" style="width:34px; height:34px; border-radius:8px; object-fit:contain; display:block;">
+   </span>
+   <span class="rail-label">
+     {% if pilot_scoped %}
+     <img src="/static/images/nvb-pilot-logo.png" alt="Nexus VisBharat Pilot Scope" style="height:36px; width:auto; max-width:180px; object-fit:contain; display:block;">
+     {% else %}
+     <img src="/static/images/nvb-logo.png" alt="Nexus VisBharat Policy Console" style="height:36px; width:auto; max-width:180px; object-fit:contain; display:block;">
+     {% endif %}
+   </span>
+ </a>
  <div class="sidebar-section rail-label">WORKSPACE</div>
  <nav class="console-navigation" aria-label="Dashboard sections">
  <a href="#mainContent" class="is-active" aria-current="page"><i class="bi bi-grid-1x2" aria-hidden="true"></i><span class="rail-label">Overview</span></a>
@@ -175,7 +184,7 @@
  <div class="stat-card-mini">
  <div class="stat-icon" aria-hidden="true"><i class="bi bi-inbox-fill"></i></div>
  <div class="stat-info">
- <div class="stat-number" id="totalComplaints">{{ total_complaints_formatted | default('63,746') }}</div>
+ <div class="stat-number" id="totalComplaints">{{ total_complaints_formatted | default('50,116') }}</div>
  <div class="stat-label">Citizen Requests</div>
  </div>
  </div>
@@ -196,7 +205,7 @@
  <div class="stat-card-mini">
  <div class="stat-icon" aria-hidden="true"><i class="bi bi-check-circle-fill"></i></div>
  <div class="stat-info">
- <div class="stat-number" id="resolutionRate">{{ resolution_rate_formatted | default('58%') }}</div>
+ <div class="stat-number" id="resolutionRate">{{ resolution_rate_formatted | default('68%') }}</div>
  <div class="stat-label">Operational closure</div>
  </div>
  </div>
@@ -777,9 +786,9 @@
  <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 10px;font-weight:600;">Public</span>
  </div>
  <div id="publicKpiRow" class="stats-row" style="margin-top:8px;">
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">{{ total_complaints_formatted | default('63,746') }}</div><div class="stat-label">Published requests</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">{{ total_complaints_formatted | default('50,116') }}</div><div class="stat-label">Published requests</div></div></div>
  <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">408</div><div class="stat-label">Districts Covered</div></div></div>
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">{{ resolution_rate_formatted | default('58%') }}</div><div class="stat-label">Operational closure</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">{{ resolution_rate_formatted | default('68%') }}</div><div class="stat-label">Operational closure</div></div></div>
  <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">468</div><div class="stat-label">Active Projects</div></div></div>
  </div>
  </div>

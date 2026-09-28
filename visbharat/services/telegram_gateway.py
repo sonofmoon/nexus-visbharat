@@ -851,19 +851,19 @@ def _clear(chat_id):
 
 
 def _lang(session):
-    """Strictly return selected language with Tamil ('ta') as default priority."""
-    value = str((session or {}).get("language") or "ta").lower()
-    return value if value in ORDERED_LANG_CODES else "ta"
+    """Return selected language, with English ('en') as initial default priority."""
+    value = str((session or {}).get("language") or "en").lower()
+    return value if value in ORDERED_LANG_CODES else "en"
 
 
 def _prompt(lang, key):
-    lang_map = BOT_PROMPTS.get(lang) or BOT_PROMPTS["ta"]
-    return lang_map.get(key) or BOT_PROMPTS["en"].get(key, "")
+    lang_map = BOT_PROMPTS.get(lang) or BOT_PROMPTS.get("en", {})
+    return lang_map.get(key) or BOT_PROMPTS.get("en", {}).get(key, "")
 
 
 def _i18n(lang, key):
     strings = STRINGS
-    lang_dict = strings.get(lang) or strings.get("ta") or {}
+    lang_dict = strings.get(lang) or strings.get("en") or {}
     return lang_dict.get(key) or strings.get("en", {}).get(key, "")
 
 
@@ -953,7 +953,7 @@ def _status(chat_id, ticket, session=None):
 
 
 def _voice_text(file_id, language):
-    """Download and transcribe a Telegram voice note through the existing ASR path."""
+    """Download and transcribe a Telegram voice note or uploaded audio file through the existing ASR path."""
     if not _token():
         raise ValueError("Telegram bot token is not configured")
     meta = requests.get(_api_url("getFile"), params={"file_id": file_id}, timeout=10).json()
@@ -963,9 +963,25 @@ def _voice_text(file_id, language):
     raw = requests.get(f"https://api.telegram.org/file/bot{_token()}/{path}", timeout=30).content
     if not raw or len(raw) > 10 * 1024 * 1024:
         raise ValueError("Telegram voice file is empty or too large")
+    ext = Path(path).suffix.lower()
+    mime_type = "audio/ogg"
+    if ext in (".mp3", ".mpeg"):
+        mime_type = "audio/mpeg"
+    elif ext in (".wav",):
+        mime_type = "audio/wav"
+    elif ext in (".m4a", ".mp4"):
+        mime_type = "audio/mp4"
+    elif ext in (".flac",):
+        mime_type = "audio/flac"
+    elif ext in (".aac",):
+        mime_type = "audio/aac"
+    elif ext in (".opus",):
+        mime_type = "audio/opus"
+    elif ext in (".ogg", ".oga"):
+        mime_type = "audio/ogg"
     from ..blueprints.api import _run_speech_to_text
     result = _run_speech_to_text(
-        {"language": language}, language, audio_bytes=raw, mime_type="audio/ogg", require_live=True,
+        {"language": language}, language, audio_bytes=raw, mime_type=mime_type, require_live=True,
     )
     transcript = result.get("transcript") or result.get("text") or result.get("transcription")
     if not isinstance(transcript, str) or not transcript.strip():
@@ -1139,11 +1155,30 @@ def _send_review(chat_id, session):
                                           [(_flow(lang, 'ward'), 'ward:add')], [(cancel_btn, 'cancel')]]))
 
 
+def _extract_audio_file_id(message):
+    """Extract audio file_id from voice notes, audio files, or audio documents."""
+    if not isinstance(message, dict):
+        return None
+    if message.get("voice") and message["voice"].get("file_id"):
+        return message["voice"]["file_id"]
+    if message.get("audio") and message["audio"].get("file_id"):
+        return message["audio"]["file_id"]
+    doc = message.get("document") or {}
+    doc_id = doc.get("file_id")
+    if doc_id:
+        mime = str(doc.get("mime_type") or "").lower()
+        name = str(doc.get("file_name") or "").lower()
+        audio_exts = ('.mp3', '.m4a', '.wav', '.ogg', '.opus', '.aac', '.flac', '.oga', '.wma', '.amr')
+        if mime.startswith("audio/") or any(name.endswith(ext) for ext in audio_exts):
+            return doc_id
+    return None
+
+
 def _message(update, chat_id, ingest_text):
     message = update.get("message") or update.get("edited_message") or {}
     text = str(message.get("text") or "").strip()
-    voice_id = (message.get("voice") or {}).get("file_id")
-    _send_chat_action(chat_id, "record_voice" if voice_id else "typing")
+    audio_file_id = _extract_audio_file_id(message)
+    _send_chat_action(chat_id, "record_voice" if audio_file_id else "typing")
 
     if text.startswith("/start"):
         _start(chat_id)
@@ -1173,13 +1208,17 @@ def _message(update, chat_id, ingest_text):
     lang = _lang(session)
 
     if stage == "language":
+        if audio_file_id:
+            session.update(language=_lang(session), stage="issue", voice_file_id=audio_file_id)
+            _save(chat_id, session)
+            _queue_voice(chat_id, session)
+            return
         _start(chat_id)
     elif stage == "issue":
-        voice_id = (message.get("voice") or {}).get("file_id")
         photos = message.get("photo")
         caption = str(message.get("caption") or "").strip()
-        if voice_id:
-            session['voice_file_id'] = voice_id
+        if audio_file_id:
+            session['voice_file_id'] = audio_file_id
             _queue_voice(chat_id, session)
             return
         elif photos:

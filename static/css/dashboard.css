@@ -65,7 +65,8 @@
 .console-brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 30px; color: var(--console-text) !important; white-space: nowrap; font-size: 17px; letter-spacing: -.5px; }
 .console-brand strong { font-weight: 700; }
 .console-brand small { display: block; color: var(--console-muted); font-size: 9px; font-weight: 600; letter-spacing: 2px; margin-top: 3px; }
-.brand-symbol { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; background: var(--console-primary); color: var(--console-surface); font-size: 20px; }
+.brand-symbol { width: 36px; height: 36px; border-radius: 10px; display: none; place-items: center; flex-shrink: 0; background: transparent; }
+.dashboard-page[data-rail="collapsed"] .brand-symbol { display: grid; }
 .sidebar-section { font-size: 10px; letter-spacing: 1.5px; color: var(--console-muted); padding: 8px 14px 12px; font-weight: 600; }
 .console-navigation { display: grid; gap: 6px; }
 .console-navigation a, .sidebar-footer a { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 10px 14px; color: var(--console-muted); border-radius: 12px; font-size: 13px; font-weight: 500; white-space: nowrap; }

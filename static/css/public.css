@@ -66,6 +66,7 @@
 .public-header { position: sticky; top: 0; z-index: 100; background: var(--public-surface); border-bottom: 1px solid var(--public-border); }
 .public-nav-wrap { max-width: 1440px; min-height: 80px; padding: 12px 40px; margin: auto; display: flex; align-items: center; gap: 32px; }
 .public-page .public-brand { display: inline-flex; align-items: center; gap: 12px; color: var(--public-text); font-size: 20px; font-weight: 500; line-height: 1.3; white-space: nowrap; }
+.public-brand-img { height: 46px; width: auto; max-width: 240px; object-fit: contain; display: block; }
 .public-brand-icon { width: 42px; height: 42px; border-radius: 14px; background: #0b57d0; color: #fff; display: grid; place-items: center; font-size: 23px; }
 .public-brand small { display: block; color: var(--public-muted); font: 500 10px/1.8 'Inter', sans-serif; letter-spacing: 1.8px; }
 .public-nav { display: flex; gap: 8px; margin-left: auto; }

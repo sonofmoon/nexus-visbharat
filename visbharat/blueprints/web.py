@@ -168,8 +168,8 @@ def dashboard():
         states = current_app.extensions['reference_repo'].list_states()
 
     db = get_db()
-    total_complaints = 63746
-    resolution_rate = 58
+    total_complaints = 50116
+    resolution_rate = 68
     try:
         row = db.execute("SELECT COUNT(*) AS total, SUM(CASE WHEN status IN ('Resolved','Closed') THEN 1 ELSE 0 END) AS resolved FROM citizen_requests").fetchone()
         if row and row['total']:

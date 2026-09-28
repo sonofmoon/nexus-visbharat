@@ -60,3 +60,4 @@ build/
 docs/videos/
 /*.png
 verified_*.png
+tmp/

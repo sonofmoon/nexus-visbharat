@@ -141,6 +141,8 @@ def process_one(ingest_text=None):
         else:
             session.update(stage='complete', request_id=result['request_id'])
             bot._save(chat_id, session)
+            db.execute("DELETE FROM telegram_outbox WHERE message_key=? AND status='queued'",
+                       (f"job:{job['job_id']}:received",))
             bot._announce_saved(chat_id, session)
             _finish(job, 'done', commit=False)
     return True
