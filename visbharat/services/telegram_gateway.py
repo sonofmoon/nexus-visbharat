@@ -783,11 +783,13 @@ def _voice_text(file_id, language):
     if not raw or len(raw) > 10 * 1024 * 1024:
         raise ValueError("Telegram voice file is empty or too large")
     from ..blueprints.api import _run_speech_to_text
-    result = _run_speech_to_text({"language": language}, language, audio_bytes=raw, mime_type="audio/ogg")
+    result = _run_speech_to_text(
+        {"language": language}, language, audio_bytes=raw, mime_type="audio/ogg", require_live=True,
+    )
     transcript = result.get("transcript") or result.get("text") or result.get("transcription")
-    if not transcript:
+    if not isinstance(transcript, str) or not transcript.strip():
         raise ValueError("Speech-to-text returned an empty transcript")
-    return str(transcript).strip()
+    return transcript.strip()
 
 
 def _submit(chat_id, session, ingest_text):
@@ -798,6 +800,9 @@ def _submit(chat_id, session, ingest_text):
             issue = _voice_text(session["voice_file_id"], language)
         except Exception as exc:
             LOGGER.exception("Failed to transcribe Telegram voice note for chat %s: %s", chat_id, exc)
+            # Keep the draft and audio reference, but allow a new recording or text.
+            session.update(stage="issue", consent_granted=False)
+            _save(chat_id, session)
             retry_msg = _i18n(language, "asr_error") or "I could not transcribe that voice note. Please type your report; your draft is retained."
             _text(chat_id, retry_msg)
             return

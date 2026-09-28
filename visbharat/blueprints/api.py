@@ -1035,7 +1035,7 @@ def _record_asr_circuit_failure(provider: str, error_text: str):
     _write_asr_circuit(provider, failure_count=failure_count, open_until_epoch=open_until, last_error=str(error_text or '')[:300])
 
 
-def _run_speech_to_text(payload, language, audio_bytes=None, mime_type=None):
+def _run_speech_to_text(payload, language, audio_bytes=None, mime_type=None, *, require_live=False):
     stt_client = current_app.extensions.get('google_stt_client')
     google_ai_client = current_app.extensions.get('google_ai_client')
     if audio_bytes is None:
@@ -1049,7 +1049,7 @@ def _run_speech_to_text(payload, language, audio_bytes=None, mime_type=None):
     if override.get('mode') == 'force' and str(override.get('forced_provider') or '').strip():
         preferred = str(override.get('forced_provider') or preferred).strip().lower()
 
-    require_live = _jury_live_models_required()
+    require_live = require_live or _jury_live_models_required()
 
     if not audio_bytes:
         if preferred in {'google'}:
@@ -1101,6 +1101,11 @@ def _run_speech_to_text(payload, language, audio_bytes=None, mime_type=None):
         started = time.perf_counter()
         try:
             out = provider_client.transcribe_bytes(audio_bytes=audio_bytes, language_code=locale, mime_type=mime_type or 'audio/wav')
+            transcript = out.get('transcript') if isinstance(out, dict) else None
+            if not isinstance(transcript, str) or not transcript.strip():
+                raise ValueError('Speech provider returned an empty or invalid transcript')
+            if require_live and (out.get('fallback_used') or not _is_live_model_result(out)):
+                raise ValueError('live ASR provider returned fallback/simulated output')
             latency_ms = (time.perf_counter() - started) * 1000.0
             _record_asr_metric(
                 provider=provider_name,
@@ -1109,8 +1114,6 @@ def _run_speech_to_text(payload, language, audio_bytes=None, mime_type=None):
                 fallback_from=(primary_provider if provider_name != primary_provider else ''),
             )
             _record_asr_circuit_success(provider_name)
-            if require_live and not _is_live_model_result(out):
-                raise ValueError('live ASR provider returned fallback/simulated output')
             return out
         except Exception as err:
             latency_ms = (time.perf_counter() - started) * 1000.0
