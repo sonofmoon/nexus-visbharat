@@ -639,6 +639,21 @@ def _api_url(method):
     return f"https://api.telegram.org/bot{token}/{method}" if token else ""
 
 
+def _send_chat_action(chat_id, action="typing"):
+    if not chat_id:
+        return
+    token = _token()
+    if not token or current_app.config.get("TESTING"):
+        return
+    url = _api_url("sendChatAction")
+    if not url:
+        return
+    try:
+        requests.post(url, json={"chat_id": chat_id, "action": action}, timeout=2)
+    except Exception:
+        pass
+
+
 def _keyboard(rows):
     return {"inline_keyboard": [[{"text": label, "callback_data": action} for label, action in row] for row in rows]}
 
@@ -967,6 +982,7 @@ def _request_voice_retry(chat_id, session):
 
 
 def _queue_voice(chat_id, session):
+    _send_chat_action(chat_id, "record_voice")
     from .telegram_jobs import enqueue
     session.update(issue='', stage='transcribing', consent_granted=False)
     session['voice_revision'] = int(session.get('voice_revision') or 0) + 1
@@ -977,6 +993,7 @@ def _queue_voice(chat_id, session):
 
 
 def _submit(chat_id, session, ingest_text):
+    _send_chat_action(chat_id, "typing")
     language = _lang(session)
     issue = str(session.get('issue') or '').strip()
     if session.get('voice_file_id') and (not issue or issue == 'Voice report'):
@@ -1011,7 +1028,9 @@ def _announce_saved(chat_id, session):
 
 def _callback(update, chat_id, ingest_text):
     callback = update.get("callback_query") or {}
+    chat_id = (callback.get("message") or {}).get("chat", {}).get("id") or chat_id
     action = str(callback.get("data") or "")
+    _send_chat_action(chat_id, "typing")
     session = _session(chat_id)
     if action.startswith('n:'):
         _, nonce, action = action.split(':', 2)
@@ -1022,7 +1041,7 @@ def _callback(update, chat_id, ingest_text):
     toast = _processing_toast(lang)
     _queue_callback_answer(callback.get("id"), f"callback:{callback.get('id') or hashlib.sha256(action.encode()).hexdigest()}", text=toast)
 
-    if session.get('stage') == 'processing' and not action.startswith('track:'):
+    if session.get('stage') == 'processing' and not action.startswith(('track:', 'action:change_lang', 'cancel', 'new_report', 'lang:')):
         _status(chat_id, session['request_id'], session)
         return
 
@@ -1123,10 +1142,8 @@ def _send_review(chat_id, session):
 def _message(update, chat_id, ingest_text):
     message = update.get("message") or update.get("edited_message") or {}
     text = str(message.get("text") or "").strip()
-    current = _session(chat_id)
-    if current.get('stage') == 'processing' and text.startswith(('/start', '/cancel', '/reset', '/language', '/lang')):
-        _status(chat_id, current['request_id'], current)
-        return
+    voice_id = (message.get("voice") or {}).get("file_id")
+    _send_chat_action(chat_id, "record_voice" if voice_id else "typing")
 
     if text.startswith("/start"):
         _start(chat_id)

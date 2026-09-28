@@ -527,6 +527,13 @@ def telegram_webhook():
     try:
         payload = handle_update(data, _ingest_text_request)
         if not current_app.config.get('TESTING'):
+            from ..services.telegram_jobs import process_one
+            try:
+                for _ in range(5):
+                    if not process_one(_ingest_text_request):
+                        break
+            except Exception:
+                current_app.logger.warning('Telegram webhook job processing failed')
             from ..services.telegram_gateway import dispatch_outbox
             try:
                 delivery = dispatch_outbox()
@@ -547,6 +554,10 @@ def telegram_health():
     from ..services.telegram_gateway import health, dispatch_outbox
     if request.args.get('flush') in ('1', 'true', 'yes') and not current_app.config.get('TESTING'):
         try:
+            from ..services.telegram_jobs import process_one
+            for _ in range(10):
+                if not process_one(_ingest_text_request):
+                    break
             dispatch_outbox()
         except Exception:
             pass
