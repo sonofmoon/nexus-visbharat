@@ -15,7 +15,26 @@
     </div>
     <p id="dfcxStatus" class="nvb-assistant-status" role="status">Ready</p>
     <details class="nvb-assistant-telemetry"><summary data-assistant-text="provider">Processing details</summary><span id="dfcxFlowBadge">Connection checked when you send a message</span><span id="dfcxIntentBadge"></span></details>
-    <form id="dfcxInputForm" class="nvb-assistant-input"><button type="button" id="dfcxMicBtn" data-assistant-label="record" aria-label="Record voice"><i class="bi bi-mic-fill" aria-hidden="true"></i></button><input id="dfcxInputText" maxlength="4000" autocomplete="off" aria-label="Message the assistant" placeholder="Type a message or record your voice…"><button id="dfcxSend" type="submit" data-assistant-text="send">Send</button></form>
+    <div id="dfcxTranscriptionCard" class="nvb-assistant-transcription-card" hidden>
+      <div class="nvb-transcription-header">
+        <span class="nvb-transcription-title"><i class="bi bi-soundwave" aria-hidden="true"></i> Speech Transcribed — Review &amp; Edit</span>
+        <button type="button" id="dfcxClearTranscriptionBtn" class="nvb-transcription-close" aria-label="Discard transcription">×</button>
+      </div>
+      <p id="dfcxTranscriptionHint" class="nvb-transcription-hint">Review what was captured below. You can edit directly in the text box before sending:</p>
+      <div class="nvb-transcription-actions">
+        <button type="button" id="dfcxRerecordBtn" class="nvb-btn-secondary"><i class="bi bi-arrow-counterclockwise"></i> Re-record</button>
+        <button type="button" id="dfcxSendTranscriptionBtn" class="nvb-btn-primary"><i class="bi bi-send-fill"></i> Send Grievance</button>
+      </div>
+    </div>
+    <form id="dfcxInputForm" class="nvb-assistant-input">
+      <div class="nvb-input-textarea-wrapper">
+        <textarea id="dfcxInputText" rows="3" maxlength="4000" autocomplete="off" aria-label="Message the assistant" placeholder="Type your message or tap Record Voice to speak…"></textarea>
+      </div>
+      <div class="nvb-input-actions-bar">
+        <button type="button" id="dfcxMicBtn" class="nvb-mic-action-btn" data-assistant-label="record" aria-label="Record voice"><i class="bi bi-mic-fill" aria-hidden="true"></i> <span id="dfcxMicLabel">Record voice</span></button>
+        <button id="dfcxSend" type="submit" class="nvb-send-action-btn" data-assistant-text="send"><i class="bi bi-send-fill" aria-hidden="true"></i> Send</button>
+      </div>
+    </form>
     <p class="nvb-assistant-notice" data-assistant-text="notice">Voice is sent to speech services for transcription. Review the text before sending. Avoid personal identifiers.</p>
   </section>
 </div>

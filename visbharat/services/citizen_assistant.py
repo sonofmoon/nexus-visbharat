@@ -186,7 +186,7 @@ def session_turn():
     lock = uuid4().hex
     acquired = db.execute('''UPDATE assistant_sessions SET busy_until=?,lock_token=?
         WHERE session_id=? AND version=? AND busy_until<? RETURNING session_id''',
-        (now+120,lock,sid,row['version'],now)).fetchone()
+        (now+10,lock,sid,row['version'],now)).fetchone()
     db.commit()
     if not acquired:
         return jsonify(success=False,error='A turn is processing; retry shortly',code='session_busy'),409

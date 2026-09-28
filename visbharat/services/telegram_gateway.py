@@ -271,7 +271,19 @@ DISTRICT_ALIASES = {
 # Localized conversational prompts for all 13 languages (Tamil first)
 BOT_PROMPTS = {
     "ta": {
-        "greeting": "வணக்கம்! Nexus VisBharat (@NexusVisBharatBot) மக்கள் உதவி மையத்திற்கு வரவேற்கிறோம்.\n\nதயவுசெய்து உங்கள் விருப்ப மொழியைத் தேர்ந்தெடுக்கவும்:\n\nWelcome to Nexus VisBharat. Please choose your preferred language:",
+        "greeting": (
+            "🏛️ வணக்கம்! Nexus VisBharat (@NexusVisBharatBot) மக்கள் உதவி மையத்திற்கு வரவேற்கிறோம்.\n"
+            "பொறுப்புமிக்க மாவட்ட நிர்வாகத்திற்கான டிஜிட்டல் பொது உள்கட்டமைப்பு\n\n"
+            "குடிநீர், சாலைகள், சுகாதாரம், மின்சாரம் போன்ற பொதுப் பிரச்சனைகளை உங்கள் சொந்த மொழியில் "
+            "குரல் பதிவு, புகைப்படம் அல்லது தட்டச்சு மூலம் பதிவு செய்யலாம்.\n\n"
+            "📌 முக்கிய கட்டளைகள் (Core Commands):\n"
+            "• /start — புதிய புகாரைத் தொடங்க / மீட்டமைக்க\n"
+            "• /language — மொழியை மாற்ற\n"
+            "• /status [குறிப்பு எண்] — புகாரின் நிலையை அறிய\n"
+            "• /cancel — வரைவை ரத்து செய்ய\n"
+            "• /help — உதவி மற்றும் வழிகாட்டுதல்\n\n"
+            "👇 தயவுசெய்து உங்கள் விருப்ப மொழியைத் தேர்ந்தெடுக்கவும்:"
+        ),
         "select_state": "உங்கள் மாநிலம் அல்லது யூனியன் பிரதேசத்தைத் தேர்ந்தெடுக்கவும்:",
         "select_district": "மாநிலம்: {state}\n\nகீழேயுள்ள பொத்தான்களில் உங்கள் மாவட்டத்தைத் தேர்ந்தெடுக்கவும், அல்லது மாவட்டத்தின் பெயரை நேரடியாக தட்டச்சு செய்யவும்:",
         "district_not_found": "'{text}' என்ற மாவட்டம் {state} மாநிலத்தில் கண்டறியப்படவில்லை. தயவுசெய்து கீழேயுள்ள பொத்தான்களில் இருந்து தேர்வு செய்யவும் அல்லது சரியான மாவட்டப் பெயரை தட்டச்சு செய்யவும்:",
@@ -502,12 +514,16 @@ BOT_PROMPTS = {
         "greeting": (
             "🏛️ Welcome to Nexus VisBharat (@NexusVisBharatBot)\n"
             "Public Digital Infrastructure for Accountable District Governance\n\n"
-            "Nexus VisBharat is an AI-powered citizen grievance redressal and participatory governance platform. "
-            "You can report civic and infrastructure issues—such as water supply, roads, sanitation, electricity, "
-            "and healthcare—in your own language using text, voice notes, or photos.\n\n"
-            "Your report is automatically translated, verified, and routed directly to the responsible district authorities "
-            "with full audit transparency under the DPDP Act 2023.\n\n"
-            "👇 Please choose your preferred language to begin:"
+            "Report civic and infrastructure issues (water supply, roads, sanitation, electricity, health) "
+            "in your own language using text, voice notes, or photos. Reports are verified, translated, "
+            "and routed directly to responsible district authorities under the DPDP Act 2023.\n\n"
+            "📌 Core Universal Commands:\n"
+            "• /start — Start a new grievance report or reset\n"
+            "• /language — Change your active language anytime\n"
+            "• /status <Ticket ID> — Track progress of a submitted report (e.g. /status NVB-20260928XXXX)\n"
+            "• /cancel — Discard current draft & start over\n"
+            "• /help — View assistance & commands\n\n"
+            "👇 Please choose your preferred language to begin / தொடங்குவதற்கு உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்:"
         ),
         "select_state": "Please select your State or Union Territory:",
         "select_district": "State: {state}\n\nPlease select your District using the buttons below, or type your district name directly:",
@@ -852,14 +868,26 @@ def _text(chat_id, text, reply_markup=None, key=None):
 def _start(chat_id, choose_language=False):
     previous = _session(chat_id)
     session = {"stage": "language", "nonce": uuid4().hex[:12]}
-    if not choose_language and previous.get('language') in ORDERED_LANG_CODES:
+    if not choose_language and previous.get('stage') == 'complete' and previous.get('language') in ORDERED_LANG_CODES:
         session.update(language=previous['language'], stage='issue')
         session.update({key: previous[key] for key in ('state', 'district') if previous.get(key)})
     _save(chat_id, session)
     if session['stage'] == 'issue':
-        _text(chat_id, _i18n(_lang(session), 'issue'))
+        lang = _lang(session)
+        issue_p = _i18n(lang, 'issue') or "Please describe the civic infrastructure issue in full detail:"
+        cmd_hint = (
+            f"\n\n📌 Core Commands:\n"
+            f"• /language — Change language / மொழியை மாற்ற\n"
+            f"• /status <Ticket ID> — Track grievance\n"
+            f"• /cancel — Start over\n"
+            f"• /help — Assistance"
+        )
+        change_btn = "🌐 Change Language / மொழியை மாற்று" if lang != "ta" else "🌐 மொழியை மாற்று (Change Language)"
+        cancel_btn = _prompt(lang, "cancel_btn") or "✖ Cancel"
+        kb = _keyboard([[(change_btn, "action:change_lang"), (cancel_btn, "cancel")]])
+        _text(chat_id, f"{issue_p}{cmd_hint}", kb)
         return session
-    greeting = BOT_PROMPTS["en"]["greeting"]
+    greeting = BOT_PROMPTS.get("en", {}).get("greeting") or BOT_PROMPTS["ta"]["greeting"]
     _text(chat_id, greeting, _keyboard(LANGUAGE_KEYBOARD), f"chat:{chat_id}:start:{session['nonce']}")
     return session
 
@@ -1064,8 +1092,10 @@ def _callback(update, chat_id, ingest_text):
     elif action.startswith("track:"):
         ticket = action[6:]
         _status(chat_id, ticket, session)
+    elif action in ("action:change_lang", "change_lang"):
+        _start(chat_id, choose_language=True)
     elif action == "new_report":
-        _start(chat_id)
+        _start(chat_id, choose_language=True)
 
 
 def _send_review(chat_id, session):

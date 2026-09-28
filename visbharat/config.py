@@ -163,6 +163,10 @@ class Config:
         'audio/mpeg',
         'audio/mp3',
         'audio/flac',
+        'audio/mp4',
+        'audio/m4a',
+        'audio/x-m4a',
+        'audio/aac',
     ]
 
     DATABASE_PATH = os.environ.get(

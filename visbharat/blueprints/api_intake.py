@@ -940,7 +940,7 @@ def transcribe_voice_endpoint():
     try:
         stt = _run_speech_to_text(data, language, audio_bytes=audio_bytes, mime_type=mime_base)
         if data.get('assistant') and not _is_live_model_result(stt):
-            return jsonify(success=False, error='Live transcription unavailable; type your message', fallback='text'),503
+            return jsonify(success=False, error='Live transcription unavailable; type your message', fallback='text'), 503
         transcript = (stt.get('transcript') or '').strip()
         confidence = stt.get('confidence')
         provider = stt.get('provider', 'stt')

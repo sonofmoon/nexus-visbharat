@@ -77,6 +77,20 @@
   }
   function setStatusText(message) { $('dfcxStatus').textContent = message; }
   function explainError(data, fallback) { return String(data?.error || data?.message || fallback || t('network')); }
+  function autoResizeTextarea() {
+    const ta = $('dfcxInputText');
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(Math.max(ta.scrollHeight, 68), 160) + 'px';
+  }
+  function showTranscriptionCard() {
+    const card = $('dfcxTranscriptionCard');
+    if (card) card.hidden = false;
+  }
+  function hideTranscriptionCard() {
+    const card = $('dfcxTranscriptionCard');
+    if (card) card.hidden = true;
+  }
   function saveSession() {
     try { sessionStorage.setItem('nvb_assistant_session', JSON.stringify({sessionId,token,language})); } catch {}
   }
@@ -125,7 +139,13 @@
         pending.consent_granted = $('dfcxConsent').checked;
         pending.input_mode = inputMode;
       }
-      if (message && action === 'message') { append(message,'user');$('dfcxInputText').value='';inputMode='text'; }
+      if (message && action === 'message') {
+        append(message,'user');
+        $('dfcxInputText').value='';
+        autoResizeTextarea();
+        hideTranscriptionCard();
+        inputMode='text';
+      }
     }
     if (!pending) return;
     setBusy(true);status('processing');$('dfcxRetry').hidden=true;
@@ -205,7 +225,16 @@
       const Recognition=window.SpeechRecognition || window.webkitSpeechRecognition;
       if(!Recognition) { status('mic_error');return; }
       recognition=new Recognition();recognition.lang=locale[language];recognition.continuous=false;
-      recognition.onresult=event => { if(epoch===recordingEpoch && opened) { $('dfcxInputText').value=event.results[0][0].transcript;inputMode='voice';status('transcribed'); } };
+      recognition.onresult=event => {
+        if(epoch===recordingEpoch && opened) {
+          $('dfcxInputText').value=event.results[0][0].transcript;
+          autoResizeTextarea();
+          showTranscriptionCard();
+          inputMode='voice';
+          status('transcribed');
+          $('dfcxInputText').focus();
+        }
+      };
       recognition.onerror=() => { if(epoch===recordingEpoch) status('mic_error'); };
       recognition.onend=() => { recognition=null;setMicState(false); };
       try { recognition.start();status('listening');setMicState(true); } catch { recognition=null;setMicState(false);status('mic_error'); }
@@ -234,7 +263,14 @@
           const res=await fetch('/api/transcribe-voice',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio_base64:encoded,audio_mime_type:blob.type,language,assistant:true}),signal:controller.signal});
           const data=await res.json();
           if(!res.ok || !data.success) throw Error(explainError(data, 'Speech could not be transcribed.'));
-          if(epoch===recordingEpoch && opened) { $('dfcxInputText').value=data.transcript;inputMode='voice';status('transcribed');$('dfcxInputText').focus(); }
+          if(epoch===recordingEpoch && opened) {
+            $('dfcxInputText').value=data.transcript;
+            autoResizeTextarea();
+            showTranscriptionCard();
+            inputMode='voice';
+            status('transcribed');
+            $('dfcxInputText').focus();
+          }
         } catch (error) { if(epoch===recordingEpoch && opened) setStatusText(error.message || t('asr_error')); }
         finally {clearTimeout(timeout);setBusy(false);}
       };
@@ -252,6 +288,8 @@
     try { sessionStorage.removeItem('nvb_assistant_session'); } catch {}
     $('dfcxConsent').checked = false;
     $('dfcxInputText').value = '';
+    autoResizeTextarea();
+    hideTranscriptionCard();
     $('dfcxMessageStream').replaceChildren();
     $('dfcxLocationPanel').hidden = true;
     $('dfcxReviewPanel').hidden = true;
@@ -297,6 +335,29 @@
   };
   // Keep the established global entry points for existing page integrations.
   window.sendDfcxMessage=() => send();window.toggleDfcxSpeechRecognition=record;
+  const inputText = $('dfcxInputText');
+  if (inputText) {
+    inputText.addEventListener('input', autoResizeTextarea);
+    inputText.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
+    });
+  }
+  $('dfcxClearTranscriptionBtn')?.addEventListener('click', hideTranscriptionCard);
+  $('dfcxRerecordBtn')?.addEventListener('click', () => {
+    hideTranscriptionCard();
+    if (inputText) {
+      inputText.value = '';
+      autoResizeTextarea();
+    }
+    record();
+  });
+  $('dfcxSendTranscriptionBtn')?.addEventListener('click', () => {
+    hideTranscriptionCard();
+    send('message');
+  });
   $('dfcxInputForm').addEventListener('submit',event => {event.preventDefault();send();});
   $('dfcxMicBtn').addEventListener('click',record);
   $('dfcxStop').addEventListener('click',() => {stopAudio();stopRecording();status('ready');});
@@ -318,7 +379,7 @@
   });
   $('dfcxUseLocation').addEventListener('click', () => send('location', {district: $('dfcxDistrict').value, ward: $('dfcxWard').value}));
   $('dfcxConfirm').addEventListener('click', () => send('confirm'));
-  $('dfcxEditIssue').addEventListener('click', async () => { $('dfcxConsent').checked = false; const text = current?.draft?.text || ''; await send('edit_issue'); $('dfcxInputText').value = text; });
+  $('dfcxEditIssue').addEventListener('click', async () => { $('dfcxConsent').checked = false; const text = current?.draft?.text || ''; await send('edit_issue'); $('dfcxInputText').value = text; autoResizeTextarea(); });
   $('dfcxEditLocation').addEventListener('click', () => { $('dfcxConsent').checked = false; send('edit_location'); });
   $('dfcxCancel').addEventListener('click', () => send('cancel'));
   $('dfcxTrack').addEventListener('click', () => send('track'));
