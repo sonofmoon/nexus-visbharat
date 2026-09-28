@@ -459,7 +459,18 @@ Observed indicators and diagnostics:
     def transcribe_audio_bytes(self, audio_bytes: bytes, language_code: str, mime_type: str = 'audio/webm') -> dict:
         import base64
         audio_b64 = base64.b64encode(audio_bytes).decode('utf-8')
-        url = f'{self.base_url}/gemini-3.6-flash:generateContent?key={self.api_key}'
+        model_name = 'gemini-2.5-flash'
+        headers = {'Content-Type': 'application/json'}
+        if self.use_vertex and self.project_id:
+            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{model_name}:generateContent"
+            headers = self._get_vertex_auth_header()
+        elif self.api_key:
+            url = f"{self.base_url}/{model_name}:generateContent?key={self.api_key}"
+        elif self.project_id:
+            url = f"https://{self.location}-aiplatform.googleapis.com/v1/projects/{self.project_id}/locations/{self.location}/publishers/google/models/{model_name}:generateContent"
+            headers = self._get_vertex_auth_header()
+        else:
+            url = f"{self.base_url}/{model_name}:generateContent?key={self.api_key}"
         prompt = f'''Transcribe the provided spoken audio into exact text in its native language.
 Return strict JSON with keys:
 transcript, confidence, language
@@ -485,7 +496,7 @@ Language: {language_code}
                 'responseMimeType': 'application/json'
             }
         }
-        response = requests.post(url, json=payload, timeout=25)
+        response = requests.post(url, json=payload, headers=headers, timeout=25)
         response.raise_for_status()
         data = response.json()
         candidates = data.get('candidates', [])

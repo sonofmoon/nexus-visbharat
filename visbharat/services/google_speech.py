@@ -35,19 +35,21 @@ class GoogleSpeechToTextClient:
             raise ValueError('audio bytes are empty')
 
         encoding = self._encoding_from_mime(mime_type)
+        # In Google Cloud Speech v1, 'latest_long' only supports English. Indic languages (te-IN, ta-IN, hi-IN, etc.) require 'default'.
+        model = 'latest_long' if language_code.lower().startswith('en') else 'default'
         config_kwargs = {
             'language_code': language_code,
             'enable_automatic_punctuation': True,
-            'model': 'latest_long',
+            'model': model,
             'encoding': encoding,
         }
-        if encoding in (
+        if sample_rate_hertz:
+            config_kwargs['sample_rate_hertz'] = int(sample_rate_hertz)
+        elif encoding in (
             self.speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
             self.speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
         ):
-            config_kwargs['sample_rate_hertz'] = int(sample_rate_hertz or 48000)
-        elif sample_rate_hertz:
-            config_kwargs['sample_rate_hertz'] = int(sample_rate_hertz)
+            config_kwargs['sample_rate_hertz'] = 48000
 
         config = self.speech.RecognitionConfig(**config_kwargs)
         audio = self.speech.RecognitionAudio(content=audio_bytes)

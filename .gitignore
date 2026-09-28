@@ -39,6 +39,7 @@ sa-key.json
 *.key
 *.pfx
 scratch/
+output/
 instance/public-data/
 **/.terraform/
 *.tfstate
