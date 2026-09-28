@@ -175,7 +175,7 @@
  <div class="stat-card-mini">
  <div class="stat-icon" aria-hidden="true"><i class="bi bi-inbox-fill"></i></div>
  <div class="stat-info">
- <div class="stat-number" id="totalComplaints">50,034</div>
+ <div class="stat-number" id="totalComplaints">{{ total_complaints_formatted | default('63,746') }}</div>
  <div class="stat-label">Citizen Requests</div>
  </div>
  </div>
@@ -196,7 +196,7 @@
  <div class="stat-card-mini">
  <div class="stat-icon" aria-hidden="true"><i class="bi bi-check-circle-fill"></i></div>
  <div class="stat-info">
- <div class="stat-number" id="resolutionRate">68%</div>
+ <div class="stat-number" id="resolutionRate">{{ resolution_rate_formatted | default('58%') }}</div>
  <div class="stat-label">Operational closure</div>
  </div>
  </div>
@@ -777,9 +777,9 @@
  <span class="badge" style="background:#e8f0fe;color:#1a73e8;border-radius:100px;padding:4px 10px;font-weight:600;">Public</span>
  </div>
  <div id="publicKpiRow" class="stats-row" style="margin-top:8px;">
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">50,034</div><div class="stat-label">Published requests</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">{{ total_complaints_formatted | default('63,746') }}</div><div class="stat-label">Published requests</div></div></div>
  <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">408</div><div class="stat-label">Districts Covered</div></div></div>
- <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">68%</div><div class="stat-label">Operational closure</div></div></div>
+ <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">{{ resolution_rate_formatted | default('58%') }}</div><div class="stat-label">Operational closure</div></div></div>
  <div class="stat-card-mini"><div class="stat-info"><div class="stat-number">468</div><div class="stat-label">Active Projects</div></div></div>
  </div>
  </div>

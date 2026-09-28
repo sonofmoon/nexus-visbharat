@@ -526,6 +526,13 @@ def telegram_webhook():
 
     try:
         payload = handle_update(data, _ingest_text_request)
+        if not current_app.config.get('TESTING'):
+            from ..services.telegram_gateway import dispatch_outbox
+            try:
+                delivery = dispatch_outbox()
+                payload['delivery'] = delivery
+            except Exception:
+                current_app.logger.warning('Telegram webhook outbox dispatch failed')
         return jsonify(payload)
     except ValueError as error:
         return jsonify({'success': False, 'error': str(error)}), 400
@@ -537,7 +544,12 @@ def telegram_webhook():
 @channels_bp.route('/api/channels/telegram/health', methods=['GET'])
 def telegram_health():
     """Operational probe; secrets are represented only as booleans."""
-    from ..services.telegram_gateway import health
+    from ..services.telegram_gateway import health, dispatch_outbox
+    if request.args.get('flush') in ('1', 'true', 'yes') and not current_app.config.get('TESTING'):
+        try:
+            dispatch_outbox()
+        except Exception:
+            pass
     return jsonify(success=True, channel='Telegram', **health())
 
 

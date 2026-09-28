@@ -1187,7 +1187,7 @@ function renderComplaintFeed() {
   return `<article class="feed-item" data-ticket="${escapeFeedHtml(c.request_id)}">
    <div class="feed-icon ${escapeFeedHtml(source.toLowerCase().replace(/\s+/g, '-'))}"><i class="bi ${icon}" aria-hidden="true"></i></div>
    <div class="feed-content">
-    <div class="feed-ticket-row"><span class="feed-ticket">${escapeFeedHtml(c.request_id || 'Ticket unavailable')}</span><time class="feed-time" datetime="${escapeFeedHtml(c.created_at || '')}" title="${escapeFeedHtml(c.created_at || '')}">${escapeFeedHtml(feedItemTime(c.created_at))}</time></div>
+    <div class="feed-ticket-row"><a href="/submission?ticket=${encodeURIComponent(c.request_id || '')}" target="_blank" rel="noopener noreferrer" class="feed-ticket" title="Inspect submission evidence &amp; audit trail for ${escapeFeedHtml(c.request_id || '')}">${escapeFeedHtml(c.request_id || 'Ticket unavailable')} <i class="bi bi-box-arrow-up-right" style="font-size:0.72rem;opacity:0.85;margin-left:2px;"></i></a><time class="feed-time" datetime="${escapeFeedHtml(c.created_at || '')}" title="${escapeFeedHtml(c.created_at || '')}">${escapeFeedHtml(feedItemTime(c.created_at))}</time></div>
     <p class="feed-text">${escapeFeedHtml(feedText || '-')} ${piiBadge}</p>
     <div class="feed-meta">
      <span class="feed-ward"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> ${escapeFeedHtml(c.ward || 'Ward not published')}</span>

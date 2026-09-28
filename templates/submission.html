@@ -14,10 +14,10 @@
 <section aria-labelledby="trace-title"><h2 id="trace-title">Follow one report</h2><p>Use an authorized analyst, auditor or administrator session. A bearer token is optional when already signed in. The token stays on this page and is never included in a URL.</p>
 <div class="token-hint" style="font-size:0.85rem;color:#5f6368;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
 <strong>Evaluator Quick Access:</strong>
-<button type="button" id="use-demo-token" style="background:#e8f0fe;color:#1a73e8;border:1px solid #1a73e8;border-radius:4px;padding:3px 10px;font-size:0.8rem;cursor:pointer;font-weight:600;">⚡ Fill Token &amp; Sample Ticket</button>
+<button type="button" id="use-demo-token" style="background:#e8f0fe;color:#1a73e8;border:1px solid #1a73e8;border-radius:4px;padding:3px 10px;font-size:0.8rem;cursor:pointer;font-weight:600;">⚡ Fill Token</button>
 <span style="font-size:0.8rem;color:#70757a;">or try:</span>
-<button type="button" class="sample-ticket-btn" data-ticket="NVB-202608271A54" style="background:#f1f3f4;border:1px solid #dadce0;border-radius:4px;padding:2px 8px;font-size:0.78rem;cursor:pointer;">NVB-202608271A54 (Chennai)</button>
-<button type="button" class="sample-ticket-btn" data-ticket="NVB-2026091007CD" style="background:#f1f3f4;border:1px solid #dadce0;border-radius:4px;padding:2px 8px;font-size:0.78rem;cursor:pointer;">NVB-2026091007CD (Karur)</button>
+<button type="button" class="sample-ticket-btn" data-ticket="NVB-202608271A54" style="background:#f1f3f4;color:#202124;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:0.78rem;cursor:pointer;font-weight:500;">NVB-202608271A54 (Chennai)</button>
+<button type="button" class="sample-ticket-btn" data-ticket="NVB-2026091007CD" style="background:#f1f3f4;color:#202124;border:1px solid #dadce0;border-radius:4px;padding:3px 8px;font-size:0.78rem;cursor:pointer;font-weight:500;">NVB-2026091007CD (Karur)</button>
 <span id="fill-feedback" style="display:none;color:#137333;font-weight:600;font-size:0.82rem;">✓ Filled!</span>
 </div>
 <form id="trace-form"><label>Request ID<input id="ticket" name="ticket" required placeholder="NVB-YYYYMMDDXXXX" autocomplete="off"></label><label>Access token, if needed<input id="access-token" type="text" placeholder="visbharat-analyst-token" autocomplete="off"></label><button type="submit">Inspect journey</button></form>

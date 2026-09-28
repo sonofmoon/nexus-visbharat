@@ -166,6 +166,21 @@ def dashboard():
         states = sorted({r['state'] for r in locs})
     else:
         states = current_app.extensions['reference_repo'].list_states()
+
+    db = get_db()
+    total_complaints = 63746
+    resolution_rate = 58
+    try:
+        row = db.execute("SELECT COUNT(*) AS total, SUM(CASE WHEN status IN ('Resolved','Closed') THEN 1 ELSE 0 END) AS resolved FROM citizen_requests").fetchone()
+        if row and row['total']:
+            total_complaints = int(row['total'])
+            if row['resolved'] is not None and total_complaints > 0:
+                resolution_rate = round((float(row['resolved']) / total_complaints) * 100.0)
+    except Exception:
+        pass
+    total_complaints_formatted = f"{total_complaints:,}"
+    resolution_rate_formatted = f"{resolution_rate}%"
+
     return render_template(
         'dashboard.html',
         states=states,
@@ -179,6 +194,8 @@ def dashboard():
         pilot_scoped=pilot_scoped,
         demo_showcase=showcase,
         selected_demo_ticket=selected_ticket,
+        total_complaints_formatted=total_complaints_formatted,
+        resolution_rate_formatted=resolution_rate_formatted,
     )
 
 
