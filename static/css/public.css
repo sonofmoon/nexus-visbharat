@@ -353,8 +353,8 @@
 .public-page .public-legacy :is(button, input, select, textarea) { min-width: 0; }
 .public-page .public-legacy button { min-height: 44px; }
 .public-page #dfcxVoiceWidgetWrapper { max-width: calc(100vw - 32px); right: 16px !important; bottom: 16px !important; z-index: 99999 !important; }
-.public-page #dfcxAssistantWindow { max-width: calc(100vw - 32px) !important; max-height: calc(100dvh - 80px) !important; height: min(620px, calc(100dvh - 80px)) !important; }
-.public-page #dfcxInputText { width: 0; min-width: 0; }
+.public-page #dfcxAssistantWindow { width: 480px; max-width: calc(100vw - 32px) !important; max-height: calc(100dvh - 60px) !important; height: min(680px, calc(100dvh - 60px)) !important; }
+.public-page #dfcxInputText { width: 100% !important; min-width: 100% !important; box-sizing: border-box !important; }
 .public-page #dfcxTelemetryBar { flex-wrap: wrap; gap: 8px; }
 .public-page .public-legacy-modal > div { max-height: calc(100dvh - 32px) !important; }
 @keyframes public-record-pulse { 50% { box-shadow: 0 0 0 8px #b3261e22; } }
