@@ -259,17 +259,51 @@
  <!-- Map -->
  <div class="dashboard-panel panel-map" id="mapPanel">
  <div class="panel-header">
+ <div style="display:flex;align-items:center;gap:10px;">
  <h3><i class="bi bi-map" aria-hidden="true"></i> Demand Hotspot Map</h3>
- <div class="panel-header-right" style="display:flex;align-items:center;gap:8px;">
- <select id="mapLayer" class="filter-select" aria-label="Map data layer">
+ <span class="panel-badge">Geospatial view</span>
+ </div>
+ <div class="panel-header-right" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+ <select id="mapLayer" class="filter-select" aria-label="Map data layer" title="Select analytical lens">
  <option value="demand">Demand Layer</option>
  <option value="spend">Approved cost estimates</option>
  <option value="gap">Service coverage gap</option>
  <option value="priority">Priority (default weights)</option>
  </select>
- <span class="panel-badge">Geospatial view</span>
+ <select id="mapSeverityFilter" class="filter-select" aria-label="Hotspot severity threshold" title="Filter signal intensity">
+ <option value="all">All Signals (408 Districts)</option>
+ <option value="critical">🚨 Critical Hotspots (>20)</option>
+ <option value="top10">⭐ Top 10 High Demand</option>
+ <option value="high_gap">⚠️ High Service Gap</option>
+ </select>
+ <button id="btnToggleMapFullscreen" class="btn btn-outline-secondary btn-sm" type="button" title="Toggle Fullscreen Map View (Esc to exit)" aria-label="Maximize map to full screen" style="display:inline-flex;align-items:center;gap:5px;font-weight:600;padding:4px 10px;">
+ <i class="bi bi-arrows-fullscreen" id="mapFullscreenIcon"></i> <span id="mapFullscreenText">Maximize</span>
+ </button>
  </div>
  </div>
+
+ <!-- In-Map Quick Toolbar: Regional Scope & In-Map Category Chips -->
+ <div class="map-controls-toolbar" id="mapControlsToolbar" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px 10px;border-bottom:1px solid var(--console-border, #e2e8f0);background:var(--console-raised, #f8fafc);">
+ <div class="map-chips-group" id="mapScopeChips" style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;">
+ <span style="font-size:11px;font-weight:700;color:var(--console-muted, #64748b);text-transform:uppercase;letter-spacing:0.5px;margin-right:2px;">Scope:</span>
+ <button type="button" class="map-chip active" data-scope="all">All India</button>
+ <button type="button" class="map-chip" data-scope="tri_district" title="Vellore ⇄ Tirupati ⇄ Bengaluru Urban">🎯 Tri-District Pilot</button>
+ <button type="button" class="map-chip" data-scope="TN">Tamil Nadu</button>
+ <button type="button" class="map-chip" data-scope="AP">Andhra Pradesh</button>
+ <button type="button" class="map-chip" data-scope="KA">Karnataka</button>
+ </div>
+ <div class="map-chips-group" id="mapCategoryChips" style="display:flex;flex-wrap:wrap;align-items:center;gap:6px;">
+ <span style="font-size:11px;font-weight:700;color:var(--console-muted, #64748b);text-transform:uppercase;letter-spacing:0.5px;margin-right:2px;">Filter:</span>
+ <button type="button" class="map-chip active" data-category="" data-urgency="">All</button>
+ <button type="button" class="map-chip chip-emergency" data-urgency="Emergency" title="Filter to emergency hazards only">🚨 Emergency</button>
+ <button type="button" class="map-chip" data-category="Water Supply">💧 Water</button>
+ <button type="button" class="map-chip" data-category="Electricity">⚡ Electricity</button>
+ <button type="button" class="map-chip" data-category="Road">🛣️ Road</button>
+ <button type="button" class="map-chip" data-category="Sanitation">🧹 Sanitation</button>
+ <button type="button" class="map-chip" data-category="Health">🏥 Health</button>
+ </div>
+ </div>
+
  <div class="map-stage"><div id="hotspotMap" class="map-container" aria-label="District demand map"></div><div class="map-overlay" aria-live="polite"><span id="mapLayerLabel">Demand layer</span><span id="mapDataStatus">Loading district signals...</span></div></div>
  <div class="map-legend" id="mapLegend">
  <div class="legend-item">

@@ -193,7 +193,7 @@ def _compute_payload_idempotency_key(payload: dict):
     return str(abs(hash(normalized)))
 
 
-def process_ingestion_payload(payload: dict):
+def process_ingestion_payload(payload: dict, *, request_id=None):
     text_result = scrub_text(payload.get('text') or '')
     text = str(text_result.get('scrubbed') or '').strip()
     language = (payload.get('language') or 'en').strip().lower() or 'en'
@@ -260,7 +260,7 @@ def process_ingestion_payload(payload: dict):
         escalation_targets=current_app.config.get('SLA_ESCALATION_TARGETS', {}),
     )
     sla_due_at = sla_policy['due_at']
-    request_id = _generate_request_id()
+    request_id = request_id or _generate_request_id()
     now = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
 
     ai_metadata = {

@@ -8,6 +8,8 @@ import pytest
 
 from visbharat.blueprints import api
 from visbharat.services import telegram_gateway as telegram
+from visbharat.services.telegram_jobs import process_one
+from visbharat.db import get_db, close_db, SQLITE_SCHEMA_SQL
 
 
 @pytest.fixture
@@ -19,8 +21,12 @@ def app():
         LANGUAGE_ASR_PROVIDER='google',
         LANGUAGE_ASR_STRICT_MODE=False,
         TELEGRAM_BOT_TOKEN='test-token',
+        DATABASE_URL='', DATABASE_PATH=':memory:',
     )
+    app.teardown_appcontext(close_db)
     with app.app_context():
+        get_db().executescript(SQLITE_SCHEMA_SQL)
+        telegram.migrate(get_db())
         yield app
 
 
@@ -113,17 +119,20 @@ def test_telegram_all_providers_fail_preserves_draft_and_accepts_text(app, monke
     ingest = Mock()
 
     telegram._submit(123, session, ingest)
+    assert process_one(ingest)
 
     ingest.assert_not_called()
     simulation.assert_not_called()
-    assert stored == {**original, 'stage': 'issue', 'consent_granted': False}
-    assert notify.call_args.args == (123, 'asr_error')
+    assert stored['stage'] == 'issue'
+    assert stored['consent_granted'] is False
+    assert stored['voice_file_id'] == original['voice_file_id']
+    assert notify.call_args.args == ('123', 'asr_error')
     assert all(e['status'] != 'success' for e in app.extensions.get('asr_metrics_store', {}).get('events', []))
 
     # The retry prompt must actually permit entering replacement text.
     telegram._message({'message': {'text': 'The drain near the school is blocked.'}}, 123, ingest)
     assert stored['issue'] == 'The drain near the school is blocked.'
-    assert stored['stage'] == 'state'
+    assert stored['stage'] == 'location_confirm'
     assert stored['district'] == 'Tirupati'
     assert stored['nonce'] == original['nonce']
     assert stored['consent_granted'] is False
@@ -139,3 +148,94 @@ def test_explicit_google_override_does_not_call_other_provider(app):
     with pytest.raises(ValueError, match='live ASR providers unavailable'):
         api._run_speech_to_text({}, 'te', audio_bytes=b'fixture', require_live=True)
     app.extensions['google_ai_client'].transcribe_bytes.assert_not_called()
+
+
+def mock_draft(monkeypatch, session):
+    stored = deepcopy(session)
+    def save(chat, draft):
+        stored.clear()
+        stored.update(deepcopy(draft))
+    monkeypatch.setattr(telegram, '_save', save)
+    monkeypatch.setattr(telegram, '_session', lambda chat: deepcopy(stored))
+    monkeypatch.setattr(telegram, '_i18n', lambda language, key: key)
+    notify = Mock()
+    monkeypatch.setattr(telegram, '_text', notify)
+    monkeypatch.setattr(telegram, '_send_quick_action', Mock())
+    monkeypatch.setattr(telegram, '_queue_callback_answer', Mock())
+    return stored, notify
+
+
+def test_initial_voice_failure_stays_at_issue_and_allows_recording_retry(app, monkeypatch):
+    stored, notify = mock_draft(monkeypatch, {
+        'stage': 'issue', 'language': 'te', 'nonce': 'retained-nonce',
+        'state': 'Andhra Pradesh', 'district': 'Tirupati',
+    })
+    transcribe = Mock(side_effect=[ValueError('Empty transcript'), 'The drain is blocked.'])
+    monkeypatch.setattr(telegram, '_voice_text', transcribe)
+    ingest = Mock()
+    telegram._message({'message': {'voice': {'file_id': 'first-recording'}}}, 123, ingest)
+    assert stored['stage'] == 'transcribing'
+    transcribe.assert_not_called()
+    assert process_one(ingest)
+    assert stored['stage'] == 'issue'
+    assert stored['voice_file_id'] == 'first-recording'
+    assert stored['issue'] == ''
+    assert stored['district'] == 'Tirupati'
+    assert stored['consent_granted'] is False
+    assert notify.call_args.args == ('123', 'asr_error')
+    ingest.assert_not_called()
+
+    telegram._message({'message': {'voice': {'file_id': 'second-recording'}}}, 123, ingest)
+    assert process_one(ingest)
+    assert stored['stage'] == 'location_confirm'
+    assert stored['voice_file_id'] == 'second-recording'
+    assert stored['issue'] == 'The drain is blocked.'
+    ingest.assert_not_called()
+
+
+@pytest.mark.parametrize('issue', ['', 'Voice report'])
+def test_review_blocks_untranscribed_voice_drafts(app, monkeypatch, issue):
+    session = {
+        'stage': 'review', 'language': 'te', 'issue': issue,
+        'voice_file_id': 'older-recording', 'district': 'Tirupati',
+    }
+    stored, notify = mock_draft(monkeypatch, session)
+    telegram._send_review(123, session)
+    assert stored['stage'] == 'issue'
+    assert stored['voice_file_id'] == 'older-recording'
+    assert stored['consent_granted'] is False
+    notify.assert_called_once_with(123, 'asr_error')
+
+
+def test_late_transcription_requires_review_and_fresh_consent_before_save(app, monkeypatch):
+    session = {
+        'stage': 'privacy', 'language': 'te', 'issue': 'Voice report',
+        'voice_file_id': 'older-recording', 'state': 'Andhra Pradesh',
+        'district': 'Tirupati', 'consent_granted': True, 'nonce': 'retained-nonce',
+    }
+    stored, notify = mock_draft(monkeypatch, session)
+    transcript = 'మా వీధిలో మురుగు కాలువ మూసుకుపోయింది.'
+    transcribe = Mock(return_value=transcript)
+    monkeypatch.setattr(telegram, '_voice_text', transcribe)
+    ingest = Mock(return_value=({'success': True, 'request_id': 'NVB-TEST'}, None))
+
+    telegram._submit(123, session, ingest)
+    assert process_one(ingest)
+
+    ingest.assert_not_called()
+    assert stored['stage'] == 'location_confirm'
+    assert stored['issue'] == transcript
+    assert stored['consent_granted'] is False
+    telegram._callback({'callback_query': {'data': 'location:confirm'}}, 123, ingest)
+    assert transcript in notify.call_args.args[1]
+
+    telegram._callback({'callback_query': {'data': 'confirm'}}, 123, ingest)
+    assert stored['stage'] == 'privacy'
+    ingest.assert_not_called()
+    telegram._callback({'callback_query': {'data': 'consent'}}, 123, ingest)
+    ingest.assert_not_called()
+    assert process_one(ingest)
+    ingest.assert_called_once()
+    assert ingest.call_args.kwargs['text'] == transcript
+    assert stored['stage'] == 'complete'
+    transcribe.assert_called_once()

@@ -48,11 +48,14 @@ def process_update(update):
     try:
         from visbharat import create_app
         from visbharat.services.telegram_gateway import dispatch_outbox, handle_update
+        from visbharat.services.telegram_jobs import process_one
         from visbharat.blueprints.api_channels import _ingest_text_request
 
         app = create_app()
         with app.app_context():
             handle_update(update, _ingest_text_request)
+            dispatch_outbox()
+            process_one()
             dispatch_outbox()
         logging.info("Processed update %s directly in-process", update.get("update_id"))
     except Exception as exc:

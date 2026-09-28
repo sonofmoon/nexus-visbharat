@@ -216,6 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
  loadHotspots();
  });
  }
+ initMapEnhancements();
 
  const deliveryRefreshBtn = document.getElementById('refreshDeliveryHealthBtn');
 
@@ -403,16 +404,11 @@ function buildFilterParams() {
 }
 
 
-async function loadHotspots() {
- const params = buildFilterParams();
- params.append('layer', currentMapLayer || 'demand');
- params.append('_t', String(Date.now()));
+let rawHotspotsCache = [];
+let currentMapSeverity = 'all';
 
- const res = await fetch(`/api/v1/geo/layers?${params}`);
- const payload = await res.json();
- const hotspots = Array.isArray(payload) ? payload : (payload.items || []);
- const activeLayer = String(payload.layer || currentMapLayer || 'demand').toLowerCase();
-
+function renderHotspotsWithFilter(activeLayer) {
+ if (!activeLayer) activeLayer = currentMapLayer || 'demand';
  const legendMap = {
  demand: [
  ['#ef4444', 'High reporting density (>50/100k)'],
@@ -450,11 +446,27 @@ async function loadHotspots() {
  `).join('');
  }
 
+ // Filter based on selected severity threshold
+ let hotspotsToRender = Array.isArray(rawHotspotsCache) ? [...rawHotspotsCache] : [];
+ if (currentMapSeverity === 'critical') {
+ hotspotsToRender = hotspotsToRender.filter(h =>
+ Number(h.complaint_count || 0) >= 20 ||
+ Number(h.emergency_count || 0) > 0 ||
+ Number(h.hotspot_score || 0) >= 30 ||
+ Number(h.layer_score || 0) >= 20
+ );
+ } else if (currentMapSeverity === 'top10') {
+ hotspotsToRender.sort((a, b) => Number(b.layer_score || b.complaint_count || 0) - Number(a.layer_score || a.complaint_count || 0));
+ hotspotsToRender = hotspotsToRender.slice(0, 10);
+ } else if (currentMapSeverity === 'high_gap') {
+ hotspotsToRender = hotspotsToRender.filter(h => Number(h.alignment_gap || 0) > 10 || Number(h.deprivation_index || 0) >= 0.35);
+ }
+
  // Clear existing markers & heatmap
  clearHotspots();
  const validPoints = [];
 
- hotspots.forEach(h => {
+ hotspotsToRender.forEach(h => {
  const count = Number(h.complaint_count || 0);
  const layerScore = Number(h.layer_score || 0);
  let color, radius;
@@ -494,7 +506,6 @@ async function loadHotspots() {
  <p style="margin:4px 0;font-size:12px"><strong>Reports per 100,000:</strong> ${h.hotspot_score}</p>
  <p style="margin:4px 0;font-size:12px"><strong>Priority Score:</strong> ${Number(h.priority_score || 0).toFixed(2)}</p>
  <p style="margin:4px 0;font-size:12px"><strong>Layer (${activeLayer}):</strong> ${Number(h.layer_score || 0).toFixed(2)}</p>
- <p style="margin:4px 0;font-size:12px"><strong>Forecast:</strong> Not estimated</p>
  <p style="margin:4px 0;font-size:12px"><strong>Deprivation Index:</strong> ${h.deprivation_index}</p>
  <p style="margin:4px 0;font-size:12px"><strong>Explainability:</strong> Demand ${Number((h.score_explainability || {}).demand_component || 0).toFixed(1)} | Spend ${Number((h.score_explainability || {}).spend_component || 0).toFixed(1)} | Gap ${Number((h.score_explainability || {}).gap_component || 0).toFixed(1)}</p>
  </div>
@@ -506,7 +517,6 @@ async function loadHotspots() {
  // Focused District/State Auto-Zoom & Pilot Bounds Fitting
  if (map && validPoints.length > 0 && window.google && google.maps) {
  if (currentState || currentDistrict || currentCategory || currentUrgency) {
- // Focused zoom when filters are active
  if (validPoints.length === 1 || currentDistrict) {
  map.setCenter({ lat: validPoints[0][0], lng: validPoints[0][1] });
  map.setZoom(10);
@@ -515,6 +525,10 @@ async function loadHotspots() {
  validPoints.forEach(pt => bounds.extend(new google.maps.LatLng(pt[0], pt[1])));
  map.fitBounds(bounds, { top: 40, bottom: 40, left: 40, right: 40 });
  }
+ } else if (currentMapSeverity === 'top10') {
+ const bounds = new google.maps.LatLngBounds();
+ validPoints.forEach(pt => bounds.extend(new google.maps.LatLng(pt[0], pt[1])));
+ map.fitBounds(bounds, { top: 40, bottom: 40, left: 40, right: 40 });
  } else {
  const bounds = new google.maps.LatLngBounds();
  validPoints.forEach(pt => bounds.extend(new google.maps.LatLng(pt[0], pt[1])));
@@ -522,11 +536,161 @@ async function loadHotspots() {
  }
  }
 
+ // Update overlay status text
+ const statusEl = document.getElementById('mapDataStatus');
+ if (statusEl) {
+ const labelMap = { all: 'All Signals', critical: 'Critical (>20)', top10: 'Top 10 Districts', high_gap: 'High Service Gap' };
+ statusEl.textContent = `Showing ${validPoints.length} of ${rawHotspotsCache.length} districts (${labelMap[currentMapSeverity] || 'Active Filter'})`;
+ }
+
  // Update hotspot count stat
- const criticalHotspots = hotspots.filter(h => Number(h.layer_score || 0) > 5 || Number(h.hotspot_score || 0) > 30).length;
-const hotspotCountEl = document.getElementById('hotspotCount');
+ const criticalHotspots = rawHotspotsCache.filter(h => Number(h.layer_score || 0) > 5 || Number(h.hotspot_score || 0) > 30).length;
+ const hotspotCountEl = document.getElementById('hotspotCount');
  if (hotspotCountEl) hotspotCountEl.textContent = criticalHotspots;
- window.NVBConsole?.setMap(hotspots.length, activeLayer, criticalHotspots);
+ window.NVBConsole?.setMap(rawHotspotsCache.length, activeLayer, criticalHotspots);
+}
+
+async function loadHotspots() {
+ const params = buildFilterParams();
+ params.append('layer', currentMapLayer || 'demand');
+ params.append('_t', String(Date.now()));
+
+ const res = await fetch(`/api/v1/geo/layers?${params}`);
+ const payload = await res.json();
+ const hotspots = Array.isArray(payload) ? payload : (payload.items || []);
+ const activeLayer = String(payload.layer || currentMapLayer || 'demand').toLowerCase();
+
+ rawHotspotsCache = hotspots;
+ renderHotspotsWithFilter(activeLayer);
+}
+
+function initMapEnhancements() {
+ // 1. Fullscreen Toggle Mode
+ const btnFullscreen = document.getElementById('btnToggleMapFullscreen');
+ const mapPanel = document.getElementById('mapPanel');
+ const fsIcon = document.getElementById('mapFullscreenIcon');
+ const fsText = document.getElementById('mapFullscreenText');
+ if (btnFullscreen && mapPanel) {
+ btnFullscreen.addEventListener('click', () => {
+ const isFullscreen = mapPanel.classList.toggle('map-fullscreen');
+ if (isFullscreen) {
+ if (fsIcon) fsIcon.className = 'bi bi-fullscreen-exit';
+ if (fsText) fsText.textContent = 'Minimize';
+ btnFullscreen.classList.replace('btn-outline-secondary', 'btn-primary');
+ } else {
+ if (fsIcon) fsIcon.className = 'bi bi-arrows-fullscreen';
+ if (fsText) fsText.textContent = 'Maximize';
+ btnFullscreen.classList.replace('btn-primary', 'btn-outline-secondary');
+ }
+ setTimeout(() => {
+ if (window.google && window.google.maps && map) {
+ google.maps.event.trigger(map, 'resize');
+ }
+ }, 150);
+ });
+
+ document.addEventListener('keydown', (e) => {
+ if (e.key === 'Escape' && mapPanel.classList.contains('map-fullscreen')) {
+ mapPanel.classList.remove('map-fullscreen');
+ if (fsIcon) fsIcon.className = 'bi bi-arrows-fullscreen';
+ if (fsText) fsText.textContent = 'Maximize';
+ btnFullscreen.classList.replace('btn-primary', 'btn-outline-secondary');
+ setTimeout(() => {
+ if (window.google && window.google.maps && map) {
+ google.maps.event.trigger(map, 'resize');
+ }
+ }, 150);
+ }
+ });
+ }
+
+ // 2. Hotspot Severity & Threshold Filter
+ const severityEl = document.getElementById('mapSeverityFilter');
+ if (severityEl) {
+ severityEl.addEventListener('change', (e) => {
+ currentMapSeverity = e.target.value || 'all';
+ renderHotspotsWithFilter(currentMapLayer || 'demand');
+ });
+ }
+
+ // 3. Regional Scope Quick-Chips
+ const scopeChips = document.querySelectorAll('#mapScopeChips .map-chip');
+ scopeChips.forEach(chip => {
+ chip.addEventListener('click', () => {
+ scopeChips.forEach(c => c.classList.remove('active'));
+ chip.classList.add('active');
+ const scope = chip.getAttribute('data-scope');
+ const stateSelect = document.getElementById('filterState');
+ const distSelect = document.getElementById('filterDistrict');
+
+ if (scope === 'all') {
+ if (stateSelect) { stateSelect.value = ''; }
+ if (distSelect) { distSelect.value = ''; distSelect.disabled = true; }
+ currentState = '';
+ currentDistrict = '';
+ refreshAll();
+ if (map && window.google && google.maps) {
+ map.setCenter({ lat: 20.5937, lng: 78.9629 });
+ map.setZoom(5);
+ }
+ } else if (scope === 'tri_district') {
+ if (stateSelect) { stateSelect.value = ''; }
+ if (distSelect) { distSelect.value = ''; distSelect.disabled = true; }
+ currentState = '';
+ currentDistrict = '';
+ loadHotspots().then(() => {
+ if (map && window.google && google.maps) {
+ const bounds = new google.maps.LatLngBounds(
+ new google.maps.LatLng(12.7, 77.3),
+ new google.maps.LatLng(13.9, 79.4)
+ );
+ map.fitBounds(bounds);
+ }
+ });
+ } else if (scope === 'TN') {
+ if (stateSelect) {
+ stateSelect.value = 'Tamil Nadu';
+ stateSelect.dispatchEvent(new Event('change'));
+ }
+ } else if (scope === 'AP') {
+ if (stateSelect) {
+ stateSelect.value = 'Andhra Pradesh';
+ stateSelect.dispatchEvent(new Event('change'));
+ }
+ } else if (scope === 'KA') {
+ if (stateSelect) {
+ stateSelect.value = 'Karnataka';
+ stateSelect.dispatchEvent(new Event('change'));
+ }
+ }
+ });
+ });
+
+ // 4. In-Map Category & Emergency Filter Chips
+ const catChips = document.querySelectorAll('#mapCategoryChips .map-chip');
+ catChips.forEach(chip => {
+ chip.addEventListener('click', () => {
+ catChips.forEach(c => c.classList.remove('active'));
+ chip.classList.add('active');
+ const cat = chip.getAttribute('data-category');
+ const urg = chip.getAttribute('data-urgency');
+ const catSelect = document.getElementById('filterCategory');
+ const urgSelect = document.getElementById('filterUrgency');
+
+ if (urg === 'Emergency') {
+ if (urgSelect) urgSelect.value = 'Emergency';
+ if (catSelect) catSelect.value = '';
+ currentUrgency = 'Emergency';
+ currentCategory = '';
+ } else {
+ if (catSelect) catSelect.value = cat || '';
+ if (urgSelect) urgSelect.value = '';
+ currentCategory = cat || '';
+ currentUrgency = '';
+ }
+ refreshAll();
+ });
+ });
 }
 
 // ===== STATS =====

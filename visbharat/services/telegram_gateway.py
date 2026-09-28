@@ -12,13 +12,15 @@ import hashlib
 import json
 import logging
 import os
+import re
 import time
 from datetime import datetime, timezone
+from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
 import requests
-from flask import current_app
+from flask import current_app, g
 
 from ..db import delete_channel_session, get_channel_session, get_db, save_channel_session
 from ..config import PILOT_STATE_TO_DISTRICTS
@@ -76,6 +78,70 @@ def _processing_toast(lang):
 
 def _submitting_interim(lang):
     return SUBMITTING_INTERIM.get(lang, SUBMITTING_INTERIM["en"])
+
+
+FLOW_TEXT = {
+    'en': {'location': 'Confirm this location, or change it:', 'change': 'Change location',
+           'ward': 'Add ward / area (optional)', 'voice': 'Recording received. Transcription is pending; you will review the words before submitting.',
+           'queued': 'Request received and saved for processing. Reference: {ticket}. AI processing is pending. Use /status {ticket}.',
+           'needs_attention': 'Processing could not finish. Reference: {ticket}. Your request is retained for operator review; please do not submit it again.'},
+    'ta': {'location': 'இந்த இடத்தை உறுதிசெய்யவும் அல்லது மாற்றவும்:', 'change': 'இடத்தை மாற்று',
+           'ward': 'வார்டு / பகுதி சேர்க்கவும் (விருப்பம்)', 'voice': 'குரல் பதிவு பெறப்பட்டது. எழுத்தாக்கம் நிலுவையில் உள்ளது; சமர்ப்பிக்கும் முன் உரையைச் சரிபார்க்கலாம்.',
+           'queued': 'கோரிக்கை பெறப்பட்டுச் செயலாக்கத்திற்காகச் சேமிக்கப்பட்டது. குறிப்பு: {ticket}. AI செயலாக்கம் நிலுவையில் உள்ளது. /status {ticket}',
+           'needs_attention': 'செயலாக்கம் முடியவில்லை. குறிப்பு: {ticket}. உங்கள் கோரிக்கை அலுவலர் பரிசீலனைக்காக உள்ளது; மீண்டும் சமர்ப்பிக்க வேண்டாம்.'},
+    'te': {'location': 'ఈ ప్రాంతాన్ని నిర్ధారించండి లేదా మార్చండి:', 'change': 'ప్రాంతాన్ని మార్చండి',
+           'ward': 'వార్డు / ప్రాంతం జోడించండి (ఐచ్ఛికం)', 'voice': 'వాయిస్ రికార్డింగ్ అందింది. వచనంగా మార్చడం పెండింగ్‌లో ఉంది; సమర్పించే ముందు వచనాన్ని సమీక్షించవచ్చు.',
+           'queued': 'మీ అభ్యర్థన ప్రాసెసింగ్ కోసం సేవ్ చేయబడింది. సూచన: {ticket}. AI ప్రాసెసింగ్ పెండింగ్‌లో ఉంది. /status {ticket}',
+           'needs_attention': 'ప్రాసెసింగ్ పూర్తి కాలేదు. సూచన: {ticket}. మీ అభ్యర్థన అధికారి సమీక్ష కోసం ఉంచబడింది; మళ్లీ సమర్పించవద్దు.'},
+    'kn': {'location': 'ಈ ಸ್ಥಳವನ್ನು ದೃಢೀಕರಿಸಿ ಅಥವಾ ಬದಲಾಯಿಸಿ:', 'change': 'ಸ್ಥಳ ಬದಲಾಯಿಸಿ',
+           'ward': 'ವಾರ್ಡ್ / ಪ್ರದೇಶ ಸೇರಿಸಿ (ಐಚ್ಛಿಕ)', 'voice': 'ಧ್ವನಿ ರೆಕಾರ್ಡಿಂಗ್ ಸ್ವೀಕರಿಸಲಾಗಿದೆ. ಪಠ್ಯ ಪರಿವರ್ತನೆ ಬಾಕಿಯಿದೆ; ಸಲ್ಲಿಸುವ ಮೊದಲು ಪಠ್ಯವನ್ನು ಪರಿಶೀಲಿಸಬಹುದು.',
+           'queued': 'ವಿನಂತಿಯನ್ನು ಪ್ರಕ್ರಿಯೆಗಾಗಿ ಉಳಿಸಲಾಗಿದೆ. ಉಲ್ಲೇಖ: {ticket}. AI ಪ್ರಕ್ರಿಯೆ ಬಾಕಿಯಿದೆ. /status {ticket}',
+           'needs_attention': 'ಪ್ರಕ್ರಿಯೆ ಪೂರ್ಣಗೊಳ್ಳಲಿಲ್ಲ. ಉಲ್ಲೇಖ: {ticket}. ನಿಮ್ಮ ವಿನಂತಿಯನ್ನು ಅಧಿಕಾರಿ ಪರಿಶೀಲನೆಗಾಗಿ ಉಳಿಸಲಾಗಿದೆ; ಮತ್ತೆ ಸಲ್ಲಿಸಬೇಡಿ.'},
+    'hi': {'location': 'इस स्थान की पुष्टि करें या इसे बदलें:', 'change': 'स्थान बदलें',
+           'ward': 'वार्ड / क्षेत्र जोड़ें (वैकल्पिक)', 'voice': 'वॉइस रिकॉर्डिंग प्राप्त हुई। लिप्यंतरण लंबित है; जमा करने से पहले आप पाठ की समीक्षा कर सकेंगे।',
+           'queued': 'आपका अनुरोध प्रक्रिया के लिए सहेजा गया है। संदर्भ: {ticket}। AI प्रक्रिया लंबित है। /status {ticket}',
+           'needs_attention': 'प्रक्रिया पूरी नहीं हुई। संदर्भ: {ticket}। अनुरोध अधिकारी की समीक्षा के लिए सुरक्षित है; कृपया दोबारा जमा न करें।'},
+}
+
+
+def _flow(lang, key):
+    if key == 'confirm_location':
+        return {'ta': 'இடத்தை உறுதிசெய்', 'te': 'ప్రాంతాన్ని నిర్ధారించండి', 'kn': 'ಸ್ಥಳ ದೃಢೀಕರಿಸಿ',
+                'hi': 'स्थान की पुष्टि करें'}.get(lang, 'Confirm location')
+    return FLOW_TEXT.get(lang, FLOW_TEXT['en'])[key]
+
+
+def _after_issue(chat_id, session):
+    """Suggest only unambiguous known locations, always requiring confirmation."""
+    text = str(session.get('issue') or '').casefold()
+    matches = set()
+    aliases = {'வேலூர்': ('Tamil Nadu', 'Vellore'), 'வேலூரி': ('Tamil Nadu', 'Vellore'), 'తిరుపతి': ('Andhra Pradesh', 'Tirupati'),
+               'ಬೆಂಗಳೂರು': ('Karnataka', 'Bengaluru Urban')}
+    for state, districts in PILOT_STATE_TO_DISTRICTS.items():
+        for district in districts:
+            if re.search(r'(?<!\w)' + re.escape(district.casefold()) + r'(?!\w)', text):
+                matches.add((state, district))
+    for alias, pair in aliases.items():
+        if alias in text:
+            matches.add(pair)
+    previous = (session.get('state'), session.get('district'))
+    if len(matches) == 1:
+        suggestion = next(iter(matches))
+    elif not matches and previous[1] in PILOT_STATE_TO_DISTRICTS.get(previous[0], []):
+        suggestion = previous
+    else:
+        suggestion = None
+    session['consent_granted'] = False
+    if suggestion:
+        session.update(stage='location_confirm', suggested_state=suggestion[0], suggested_district=suggestion[1])
+        _save(chat_id, session)
+        lang = _lang(session)
+        _text(chat_id, f"{_flow(lang, 'location')}\n📍 {suggestion[1]}, {suggestion[0]}",
+              _keyboard([[(_flow(lang, 'confirm_location'), 'location:confirm'), (_flow(lang, 'change'), 'location:change')]]))
+    else:
+        session['stage'] = 'state'
+        _save(chat_id, session)
+        _text(chat_id, _prompt(_lang(session), 'select_state'), _keyboard(STATE_KEYBOARD))
 
 LANGUAGE_KEYBOARD = [
     [("தமிழ் (Tamil)", "lang:ta"), ("తెలుగు (Telugu)", "lang:te")],
@@ -534,7 +600,16 @@ def migrate(db):
         )"""
     )
     db.execute("CREATE INDEX IF NOT EXISTS idx_telegram_outbox_due ON telegram_outbox(status, next_attempt_at_epoch)")
+    if getattr(db, 'backend', 'sqlite') == 'postgres':
+        outbox_cols = {r['column_name'] for r in db.execute("SELECT column_name FROM information_schema.columns WHERE table_name='telegram_outbox'").fetchall()}
+    else:
+        outbox_cols = {r['name'] for r in db.execute('PRAGMA table_info(telegram_outbox)').fetchall()}
+    if 'lease_owner' not in outbox_cols:
+        db.execute('ALTER TABLE telegram_outbox ADD COLUMN lease_owner TEXT')
     db.execute("CREATE INDEX IF NOT EXISTS idx_telegram_inbound_chat ON telegram_inbound_events(chat_id, received_at)")
+    db.execute("CREATE TABLE IF NOT EXISTS telegram_chat_guards (chat_id TEXT PRIMARY KEY, touched_at TEXT)")
+    from .telegram_jobs import migrate as migrate_jobs
+    migrate_jobs(db)
     db.commit()
 
 
@@ -565,7 +640,34 @@ def _queue(message_key, chat_id, method, payload):
            ON CONFLICT(message_key) DO NOTHING""",
         (str(message_key), str(chat_id), method, json.dumps(payload, ensure_ascii=False), now, now_iso, now_iso),
     )
-    db.commit()
+    _commit()
+
+
+def _commit():
+    if not getattr(g, 'telegram_atomic', False):
+        get_db().commit()
+
+
+def _lock_chat(chat_id):
+    db = get_db()
+    db.execute("INSERT INTO telegram_chat_guards(chat_id) VALUES (?) ON CONFLICT(chat_id) DO NOTHING", (str(chat_id),))
+    # A short row write serializes each chat on PostgreSQL and SQLite.
+    db.execute("UPDATE telegram_chat_guards SET touched_at=? WHERE chat_id=?", (_now(), str(chat_id)))
+
+
+@contextmanager
+def _chat_transaction(chat_id):
+    previous = getattr(g, 'telegram_atomic', False)
+    g.telegram_atomic = True
+    try:
+        _lock_chat(chat_id)
+        yield
+        get_db().commit()
+    except Exception:
+        get_db().rollback()
+        raise
+    finally:
+        g.telegram_atomic = previous
 
 
 def _queue_text(chat_id, text, reply_markup=None, message_key=None):
@@ -594,7 +696,6 @@ def _queue_callback_answer(callback_id, message_key, text=None):
     payload = {"callback_query_id": callback_id}
     if text:
         payload["text"] = str(text)[:200]
-    _send_quick_action("answerCallbackQuery", payload)
     _queue(message_key, "callback", "answerCallbackQuery", payload)
 
 
@@ -609,29 +710,31 @@ def dispatch_outbox(limit=None):
     sent = failed = 0
     db = get_db()
     now = int(time.time())
+    db.execute("UPDATE telegram_outbox SET status='dead',lease_owner=NULL WHERE status='sending' AND lease_until_epoch<? AND attempts>=?", (now, max_attempts))
+    db.commit()
     for _ in range(max_items):
         row = db.execute(
             """SELECT * FROM telegram_outbox
-               WHERE (status='queued' OR status='failed')
+               WHERE (status='queued' OR status='failed' OR (status='sending' AND lease_until_epoch<?))
                  AND next_attempt_at_epoch<=?
                  AND (lease_until_epoch IS NULL OR lease_until_epoch<?)
                  AND attempts<?
-               ORDER BY created_at LIMIT 1""",
-            (now, now, max_attempts),
+               ORDER BY CASE WHEN method='answerCallbackQuery' THEN 0 ELSE 1 END, created_at, message_key LIMIT 1""",
+            (now, now, now, max_attempts),
         ).fetchone()
         if not row:
             break
         key = row["message_key"]
-        lease_until = now + 30
-        db.execute(
-            """UPDATE telegram_outbox SET status='sending', lease_until_epoch=?, updated_at=?
-               WHERE message_key=? AND (status='queued' OR status='failed')
-                 AND (lease_until_epoch IS NULL OR lease_until_epoch<?)""",
-            (lease_until, _now(), key, now),
-        )
+        lease_until = int(time.time()) + 60
+        owner = uuid4().hex
+        claim = db.execute(
+            """UPDATE telegram_outbox SET status='sending', lease_until_epoch=?, lease_owner=?, updated_at=?, attempts=attempts+1
+               WHERE message_key=? AND (status='queued' OR status='failed' OR (status='sending' AND lease_until_epoch<?))
+                 AND (lease_until_epoch IS NULL OR lease_until_epoch<?) RETURNING *""",
+            (lease_until, owner, _now(), key, now, now),
+        ).fetchone()
         db.commit()
-        claim = db.execute("SELECT status, lease_until_epoch FROM telegram_outbox WHERE message_key=?", (key,)).fetchone()
-        if not claim or claim['status'] != 'sending' or int(claim['lease_until_epoch'] or 0) != lease_until:
+        if not claim:
             continue
 
         try:
@@ -642,26 +745,26 @@ def dispatch_outbox(limit=None):
                 if row["method"] == "answerCallbackQuery" and ("too old" in desc or "invalid" in desc or "query id" in desc):
                     db.execute(
                         """UPDATE telegram_outbox SET status='sent', sent_at=?, lease_until_epoch=NULL,
-                           last_error=NULL, updated_at=? WHERE message_key=?""",
-                        (_now(), _now(), key),
+                           last_error=NULL, updated_at=?,lease_owner=NULL WHERE message_key=? AND lease_owner=?""",
+                        (_now(), _now(), key, owner),
                     )
                     db.commit()
                     continue
                 raise RuntimeError(f"Telegram API rejected {row['method']} ({response.status_code}): {body.get('description')}")
             db.execute(
                 """UPDATE telegram_outbox SET status='sent', sent_at=?, lease_until_epoch=NULL,
-                   last_error=NULL, updated_at=? WHERE message_key=?""",
-                (_now(), _now(), key),
+                   last_error=NULL, updated_at=?,lease_owner=NULL WHERE message_key=? AND lease_owner=?""",
+                (_now(), _now(), key, owner),
             )
             db.commit()
             sent += 1
         except Exception as exc:
-            attempts = int(row["attempts"] or 0) + 1
+            attempts = int(claim["attempts"])
             delay = min(900, 2 ** min(attempts, 8))
             db.execute(
-                """UPDATE telegram_outbox SET status='failed', attempts=?, next_attempt_at_epoch=?,
-                   lease_until_epoch=NULL, last_error=?, updated_at=? WHERE message_key=?""",
-                (attempts, int(time.time()) + delay, str(exc)[:500], _now(), key),
+                """UPDATE telegram_outbox SET status=?, next_attempt_at_epoch=?,
+                   lease_until_epoch=NULL,lease_owner=NULL,last_error=?, updated_at=? WHERE message_key=? AND lease_owner=?""",
+                ('dead' if attempts >= max_attempts else 'failed', int(time.time()) + delay, type(exc).__name__, _now(), key, owner),
             )
             db.commit()
             failed += 1
@@ -671,7 +774,7 @@ def dispatch_outbox(limit=None):
 
 def _pending_count():
     try:
-        row = get_db().execute("SELECT COUNT(*) AS n FROM telegram_outbox WHERE status IN ('queued','failed')").fetchone()
+        row = get_db().execute("SELECT COUNT(*) AS n FROM telegram_outbox WHERE status IN ('queued','failed','sending')").fetchone()
         return int(row["n"] or 0)
     except Exception:
         return 0
@@ -680,12 +783,21 @@ def _pending_count():
 def health():
     db = get_db()
     inbound = db.execute("SELECT COUNT(*) AS n FROM telegram_inbound_events").fetchone()
-    pending = db.execute("SELECT COUNT(*) AS n FROM telegram_outbox WHERE status IN ('queued','failed')").fetchone()
+    counts = {r['status']: int(r['n']) for r in db.execute('SELECT status,COUNT(*) AS n FROM telegram_jobs GROUP BY status').fetchall()}
+    oldest = db.execute("SELECT MIN(created_at) AS oldest FROM telegram_jobs WHERE status IN ('queued','processing')").fetchone()
+    dead = db.execute("SELECT COUNT(*) AS n FROM telegram_outbox WHERE status='dead'").fetchone()
+    worker_age = {r['role']: max(0, int(time.time())-int(r['last_seen_epoch']))
+                  for r in db.execute('SELECT role,last_seen_epoch FROM telegram_worker_heartbeats').fetchall()}
     return {
         "token_configured": bool(_token()),
         "webhook_secret_configured": bool((current_app.config.get("TELEGRAM_WEBHOOK_SECRET") or "").strip()),
         "inbound_events": int(inbound["n"] or 0),
-        "outbox_pending": int(pending["n"] or 0),
+        "outbox_pending": _pending_count(),
+        'outbox_dead': int(dead['n'] or 0),
+        'jobs_by_status': counts,
+        'oldest_pending_job_at': oldest['oldest'],
+        'worker_last_seen_seconds_ago': worker_age,
+        'dedicated_workers_recent': worker_age.get('outbox', 999999) < 30 and worker_age.get('jobs', 999999) < 900,
     }
 
 
@@ -695,11 +807,16 @@ def _session(chat_id):
 
 
 def _save(chat_id, session):
-    save_channel_session("telegram", str(chat_id), session)
+    get_db().execute("""INSERT INTO channel_sessions(channel,session_key,data_json,updated_at)
+        VALUES ('telegram',?,?,?) ON CONFLICT(session_key) DO UPDATE SET
+        data_json=excluded.data_json,updated_at=excluded.updated_at""",
+        (str(chat_id), json.dumps(session), _now()))
+    _commit()
 
 
 def _clear(chat_id):
-    delete_channel_session("telegram", str(chat_id))
+    get_db().execute("DELETE FROM channel_sessions WHERE channel='telegram' AND session_key=?", (str(chat_id),))
+    _commit()
 
 
 def _lang(session):
@@ -714,18 +831,34 @@ def _prompt(lang, key):
 
 
 def _i18n(lang, key):
-    strings = _get_strings()
+    strings = STRINGS
     lang_dict = strings.get(lang) or strings.get("ta") or {}
     return lang_dict.get(key) or strings.get("en", {}).get(key, "")
 
 
 def _text(chat_id, text, reply_markup=None, key=None):
+    if reply_markup:
+        reply_markup = json.loads(json.dumps(reply_markup))
+        nonce = _session(chat_id).get('nonce')
+        if nonce:
+            for row in reply_markup.get('inline_keyboard', []):
+                for button in row:
+                    action = button.get('callback_data', '')
+                    if action and not action.startswith('track:'):
+                        button['callback_data'] = f'n:{nonce}:{action}'
     _queue_text(chat_id, text, reply_markup, key)
 
 
-def _start(chat_id):
+def _start(chat_id, choose_language=False):
+    previous = _session(chat_id)
     session = {"stage": "language", "nonce": uuid4().hex[:12]}
+    if not choose_language and previous.get('language') in ORDERED_LANG_CODES:
+        session.update(language=previous['language'], stage='issue')
+        session.update({key: previous[key] for key in ('state', 'district') if previous.get(key)})
     _save(chat_id, session)
+    if session['stage'] == 'issue':
+        _text(chat_id, _i18n(_lang(session), 'issue'))
+        return session
     greeting = BOT_PROMPTS["en"]["greeting"]
     _text(chat_id, greeting, _keyboard(LANGUAGE_KEYBOARD), f"chat:{chat_id}:start:{session['nonce']}")
     return session
@@ -741,11 +874,16 @@ def _status(chat_id, ticket, session=None):
     lang = _lang(session or _session(chat_id))
     clean_ticket = str(ticket or "").strip().upper()
     db = get_db()
+    job = db.execute("SELECT status FROM telegram_jobs WHERE request_id=? AND chat_id=?", (clean_ticket, str(chat_id))).fetchone()
+    if job and job['status'] != 'done':
+        key = 'needs_attention' if job['status'] == 'failed' else 'queued'
+        _text(chat_id, _flow(lang, key).format(ticket=clean_ticket))
+        return
     row = db.execute(
         """SELECT request_id, status, district, state, category, urgency,
                   routed_department, sla_due_at, created_at
-           FROM citizen_requests WHERE request_id=?""",
-        (clean_ticket,)
+           FROM citizen_requests WHERE request_id=? AND submitted_by=?""",
+        (clean_ticket, str(chat_id))
     ).fetchone()
     if not row:
         not_found_msg = _i18n(lang, "not_found") or f"No request matches ticket {clean_ticket}."
@@ -792,73 +930,73 @@ def _voice_text(file_id, language):
     return transcript.strip()
 
 
+def _request_voice_retry(chat_id, session):
+    """Retain the draft and allow replacement audio/text without confirmation."""
+    session.update(stage="issue", consent_granted=False)
+    _save(chat_id, session)
+    retry_msg = _i18n(_lang(session), "asr_error") or "I could not transcribe that voice note. Please type your report; your draft is retained."
+    _text(chat_id, retry_msg)
+
+
+def _queue_voice(chat_id, session):
+    from .telegram_jobs import enqueue
+    session.update(issue='', stage='transcribing', consent_granted=False)
+    session['voice_revision'] = int(session.get('voice_revision') or 0) + 1
+    job = enqueue(chat_id, session, 'voice')
+    session['job_id'] = job['job_id']
+    _save(chat_id, session)
+    _text(chat_id, _flow(_lang(session), 'voice'), key=f"job:{job['job_id']}:received")
+
+
 def _submit(chat_id, session, ingest_text):
     language = _lang(session)
-    issue = str(session.get("issue") or "").strip()
-    if session.get("voice_file_id") and (not issue or issue == "Voice report"):
-        try:
-            issue = _voice_text(session["voice_file_id"], language)
-        except Exception as exc:
-            LOGGER.exception("Failed to transcribe Telegram voice note for chat %s: %s", chat_id, exc)
-            # Keep the draft and audio reference, but allow a new recording or text.
-            session.update(stage="issue", consent_granted=False)
-            _save(chat_id, session)
-            retry_msg = _i18n(language, "asr_error") or "I could not transcribe that voice note. Please type your report; your draft is retained."
-            _text(chat_id, retry_msg)
-            return
-    if not issue:
-        _text(chat_id, _i18n(language, "issue"))
+    issue = str(session.get('issue') or '').strip()
+    if session.get('voice_file_id') and (not issue or issue == 'Voice report'):
+        _queue_voice(chat_id, session)
         return
-
-    # Immediate feedback while AI translation & verification runs
-    _send_quick_action("sendChatAction", {"chat_id": chat_id, "action": "typing"})
-    interim_msg = _submitting_interim(language)
-    _send_quick_action("sendMessage", {"chat_id": chat_id, "text": interim_msg})
-    _text(chat_id, interim_msg, key=f"chat:{chat_id}:submitting:{session.get('nonce', uuid4().hex)}")
-
-    state = session.get("state") or "Tamil Nadu"
-    district = session.get("district") or session.get("location") or "Vellore"
-    ward = session.get("ward") or ""
-
-    payload, error = ingest_text(
-        channel="Telegram",
-        text=issue,
-        language=language,
-        district=district,
-        state=state,
-        ward=ward,
-        sender=str(chat_id),
-        endpoint="/api/channels/telegram/conversation",
-        idempotency_key=f"telegram:{chat_id}:{session.get('nonce', 'unknown')}",
-    )
-    if error or not payload.get("success"):
-        fail_msg = _i18n(language, "failed") or "The service is temporarily unavailable. Your draft is retained; please try again."
-        _text(chat_id, fail_msg)
+    if not issue or not session.get('consent_granted'):
+        _send_review(chat_id, session)
         return
-    request_id = payload.get("request_id")
-    if request_id:
-        session.update(stage="complete", request_id=request_id, issue=issue)
+    if session.get('district') not in PILOT_STATE_TO_DISTRICTS.get(session.get('state'), []):
+        session['stage'] = 'state'
         _save(chat_id, session)
-        saved_template = _i18n(language, "saved") or "Your request has been registered. Reference: {ticket}"
-        saved_text = saved_template.format(ticket=request_id)
-        tip_text = _prompt(language, "track_tip").format(ticket=request_id)
-        full_ack = f"{saved_text}\n\n{tip_text}"
-        track_btn = _prompt(language, "track_btn")
-        new_btn = _prompt(language, "new_btn")
-        kb = _keyboard([[ (track_btn, f"track:{request_id}"), (new_btn, "new_report") ]])
-        _text(chat_id, full_ack, kb, key=f"chat:{chat_id}:saved:{request_id}")
-    else:
-        _text(chat_id, "Your report was accepted for processing. Please check status shortly.")
+        _text(chat_id, _prompt(language, 'select_state'), _keyboard(STATE_KEYBOARD))
+        return
+    from .telegram_jobs import enqueue
+    job = enqueue(chat_id, session, 'intake')
+    session.update(stage='processing', job_id=job['job_id'], request_id=job['request_id'])
+    _save(chat_id, session)
+    _text(chat_id, _flow(language, 'queued').format(ticket=job['request_id']),
+          _keyboard([[(_prompt(language, 'track_btn'), f"track:{job['request_id']}")]]),
+          key=f"job:{job['job_id']}:received")
+
+
+def _announce_saved(chat_id, session):
+    language = _lang(session)
+    request_id = session['request_id']
+    saved = (_i18n(language, 'saved') or 'Your request was saved. Reference: {ticket}').format(ticket=request_id)
+    tip = _prompt(language, 'track_tip').format(ticket=request_id)
+    kb = _keyboard([[(_prompt(language, 'track_btn'), f'track:{request_id}'),
+                     (_prompt(language, 'new_btn'), 'new_report')]])
+    _text(chat_id, f'{saved}\n\n{tip}', kb, key=f'chat:{chat_id}:saved:{request_id}')
 
 
 def _callback(update, chat_id, ingest_text):
     callback = update.get("callback_query") or {}
     action = str(callback.get("data") or "")
     session = _session(chat_id)
+    if action.startswith('n:'):
+        _, nonce, action = action.split(':', 2)
+        if nonce != session.get('nonce'):
+            _queue_callback_answer(callback.get('id'), f"callback:{callback.get('id')}", text='This button belongs to an earlier draft. Use the latest message.')
+            return
     lang = action[5:] if action.startswith("lang:") and action[5:] in ORDERED_LANG_CODES else _lang(session)
     toast = _processing_toast(lang)
-    _send_quick_action("sendChatAction", {"chat_id": chat_id, "action": "typing"})
     _queue_callback_answer(callback.get("id"), f"callback:{callback.get('id') or hashlib.sha256(action.encode()).hexdigest()}", text=toast)
+
+    if session.get('stage') == 'processing' and not action.startswith('track:'):
+        _status(chat_id, session['request_id'], session)
+        return
 
     if action.startswith("lang:") and action[5:] in ORDERED_LANG_CODES:
         language = action[5:]
@@ -867,22 +1005,36 @@ def _callback(update, chat_id, ingest_text):
         welcome = _i18n(language, "welcome")
         issue_p = _i18n(language, "issue")
         _text(chat_id, f"{welcome}\n\n{issue_p}")
-    elif action.startswith("state:"):
+    elif action == 'location:change' and session.get('stage') in {'location_confirm', 'review'}:
+        session.update(stage='state', consent_granted=False)
+        _save(chat_id, session)
+        _text(chat_id, _prompt(lang, 'select_state'), _keyboard(STATE_KEYBOARD))
+    elif action == 'location:confirm' and session.get('stage') == 'location_confirm':
+        session.update(state=session['suggested_state'], district=session['suggested_district'], ward='', stage='review')
+        _save(chat_id, session)
+        _send_review(chat_id, session)
+    elif action.startswith("state:") and session.get('stage') == 'state':
         state = action[6:]
+        if state not in PILOT_STATE_TO_DISTRICTS:
+            return
         session.update(state=state, stage="district")
         _save(chat_id, session)
         lang = _lang(session)
         keyboard = DISTRICT_KEYBOARDS.get(state, DISTRICT_KEYBOARDS["Tamil Nadu"])
         prompt_text = _prompt(lang, "select_district").format(state=state)
         _text(chat_id, prompt_text, _keyboard(keyboard))
-    elif action.startswith("dist:"):
+    elif action.startswith("dist:") and session.get('stage') == 'district':
         district = action[5:]
-        session.update(district=district, location=district, stage="ward")
+        if district not in PILOT_STATE_TO_DISTRICTS.get(session.get('state'), []):
+            return
+        session.update(district=district, location=district, ward='', stage="review")
         _save(chat_id, session)
-        lang = _lang(session)
-        ward_prompt = _prompt(lang, "enter_ward").format(district=district)
-        skip_btn = _prompt(lang, "skip_btn")
-        _text(chat_id, ward_prompt, _keyboard([[ (skip_btn, "ward:skip") ]]))
+        _send_review(chat_id, session)
+    elif action == 'ward:add' and session.get('stage') == 'review':
+        session.update(stage='ward', consent_granted=False)
+        _save(chat_id, session)
+        _text(chat_id, _prompt(lang, 'enter_ward').format(district=session['district']),
+              _keyboard([[(_prompt(lang, 'skip_btn'), 'ward:skip')]]))
     elif action == "ward:skip" and session.get("stage") == "ward":
         session.update(ward="", stage="review")
         _save(chat_id, session)
@@ -896,13 +1048,13 @@ def _callback(update, chat_id, ingest_text):
         consent_btn = _prompt(lang, "consent_btn")
         cancel_btn = _prompt(lang, "cancel_btn")
         _text(chat_id, f"{notice}\n\n{consent}", _keyboard([[ (consent_btn, 'consent') ], [ (cancel_btn, 'cancel') ]]))
-    elif action == "consent" and session.get("stage") == "privacy":
+    elif action == "consent" and session.get("stage") in {"review", "privacy"}:
         session["consent_granted"] = True
         _save(chat_id, session)
         _submit(chat_id, session, ingest_text)
-    elif action == "edit":
+    elif action == "edit" and session.get('stage') in {'review', 'privacy'}:
         lang = _lang(session)
-        session["stage"] = "issue"
+        session.update(stage='issue', consent_granted=False)
         _save(chat_id, session)
         _text(chat_id, _i18n(lang, "issue"))
     elif action == "cancel":
@@ -917,6 +1069,10 @@ def _callback(update, chat_id, ingest_text):
 
 
 def _send_review(chat_id, session):
+    issue = str(session.get("issue") or "").strip()
+    if session.get("voice_file_id") and (not issue or issue == "Voice report"):
+        _request_voice_retry(chat_id, session)
+        return
     lang = _lang(session)
     state = session.get("state", "Tamil Nadu")
     district = session.get("district", "Vellore")
@@ -926,15 +1082,21 @@ def _send_review(chat_id, session):
     issue_lbl = _prompt(lang, "issue_label")
     loc_lbl = _prompt(lang, "location_label")
     review_text = f"{review_head}\n\n📝 {issue_lbl}: {session.get('issue', '')}\n📍 {loc_lbl}: {loc_display}"
-    confirm_btn = _prompt(lang, "confirm_btn")
+    review_text += f"\n\n{_i18n(lang, 'notice')}\n\n{_i18n(lang, 'consent')}"
+    confirm_btn = _prompt(lang, "consent_btn")
     edit_btn = _prompt(lang, "edit_btn")
     cancel_btn = _prompt(lang, "cancel_btn")
-    _text(chat_id, review_text, _keyboard([[ (confirm_btn, 'confirm'), (edit_btn, 'edit') ], [ (cancel_btn, 'cancel') ]]))
+    _text(chat_id, review_text, _keyboard([[(confirm_btn, 'consent')], [(edit_btn, 'edit'), (_flow(lang, 'change'), 'location:change')],
+                                          [(_flow(lang, 'ward'), 'ward:add')], [(cancel_btn, 'cancel')]]))
 
 
 def _message(update, chat_id, ingest_text):
     message = update.get("message") or update.get("edited_message") or {}
     text = str(message.get("text") or "").strip()
+    current = _session(chat_id)
+    if current.get('stage') == 'processing' and text.startswith(('/start', '/cancel', '/reset', '/language', '/lang')):
+        _status(chat_id, current['request_id'], current)
+        return
 
     if text.startswith("/start"):
         _start(chat_id)
@@ -943,7 +1105,7 @@ def _message(update, chat_id, ingest_text):
         _help(chat_id)
         return
     if text.startswith("/language") or text.startswith("/lang"):
-        _start(chat_id)
+        _start(chat_id, choose_language=True)
         return
     if text.startswith("/cancel") or text.startswith("/reset"):
         session = _session(chat_id)
@@ -970,23 +1132,20 @@ def _message(update, chat_id, ingest_text):
         photos = message.get("photo")
         caption = str(message.get("caption") or "").strip()
         if voice_id:
-            try:
-                transcription = _voice_text(voice_id, lang)
-                session.update(issue=transcription, voice_file_id=voice_id, stage="state")
-            except Exception as exc:
-                LOGGER.warning("Voice transcription deferred: %s", exc)
-                session.update(issue="Voice report", voice_file_id=voice_id, stage="state")
+            session['voice_file_id'] = voice_id
+            _queue_voice(chat_id, session)
+            return
         elif photos:
             photo_file_id = photos[-1].get("file_id")
             issue_desc = caption or "Civic hazard photo attached"
             session.update(issue=issue_desc, photo_file_id=photo_file_id, stage="state")
         elif text:
             session.update(issue=text, stage="state")
+            session.pop('voice_file_id', None)
         else:
             _text(chat_id, _i18n(lang, "issue"))
             return
-        _save(chat_id, session)
-        _text(chat_id, _prompt(lang, "select_state"), _keyboard(STATE_KEYBOARD))
+        _after_issue(chat_id, session)
     elif stage == "state":
         _text(chat_id, _prompt(lang, "select_state"), _keyboard(STATE_KEYBOARD))
     elif stage == "district":
@@ -994,11 +1153,9 @@ def _message(update, chat_id, ingest_text):
         if text:
             matched = _find_matching_district(state, text)
             if matched:
-                session.update(district=matched, location=matched, stage="ward")
+                session.update(district=matched, location=matched, ward='', stage="review")
                 _save(chat_id, session)
-                ward_prompt = _prompt(lang, "enter_ward").format(district=matched)
-                skip_btn = _prompt(lang, "skip_btn")
-                _text(chat_id, ward_prompt, _keyboard([[ (skip_btn, "ward:skip") ]]))
+                _send_review(chat_id, session)
             else:
                 err_text = _prompt(lang, "district_not_found").format(text=text, state=state)
                 keyboard = DISTRICT_KEYBOARDS.get(state, DISTRICT_KEYBOARDS["Tamil Nadu"])
@@ -1017,13 +1174,17 @@ def _message(update, chat_id, ingest_text):
         session.update(location=text, district="Vellore", state="Tamil Nadu", stage="review")
         _save(chat_id, session)
         _send_review(chat_id, session)
-    elif stage in {"review", "privacy"}:
+    elif stage == 'processing':
+        _status(chat_id, session['request_id'], session)
+    elif stage == 'transcribing':
+        _text(chat_id, _flow(lang, 'voice'))
+    elif stage in {"review", "privacy", "location_confirm"}:
         _text(chat_id, "Please use the interactive buttons above to continue or cancel.")
     else:
         _text(chat_id, "Your previous report is registered. Use /status <ticket ID> to track it, or /start to begin a new report.")
 
 
-def handle_update(update, ingest_text):
+def _handle_update_locked(update, ingest_text):
     """Process one Telegram update and return a safe acknowledgement payload."""
     if not isinstance(update, dict):
         raise ValueError("Telegram update must be an object")
@@ -1052,14 +1213,14 @@ def handle_update(update, ingest_text):
             "UPDATE telegram_inbound_events SET status='processing', lease_until_epoch=?, received_at=? WHERE update_id=?",
             (int(time.time()) + 30, _now(), update_id),
         )
-        db.commit()
+        _commit()
     else:
         db.execute(
             """INSERT INTO telegram_inbound_events(update_id,payload_hash,chat_id,status,response_json,received_at,lease_until_epoch)
                VALUES(?,?,?,'processing',NULL,?,?)""",
             (update_id, payload_hash, str(chat_id) if chat_id is not None else None, _now(), int(time.time()) + 30),
         )
-        db.commit()
+        _commit()
 
     if chat_id is not None:
         if update.get("callback_query"):
@@ -1071,5 +1232,14 @@ def handle_update(update, ingest_text):
         "UPDATE telegram_inbound_events SET status='processed', response_json=?, lease_until_epoch=NULL, processed_at=? WHERE update_id=?",
         (json.dumps(response), _now(), update_id),
     )
-    db.commit()
+    _commit()
     return response
+
+
+def handle_update(update, ingest_text):
+    if not isinstance(update, dict):
+        raise ValueError('Telegram update must be an object')
+    message = (update.get('callback_query') or {}).get('message') or update.get('message') or update.get('edited_message') or {}
+    chat_id = (message.get('chat') or {}).get('id') or (message.get('from') or {}).get('id')
+    with _chat_transaction(chat_id or 'unknown'):
+        return _handle_update_locked(update, ingest_text)

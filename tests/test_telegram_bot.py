@@ -11,12 +11,14 @@ Tests:
 """
 
 import json
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pandas as pd
 import pytest
 
 from visbharat import create_app
+from visbharat.config import Config
+from visbharat.services.telegram_jobs import process_one
 from visbharat.blueprints.api_channels import _ingest_text_request
 from visbharat.db import get_channel_session, get_db, init_db
 from visbharat.services.telegram_gateway import (
@@ -33,8 +35,14 @@ from visbharat.services.telegram_gateway import (
 
 
 @pytest.fixture
-def app(tmp_path):
+def app(tmp_path, monkeypatch):
     db_file = str(tmp_path / "test_telegram.db")
+    monkeypatch.setenv('NVB_DISABLE_EXTERNAL_SERVICES', '1')
+    for key, value in dict(DATABASE_PATH=db_file, DATABASE_URL='', TESTING=True,
+                           EXTERNAL_SERVICES_ENABLED=False, LOCAL_EVALUATION_WORKER=False,
+                           SEED_DEMO_DATA=False).items():
+        monkeypatch.setattr(Config, key, value, raising=False)
+    monkeypatch.setattr('requests.sessions.Session.request', Mock(side_effect=AssertionError('External calls forbidden in tests')))
     app = create_app()
     app.config.update(
         TESTING=True,
@@ -184,7 +192,7 @@ def test_telegram_intake_full_flow_tamil(app):
 
         sess5 = get_channel_session("telegram", str(chat_id))
         assert sess5["district"] == "Vellore"
-        assert sess5["stage"] == "ward"
+        assert sess5["stage"] == "review"
 
         # 6. Skip ward
         up6 = {"update_id": 1006, "callback_query": {"id": "cb4", "message": {"chat": {"id": chat_id}}, "data": "ward:skip"}}
@@ -208,7 +216,10 @@ def test_telegram_intake_full_flow_tamil(app):
         assert res8["success"]
 
         sess8 = get_channel_session("telegram", str(chat_id))
-        assert sess8["stage"] == "complete"
+        assert sess8["stage"] == "processing"
+        assert process_one(_ingest_text_request)
+        sess8 = get_channel_session('telegram', str(chat_id))
+        assert sess8['stage'] == 'complete'
         assert sess8["request_id"].startswith("NVB-")
 
         ticket_id = sess8["request_id"]
@@ -247,7 +258,8 @@ def test_telegram_district_typing_and_ward_entry(app):
 
         sess = get_channel_session("telegram", str(chat_id))
         assert sess["district"] == "NTR", "Vijayawada alias should resolve to NTR district"
-        assert sess["stage"] == "ward"
+        assert sess["stage"] == "review"
+        handle_update({'update_id': 2099, 'callback_query': {'id': 'cb_ward', 'message': {'chat': {'id': chat_id}}, 'data': 'ward:add'}}, _ingest_text_request)
 
         # Type ward name
         handle_update({"update_id": 2006, "message": {"chat": {"id": chat_id}, "text": "Ward 14 Gandhi Nagar"}}, _ingest_text_request)
@@ -259,6 +271,7 @@ def test_telegram_district_typing_and_ward_entry(app):
         # Confirm and consent
         handle_update({"update_id": 2007, "callback_query": {"id": "cb_c", "message": {"chat": {"id": chat_id}}, "data": "confirm"}}, _ingest_text_request)
         handle_update({"update_id": 2008, "callback_query": {"id": "cb_con", "message": {"chat": {"id": chat_id}}, "data": "consent"}}, _ingest_text_request)
+        assert process_one(_ingest_text_request)
 
         sess3 = get_channel_session("telegram", str(chat_id))
         assert sess3["stage"] == "complete"

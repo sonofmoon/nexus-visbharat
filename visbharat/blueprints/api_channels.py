@@ -367,7 +367,7 @@ def _verify_replay_protection():
         return True
     except Exception:
         return False
-def _ingest_text_request(channel, text, language, district, sender='anonymous', endpoint='', idempotency_key=None, state=None, ward=None):
+def _ingest_text_request(channel, text, language, district, sender='anonymous', endpoint='', idempotency_key=None, state=None, ward=None, reserved_request_id=None):
     raw_text = str(text or '').strip()
     language = (language or 'en').strip().lower() or 'en'
     district = (district or '').strip()
@@ -418,7 +418,7 @@ def _ingest_text_request(channel, text, language, district, sender='anonymous', 
         'pipeline': {'ingested_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')},
     }
 
-    if bool(current_app.config.get('ASYNC_PIPELINE_ENABLED', False)):
+    if bool(current_app.config.get('ASYNC_PIPELINE_ENABLED', False)) and not reserved_request_id:
         idem_key = idem_key
         if idem_key:
             existing = find_job_by_idempotency_key(idem_key)
@@ -439,7 +439,7 @@ def _ingest_text_request(channel, text, language, district, sender='anonymous', 
             'channel': channel,
         }, None
 
-    result = process_ingestion_payload(payload)
+    result = process_ingestion_payload(payload, request_id=reserved_request_id) if reserved_request_id else process_ingestion_payload(payload)
     _save_idempotency_key(endpoint or f'/api/channels/{channel.lower()}/webhook', idem_key, result['request_id'])
     _append_lifecycle_event(
         result['request_id'],
@@ -522,12 +522,10 @@ def telegram_webhook():
     if not has_custom_secret and not _require_webhook_token():
         return jsonify({'success': False, 'error': 'invalid webhook token'}), 401
     data = request.get_json(silent=True) or {}
-    from ..services.telegram_gateway import dispatch_outbox, handle_update
+    from ..services.telegram_gateway import handle_update
 
     try:
         payload = handle_update(data, _ingest_text_request)
-        delivery = dispatch_outbox()
-        payload['delivery'] = delivery
         return jsonify(payload)
     except ValueError as error:
         return jsonify({'success': False, 'error': str(error)}), 400

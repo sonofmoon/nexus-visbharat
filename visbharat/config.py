@@ -183,6 +183,7 @@ class Config:
     TELEGRAM_WEBHOOK_SECRET = os.environ.get('TELEGRAM_WEBHOOK_SECRET', '')
     TELEGRAM_OUTBOX_BATCH_SIZE = int(os.environ.get('TELEGRAM_OUTBOX_BATCH_SIZE', '20'))
     TELEGRAM_OUTBOX_MAX_ATTEMPTS = int(os.environ.get('TELEGRAM_OUTBOX_MAX_ATTEMPTS', '12'))
+    TELEGRAM_JOB_LEASE_SECONDS = int(os.environ.get('TELEGRAM_JOB_LEASE_SECONDS', '900'))
     GMAIL_ENABLED = _as_bool('GMAIL_ENABLED', True)
     GMAIL_MAILBOX = os.environ.get('GMAIL_MAILBOX', 'nexusvisbharat@gmail.com').strip() or 'nexusvisbharat@gmail.com'
     GMAIL_AUTH_MODE = os.environ.get('GMAIL_AUTH_MODE', 'service_account').strip().lower()
