@@ -27,6 +27,7 @@ This repository is the Code for Communities submission for [Build with AI: Code 
 - **Official Telegram Citizen Bot:** [@NexusVisBharatBot ↗](https://t.me/NexusVisBharatBot) *(Live omnichannel citizen filing & tracking with Tamil-first multilingual support)*
 - **Source code:** [github.com/sonofmoon/nexus-visbharat ↗](https://github.com/sonofmoon/nexus-visbharat)
 - **Official Project Pitch Deck (PDF):** [Nexus_VisBharat_Pitch_Deck.pdf ↗](docs/pitch/Nexus_VisBharat_Pitch_Deck.pdf)
+- **Official Video Walkthrough:** [YouTube (3:16 Demo) ↗](https://youtu.be/zIRLMG5ZPjU)
 
 The live deployment is a working demonstration environment. The showcase corpus is synthetic, and the evidence notes below describe what has been measured, what is provisional and what still requires a real municipal pilot.
 
